@@ -1,0 +1,22 @@
+
+{
+  "name": "react-native-react-native-link-preview",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react-native"
+  ],
+  "author": "Oscar Franco",
+  "license": "MIT",
+  "peerDependencies": {
+    "react-native": "^0.29.0"
+  },
+  "dependencies": {
+    "cheerio-without-node-native": "^0.20.1",
+    "autolinker": "^1.2.0"
+  }
+}
