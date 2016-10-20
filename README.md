@@ -31,7 +31,8 @@ Returns
   title: "OK Go - Needing/Getting - Official Video - YouTube",
   url: "https://www.youtube.com/watch?v=MejbOFk7H6c",
   videos: undefined
-}```
+}
+```
 
 ## Dependencies
 This library depends on:
