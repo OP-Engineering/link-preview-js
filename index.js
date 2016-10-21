@@ -8,56 +8,39 @@ const cheerio = require('cheerio-without-node-native')
 const Autolinker = require('autolinker')
 
 export default class LinkPreview {
-  static getPreview({uri, text}) {
+  static getPreview(text) {
     return new Promise((resolve, reject) => {
-      if(!text && !uri) {
+      if(!text) {
         reject({error: 'LinkPreview did not receive either a url or text'})
       }
 
-      if(uri) {
-        fetch(uri)
+      let detectedUrl = null
+      const linkedText = Autolinker.link(text, {
+        replaceFn: match => {
+          switch( match.getType() ) {
+          case 'url' :
+            if(!detectedUrl)
+              detectedUrl = match.getUrl()
+            return true
+          default:
+            break
+          }
+        },
+      })
+
+      if(detectedUrl) {
+        fetch(detectedUrl)
         .then(response => {
           let html = response._bodyInit
           let myReader = new FileReader()
           myReader.onload = () => {
-            resolve(this._parseResponse(myReader.result, uri))
+            resolve(this._parseResponse(myReader.result, detectedUrl))
           }
           myReader.readAsText(html)
         })
         .catch(err => reject(err))
-        return
-      }
-
-      if(text) {
-        let detectedUrl = null
-        const linkedText = Autolinker.link(text, {
-          replaceFn: match => {
-            switch( match.getType() ) {
-            case 'url' :
-              if(!detectedUrl)
-                detectedUrl = match.getUrl()
-              return true
-            default:
-              break
-            }
-          },
-        })
-
-        if(detectedUrl) {
-          fetch(detectedUrl)
-          .then(response => {
-            let html = response._bodyInit
-            let myReader = new FileReader()
-            myReader.onload = () => {
-              resolve(this._parseResponse(myReader.result, detectedUrl))
-            }
-            myReader.readAsText(html)
-          })
-          .catch(err => reject(err))
-        } else {
-          reject({error: 'Preview link did not find a link in the text'})
-        }
-        return
+      } else {
+        reject({error: 'Preview link did not find a link in the text'})
       }
     })
   }

@@ -13,11 +13,11 @@ You have to pass an object argument with either a valid URL (no validation on li
 ```javascript
 import LinkPreview from 'react-native-react-native-link-preview';
 
-LinkPreview.getPreview({uri: 'https://www.youtube.com/watch?v=MejbOFk7H6c'})
+LinkPreview.getPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
 .then(data => console.warn(data))
 .catch(err => console.warn(err))
 
-LinkPreview.getPreview({text: 'This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c'})
+LinkPreview.getPreview('This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c')
 .then(data => console.warn(data))
 .catch(err => console.warn(err))
 ```
