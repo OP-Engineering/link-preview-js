@@ -12,9 +12,7 @@
   ],
   "author": "Oscar Franco",
   "license": "MIT",
-  "peerDependencies": {
-    "react-native": "^0.29.0"
-  },
+  "peerDependencies": {},
   "repository" : "https://github.com/ospfranco/react-native-link-preview",
   "dependencies": {
     "cheerio-without-node-native": "^0.20.1",
