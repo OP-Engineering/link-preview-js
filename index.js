@@ -30,13 +30,9 @@ export default class LinkPreview {
 
       if(detectedUrl) {
         fetch(detectedUrl)
-        .then(response => {
-          let html = response._bodyInit
-          let myReader = new FileReader()
-          myReader.onload = () => {
-            resolve(this._parseResponse(myReader.result, detectedUrl))
-          }
-          myReader.readAsText(html)
+        .then(response => response.text())
+        .then(text => {
+          resolve(this._parseResponse(text, detectedUrl))
         })
         .catch(err => reject(err))
       } else {
