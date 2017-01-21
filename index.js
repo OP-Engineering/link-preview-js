@@ -43,7 +43,7 @@ export default class LinkPreview {
 
 
   static _parseResponse(body, url) {
-    doc = cheerio.load(body)
+    const doc = cheerio.load(body)
 
     return {
       url,
