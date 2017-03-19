@@ -1,4 +1,3 @@
-
 {
   "name": "react-native-link-preview",
   "version": "1.0.7",
@@ -13,29 +12,26 @@
   "author": "Oscar Franco",
   "license": "MIT",
   "peerDependencies": {},
-  "repository" : "https://github.com/ospfranco/react-native-link-preview",
+  "repository": "https://github.com/ospfranco/react-native-link-preview",
   "dependencies": {
-    "cheerio-without-node-native": "^0.20.1",
-    "autolinker": "^1.2.0"
+    "autolinker": "^1.2.0",
+    "cheerio-without-node-native": "^0.20.1"
   },
   "devDependencies": {
-    "eslint": "^3.12.1",
     "babel-core": "^6.22.1",
     "babel-eslint": "^7.1.1",
     "babel-jest": "^18.0.0",
     "babel-loader": "^6.2.10",
     "babel-polyfill": "^6.22.0",
-    "babel-preset-es2015": "^6.18.0",
-    "babel-preset-es2015-node4": "^2.1.0",
-    "babel-preset-react": "^6.11.1",
-    "babel-preset-stage-0": "^6.22.0",
+    "babel-preset-react-native": "^1.9.1",
+    "eslint": "^3.12.1",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-loader": "^1.6.1",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.9.0",
     "expect.js": "^0.3.1",
-    "node-fetch": "^1.6.3",
-    "jest": "^16.0.2"
+    "jest": "^16.0.2",
+    "node-fetch": "^1.6.3"
   }
 }
