@@ -8,10 +8,10 @@ Allows to extract information from an URL or parse a text and retrieve informati
 `$ npm install -S react-native-link-preview`
 
 ## Usage
-You have to pass an object argument with either a valid URL (no validation on library side yet) or a text that can be parsed
+Library exposes just one method: getPreview, you have to pass a string (doesn't matter if it is just and URL or a piece of text that contains an URL), the library will take care of parsing it and returning the first valid URL info it finds, the parsing is done automatically via auto-linker, if you have problems getting your URL recognized you can dig their documentation for a valid regex.
 
 ```javascript
-import LinkPreview from 'react-native-react-native-link-preview';
+import LinkPreview from 'react-native-link-preview';
 
 LinkPreview.getPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
 .then(data => console.warn(data))
@@ -33,13 +33,6 @@ Returns
   videos: undefined
 }
 ```
-
-## Dependencies
-This library depends on:
-- [Autolinker](https://github.com/gregjacobs/Autolinker.js/)
-- [cheerio-without-node-native](https://github.com/oyyd/cheerio-without-node-native)
-
-Check them out, both pretty cool
 
 ## License
 
