@@ -21,7 +21,7 @@ export default class LinkPreview {
             if (!detectedUrl) { detectedUrl = match.getUrl(); }
             return true;
           default:
-            return false;
+            return true;
           }
         }
       });
@@ -34,7 +34,7 @@ export default class LinkPreview {
         })
         .catch(error => reject({ error }));
       } else {
-        reject({ error: 'Preview link did not find a link in the text' });
+        reject({ error: 'React-Native-Preview-Link did not find a link in the text' });
       }
     });
   }
