@@ -10,18 +10,22 @@ Allows to extract information from an URL or parse a text and retrieve informati
 ## Usage
 Library exposes just one method: getPreview, you have to pass a string (doesn't matter if it is just an URL or a piece of text that contains an URL), the library will take care of parsing it and returning the info of first valid URL info it finds.
 
+1.0.x versions:
 The parsing is done automatically via [Autolinker](https://github.com/gregjacobs/Autolinker.js/), if you have problems getting your URL recognized you can dig their documentation for a valid regex.
+
+1.1.x versions:
+Parsing is simplified to avoid dependency on Autolinker and having to double check for malformed URLs, basically: string is splitted by space characters and each token is tested against propper regex (https://gist.github.com/dperini/729294), if you have any problems with this please create a ticket, haven't tested all possible cases where this could fail.
 
 ```javascript
 import LinkPreview from 'react-native-link-preview';
 
 LinkPreview.getPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
-.then(data => console.warn(data))
-.catch(err => console.warn(err))
+  .then(data => console.warn(data))
+  .catch(err => console.warn(err))
 
 LinkPreview.getPreview('This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c')
-.then(data => console.warn(data))
-.catch(err => console.warn(err))
+  .then(data => console.warn(data))
+  .catch(err => console.warn(err))
 ```
 
 Returns

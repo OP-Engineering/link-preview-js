@@ -1,6 +1,6 @@
 {
   "name": "react-native-link-preview",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,6 @@
   "peerDependencies": {},
   "repository": "https://github.com/ospfranco/react-native-link-preview",
   "dependencies": {
-    "autolinker": "^1.2.0",
     "cheerio-without-node-native": "^0.20.1"
   },
   "devDependencies": {
