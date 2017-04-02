@@ -4,6 +4,7 @@
 
 const cheerio = require('cheerio-without-node-native');
 const Autolinker = require('autolinker');
+import {REGEX_VALID_URL} from './constants'
 
 export default class LinkPreview {
   static getPreview(text) {
@@ -18,6 +19,10 @@ export default class LinkPreview {
         replaceFn: match => {
           switch (match.getType()) {
           case 'url' :
+            const url = match.getUrl()
+            if (! REGEX_VALID_URL.test(url)) {
+            	return false
+            }
             if (!detectedUrl) { detectedUrl = match.getUrl(); }
             return true;
           default:
