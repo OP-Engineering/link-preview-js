@@ -49,10 +49,10 @@ export default class LinkPreview {
   }
 
   static _getTitle(doc) {
-    let title = doc('title').text();
+    let title = doc('meta[property=\'og:title\']').attr('content');
 
     if (!title) {
-      title = doc('meta[property=\'og:title\']').attr('content');
+      title = doc('title').text();
     }
 
     return title;
