@@ -1,8 +1,9 @@
 /**
- * @providesModule react-native-link-preview
- */
+* @providesModule react-native-link-preview
+*/
 
 const cheerio = require('cheerio-without-node-native');
+const urlObj = require('url');
 
 import { REGEX_VALID_URL } from './constants';
 
@@ -84,11 +85,45 @@ export default class LinkPreview {
   }
 
   static _getImages(doc, rootUrl) {
-    const images = [];
-    const nodes = doc('meta[property=\'og:image\']');
+    let images = [],
+      nodes,
+      src,
+      dic;
 
-    if (nodes.length > 0) {
-      nodes.each((index, node) => { images.push(node.attribs.content); });
+    nodes = doc('meta[property=\'og:image\']');
+
+    if (nodes.length) {
+      nodes.each((index, node) => {
+        src = node.attribs.content;
+        if (src) {
+          src = urlObj.resolve(rootUrl, src);
+          images.push(src);
+        }
+      });
+    }
+
+    if (images.length <= 0) {
+      src = doc('link[rel=image_src]').attr('href');
+      if (src) {
+        src = urlObj.resolve(rootUrl, src);
+        images = [src];
+      } else {
+        nodes = doc('img');
+
+        if (nodes.length) {
+          dic = {};
+          images = [];
+          nodes.each((index, node) => {
+            src = node.attribs.src;
+            if (src && !dic[src]) {
+              dic[src] = 1;
+              // width = node.attribs.width;
+              // height = node.attribs.height;
+              images.push(urlObj.resolve(rootUrl, src));
+            }
+          });
+        }
+      }
     }
 
     return images;

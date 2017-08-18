@@ -14,8 +14,8 @@ describe('link preview', () => {
     //   videos: undefined }
 
     expect(linkInfo.url).to.be.equal('https://www.youtube.com/watch?v=wuClZjOdT30');
-    expect(linkInfo.title).to.be.equal('Geography Now! Germany - YouTube');
-    expect(linkInfo.description).to.be.equal('Gluten free vegetarians beware. Watch at your own risk. We now have a Public mailbox! Feel free to send anything via mail! Our public mailbox address is: 190...');
+    expect(linkInfo.title).to.be.equal('Geography Now! Germany');
+    expect(linkInfo.description).to.be.ok();
     expect(linkInfo.mediaType).to.be.equal('video');
     expect(linkInfo.images.length).to.be.equal(1);
     expect(linkInfo.images[0]).to.be.equal('https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg');
@@ -32,8 +32,8 @@ describe('link preview', () => {
     //   videos: undefined }
 
     expect(linkInfo.url).to.be.equal('https://www.youtube.com/watch?v=wuClZjOdT30');
-    expect(linkInfo.title).to.be.equal('Geography Now! Germany - YouTube');
-    expect(linkInfo.description).to.be.equal('Gluten free vegetarians beware. Watch at your own risk. We now have a Public mailbox! Feel free to send anything via mail! Our public mailbox address is: 190...');
+    expect(linkInfo.title).to.be.equal('Geography Now! Germany');
+    expect(linkInfo.description).to.be.ok();
     expect(linkInfo.mediaType).to.be.equal('video');
     expect(linkInfo.images.length).to.be.equal(1);
     expect(linkInfo.images[0]).to.be.equal('https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg');
