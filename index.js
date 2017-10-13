@@ -5,9 +5,9 @@
 const cheerio = require('cheerio-without-node-native');
 const urlObj = require('url');
 
-import { REGEX_VALID_URL } from './constants';
+const { REGEX_VALID_URL } = require('./constants');
 
-export default class LinkPreview {
+exports = class LinkPreview {
   static getPreview(text) {
     return new Promise((resolve, reject) => {
       if (!text) {
@@ -181,4 +181,4 @@ export default class LinkPreview {
   //   }
   // }
 
-}
+};
