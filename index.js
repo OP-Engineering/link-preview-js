@@ -27,7 +27,7 @@ exports.getPreview = function(text) {
       fetch(detectedUrl)
         .then(response => response.text())
         .then(text => {
-          resolve(_parseResponse(text, detectedUrl));
+          resolve(parseResponse(text, detectedUrl));
         })
         .catch(error => reject({ error }));
     } else {
@@ -38,20 +38,20 @@ exports.getPreview = function(text) {
   });
 };
 
-const _parseResponse = function(body, url) {
+const parseResponse = function(body, url) {
   const doc = cheerio.load(body);
 
   return {
     url,
-    title: _getTitle(doc),
-    description: _getDescription(doc),
-    mediaType: _getMediaType(doc) || 'website',
-    images: _getImages(doc, url),
-    videos: _getVideos(doc)
+    title: getTitle(doc),
+    description: getDescription(doc),
+    mediaType: getMediaType(doc) || 'website',
+    images: getImages(doc, url),
+    videos: getVideos(doc)
   };
 };
 
-const _getTitle = function(doc) {
+const getTitle = function(doc) {
   let title = doc("meta[property='og:title']").attr('content');
 
   if (!title) {
@@ -61,7 +61,7 @@ const _getTitle = function(doc) {
   return title;
 };
 
-const _getDescription = function(doc) {
+const getDescription = function(doc) {
   let description = doc('meta[name=description]').attr('content');
 
   if (description === undefined) {
@@ -75,7 +75,7 @@ const _getDescription = function(doc) {
   return description;
 };
 
-const _getMediaType = function(doc) {
+const getMediaType = function(doc) {
   const node = doc('meta[name=medium]');
 
   if (node.length) {
@@ -86,7 +86,7 @@ const _getMediaType = function(doc) {
   }
 };
 
-const _getImages = function(doc, rootUrl) {
+const getImages = function(doc, rootUrl) {
   let images = [],
     nodes,
     src,
@@ -131,7 +131,7 @@ const _getImages = function(doc, rootUrl) {
   return images;
 };
 
-const _getVideos = function(doc) {
+const getVideos = function(doc) {
   const videos = [];
   let nodeTypes;
   let nodeSecureUrls;
@@ -181,7 +181,7 @@ const _getVideos = function(doc) {
   return videos;
 };
 
-// const _parseMediaResponse = function(res, contentType, url) {
+// const parseMediaResponse = function(res, contentType, url) {
 //   if (contentType.indexOf('image/') === 0) {
 //     return createResponseData(url, false, '', '', contentType, 'photo', [url]);
 //   } else {
