@@ -4,7 +4,7 @@
 
 const cheerio = require('cheerio-without-node-native');
 const urlObj = require('url');
-const fetch = require('node-fetch');
+const fetch = require('cross-fetch');
 
 const { REGEX_VALID_URL } = require('./constants');
 
