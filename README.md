@@ -3,6 +3,9 @@
 
 Allows to extract information from an URL or parse a text and retrieve information from the first available link.
 
+## NodeJS support
+Library should now work on node environments, thanks to @uriva and @itaibs, I will not rename the library because it may cause confusion for people who try to run in a CORS protected environment (ex. google chrome), since this does not happen for RN that was the original intention of the package.
+
 ## Getting started
 
 `$ npm install -S react-native-link-preview`
@@ -10,11 +13,7 @@ Allows to extract information from an URL or parse a text and retrieve informati
 ## Usage
 Library exposes just one method: getPreview, you have to pass a string (doesn't matter if it is just an URL or a piece of text that contains an URL), the library will take care of parsing it and returning the info of first valid URL info it finds.
 
-1.0.x versions:
-The parsing is done automatically via [Autolinker](https://github.com/gregjacobs/Autolinker.js/), if you have problems getting your URL recognized you can dig their documentation for a valid regex.
-
-1.1.x versions:
-Parsing is simplified to avoid dependency on Autolinker and having to double check for malformed URLs, basically: string is splitted by space characters and each token is tested against propper regex (https://gist.github.com/dperini/729294), if you have any problems with this please create a ticket, haven't tested all possible cases where this could fail.
+URL parsing is done via: https://gist.github.com/dperini/729294
 
 ```javascript
 import LinkPreview from 'react-native-link-preview';
