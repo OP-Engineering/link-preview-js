@@ -1,4 +1,4 @@
-export const REGEX_VALID_URL = new RegExp(
+exports.REGEX_VALID_URL = new RegExp(
   "^" +
     // protocol identifier
     "(?:(?:https?|ftp)://)" +
@@ -33,4 +33,4 @@ export const REGEX_VALID_URL = new RegExp(
     // resource path
     "(?:[/?#]\\S*)?" +
   "$", "i"
-)
+);

@@ -1,6 +1,6 @@
 {
   "name": "react-native-link-preview",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,7 @@
   "repository": "https://github.com/ospfranco/react-native-link-preview",
   "dependencies": {
     "cheerio-without-node-native": "^0.20.1",
+    "cross-fetch": "0.0.8",
     "url": "^0.11.0"
   },
   "devDependencies": {
@@ -31,7 +32,6 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.9.0",
     "expect.js": "^0.3.1",
-    "jest": "^16.0.2",
-    "node-fetch": "^1.6.3"
+    "jest": "^16.0.2"
   }
 }
