@@ -1,5 +1,5 @@
 
-package com.reactlibrary;
+package io.linkpreview;
 
 import java.util.Arrays;
 import java.util.Collections;
