@@ -8,7 +8,7 @@ const { fetch } = require('cross-fetch');
 
 const { REGEX_VALID_URL } = require('./constants');
 
-exports.getPreview = function(text) {
+exports.getPreview = function(text, propertyType) {
   return new Promise((resolve, reject) => {
     if (!text) {
       reject({
@@ -28,7 +28,7 @@ exports.getPreview = function(text) {
       fetch(detectedUrl)
         .then(response => response.text())
         .then(text => {
-          resolve(parseResponse(text, detectedUrl));
+          resolve(parseResponse(text, detectedUrl, propertyType));
         })
         .catch(error => reject({ error }));
     } else {
@@ -39,7 +39,7 @@ exports.getPreview = function(text) {
   });
 };
 
-const parseResponse = function(body, url) {
+const parseResponse = function(body, url, propertyType) {
   const doc = cheerio.load(body);
 
   return {
@@ -47,7 +47,7 @@ const parseResponse = function(body, url) {
     title: getTitle(doc),
     description: getDescription(doc),
     mediaType: getMediaType(doc) || 'website',
-    images: getImages(doc, url),
+    images: getImages(doc, url, propertyType),
     videos: getVideos(doc)
   };
 };
@@ -87,13 +87,13 @@ const getMediaType = function(doc) {
   }
 };
 
-const getImages = function(doc, rootUrl) {
+const getImages = function(doc, rootUrl, propertyType) {
   let images = [],
     nodes,
     src,
     dic;
 
-  nodes = doc("meta[property='og:image']");
+  nodes = doc(`meta[property='${propertyType || 'og'}:image']`);
 
   if (nodes.length) {
     nodes.each((index, node) => {
@@ -105,7 +105,7 @@ const getImages = function(doc, rootUrl) {
     });
   }
 
-  if (images.length <= 0) {
+  if (images.length <= 0 && !propertyType) {
     src = doc('link[rel=image_src]').attr('href');
     if (src) {
       src = urlObj.resolve(rootUrl, src);
