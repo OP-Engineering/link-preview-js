@@ -18,14 +18,31 @@ URL parsing is done via: https://gist.github.com/dperini/729294
 ```javascript
 import LinkPreview from 'react-native-link-preview';
 
+...
+
 LinkPreview.getPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
-  .then(data => console.warn(data))
-  .catch(err => console.warn(err))
+  .then(data => console.debug(data));
 
 LinkPreview.getPreview('This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c')
-  .then(data => console.warn(data))
-  .catch(err => console.warn(err))
+  .then(data => console.debug(data));
 ```
+## Options
+Additionally you can pass an options object which should add more functionality to the parsing of the link
+
+| Property Name | Result        | 
+| ------------- |:-------------:| 
+| imagesPropertyType  (**optional**) (ex: 'og')     | Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']` |
+
+
+```
+LinkPreview.getPreview(
+  'https://www.youtube.com/watch?v=MejbOFk7H6c', 
+  {
+    imagesPropertyType: 'og', // fetches only open-graph images
+  })
+  .then(data => console.debug(data));
+```
+
 
 Returns
 ```
