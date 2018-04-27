@@ -48,7 +48,8 @@ const parseResponse = function(body, url, options) {
     description: getDescription(doc),
     mediaType: getMediaType(doc) || 'website',
     images: getImages(doc, url, options.imagesPropertyType),
-    videos: getVideos(doc)
+    videos: getVideos(doc),
+    favicons: getFavicons(doc, url)
   };
 };
 
@@ -180,6 +181,39 @@ const getVideos = function(doc) {
   }
 
   return videos;
+};
+
+// returns an array of URL's to favicon images
+const getFavicons = function(doc, rootUrl) {
+  let images = [],
+    nodes = [],
+    src;
+
+  const relSelectors = ['rel=icon', 'rel="shortcut icon"', 'rel=apple-touch-icon'];
+
+  relSelectors.forEach((relSelector) => {
+    // look for all icon tags
+    nodes = doc(`link[${relSelector}]`);
+
+    // collect all images from icon tags
+    if (nodes.length) {
+      nodes.each((index, node) => {
+        src = node.attribs.href;
+        if (src) {
+          src = urlObj.resolve(rootUrl, src);
+          images.push(src);
+        }
+      });
+    }
+  });
+
+  // if no icon images, use default favicon location
+  if (images.length <= 0) {
+    src = '/favicon.ico';
+    images.push(urlObj.resolve(rootUrl, src));
+  }
+
+  return images;
 };
 
 // const parseMediaResponse = function(res, contentType, url) {
