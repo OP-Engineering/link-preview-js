@@ -34,7 +34,7 @@ Additionally you can pass an options object which should add more functionality 
 | imagesPropertyType  (**optional**) (ex: 'og')     | Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']` |
 
 
-```
+```javascript
 LinkPreview.getPreview(
   'https://www.youtube.com/watch?v=MejbOFk7H6c',
   {
@@ -93,7 +93,7 @@ in the HTTP response (see below for variations of response).  Rejects with an er
 }
 ```
 
-### Application URLs
+### Application URL
 ```
 {
   url: "https://assets.curtmfg.com/masterlibrary/56282/installsheet/CME_56282_INS.pdf",
