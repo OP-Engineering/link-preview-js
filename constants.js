@@ -34,3 +34,13 @@ exports.REGEX_VALID_URL = new RegExp(
     "(?:[/?#]\\S*)?" +
   "$", "i"
 );
+
+exports.REGEX_CONTENT_TYPE_IMAGE = new RegExp("image\/.*", "i");
+
+exports.REGEX_CONTENT_TYPE_AUDIO = new RegExp("audio\/.*", "i");
+
+exports.REGEX_CONTENT_TYPE_VIDEO = new RegExp("video\/.*", "i");
+
+exports.REGEX_CONTENT_TYPE_TEXT = new RegExp("text\/.*", "i");
+
+exports.REGEX_CONTENT_TYPE_APPLICATION = new RegExp("application\/.*", "i");

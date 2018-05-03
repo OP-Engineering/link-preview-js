@@ -6,7 +6,14 @@ const cheerio = require('cheerio-without-node-native');
 const urlObj = require('url');
 const { fetch } = require('cross-fetch');
 
-const { REGEX_VALID_URL } = require('./constants');
+const {
+  REGEX_VALID_URL,
+  REGEX_CONTENT_TYPE_IMAGE,
+  REGEX_CONTENT_TYPE_AUDIO,
+  REGEX_CONTENT_TYPE_VIDEO,
+  REGEX_CONTENT_TYPE_TEXT,
+  REGEX_CONTENT_TYPE_APPLICATION
+} = require('./constants');
 
 exports.getPreview = function(text, options) {
   return new Promise((resolve, reject) => {
@@ -26,9 +33,34 @@ exports.getPreview = function(text, options) {
 
     if (detectedUrl) {
       fetch(detectedUrl)
-        .then(response => response.text())
-        .then(text => {
-          resolve(parseResponse(text, detectedUrl, options || {}));
+        .then(response => {
+          // get final URL (after any redirects)
+          const finalUrl = response.url;
+
+          // get content type of response
+          const contentType =
+            response.headers &&
+            response.headers._headers &&
+            response.headers._headers['content-type'] &&
+            response.headers._headers['content-type'][0];
+
+          // parse response depending on content type
+          if (contentType && REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
+            resolve(parseImageResponse(finalUrl, contentType));
+          } else if (contentType && REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
+            resolve(parseAudioResponse(finalUrl, contentType));
+          } else if (contentType && REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
+            resolve(parseVideoResponse(finalUrl, contentType));
+          } else if (contentType && REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
+            response.text()
+              .then(text => {
+                resolve(parseTextResponse(text, finalUrl, options || {}, contentType));
+              });
+          } else if (contentType && REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
+            resolve(parseApplicationResponse(finalUrl, contentType));
+          } else {
+            reject({ error: 'React-Native-Preview-Link: Unknown MIME type for URL.' });
+          }
         })
         .catch(error => reject({ error }));
     } else {
@@ -39,7 +71,43 @@ exports.getPreview = function(text, options) {
   });
 };
 
-const parseResponse = function(body, url, options) {
+const parseImageResponse = function (url, contentType) {
+  return {
+    url,
+    mediaType: 'image',
+    contentType,
+    favicons: [getDefaultFavicon(url)]
+  };
+};
+
+const parseAudioResponse = function (url, contentType) {
+  return {
+    url,
+    mediaType: 'audio',
+    contentType,
+    favicons: [getDefaultFavicon(url)]
+  };
+};
+
+const parseVideoResponse = function (url, contentType) {
+  return {
+    url,
+    mediaType: 'video',
+    contentType,
+    favicons: [getDefaultFavicon(url)]
+  };
+};
+
+const parseApplicationResponse = function (url, contentType) {
+  return {
+    url,
+    mediaType: 'application',
+    contentType,
+    favicons: [getDefaultFavicon(url)]
+  };
+};
+
+const parseTextResponse = function (body, url, options, contentType) {
   const doc = cheerio.load(body);
 
   return {
@@ -47,6 +115,7 @@ const parseResponse = function(body, url, options) {
     title: getTitle(doc),
     description: getDescription(doc),
     mediaType: getMediaType(doc) || 'website',
+    contentType,
     images: getImages(doc, url, options.imagesPropertyType),
     videos: getVideos(doc),
     favicons: getFavicons(doc, url)
@@ -209,11 +278,15 @@ const getFavicons = function(doc, rootUrl) {
 
   // if no icon images, use default favicon location
   if (images.length <= 0) {
-    src = '/favicon.ico';
-    images.push(urlObj.resolve(rootUrl, src));
+    images.push(getDefaultFavicon(rootUrl));
   }
 
   return images;
+};
+
+// returns default favicon (//hostname/favicon.ico) for a url
+const getDefaultFavicon = function (rootUrl) {
+  return urlObj.resolve(rootUrl, '/favicon.ico');
 };
 
 // const parseMediaResponse = function(res, contentType, url) {
