@@ -38,11 +38,13 @@ exports.getPreview = function(text, options) {
           const finalUrl = response.url;
 
           // get content type of response
-          const contentType =
-            response.headers &&
-            response.headers._headers &&
-            response.headers._headers['content-type'] &&
-            response.headers._headers['content-type'][0];
+          let contentType = findById(response.headers, 'content-type');
+          if (!contentType) {
+            return reject({ error: 'React-Native-Link-Preview: Could not extract content type for URL.' });
+          }
+          if (contentType instanceof Array) {
+            contentType = contentType[0];
+          }
 
           // parse response depending on content type
           if (contentType && REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
@@ -59,16 +61,35 @@ exports.getPreview = function(text, options) {
           } else if (contentType && REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
             resolve(parseApplicationResponse(finalUrl, contentType));
           } else {
-            reject({ error: 'React-Native-Preview-Link: Unknown MIME type for URL.' });
+            reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
           }
         })
         .catch(error => reject({ error }));
     } else {
       reject({
-        error: 'React-Native-Preview-Link did not find a link in the text'
+        error: 'React-Native-Link-Preview did not find a link in the text'
       });
     }
   });
+};
+
+// recursively search through object to find property with given id
+// returns value if found, undefined if not found
+const findById = function (object, key) {
+  let value;
+
+  Object.keys(object).some(k => {
+    if (k === key) {
+      value = object[k];
+      return true;
+    }
+    if (object[k] && typeof object[k] === 'object') {
+      value = findById(object[k], key);
+      return value !== undefined;
+    }
+    return false;
+  });
+  return value;
 };
 
 const parseImageResponse = function (url, contentType) {
@@ -288,11 +309,3 @@ const getFavicons = function(doc, rootUrl) {
 const getDefaultFavicon = function (rootUrl) {
   return urlObj.resolve(rootUrl, '/favicon.ico');
 };
-
-// const parseMediaResponse = function(res, contentType, url) {
-//   if (contentType.indexOf('image/') === 0) {
-//     return createResponseData(url, false, '', '', contentType, 'photo', [url]);
-//   } else {
-//     return createResponseData(url, false, '', '', contentType);
-//   }
-// }
