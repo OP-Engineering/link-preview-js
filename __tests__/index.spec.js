@@ -104,7 +104,7 @@ describe('link preview', () => {
     try {
       await LinkPreview.getPreview('there is no link here');
     } catch (e) {
-      expect(e.error).to.be('React-Native-Preview-Link did not find a link in the text');
+      expect(e.error).to.be('React-Native-Link-Preview did not find a link in the text');
     }
   });
 
@@ -112,7 +112,7 @@ describe('link preview', () => {
     try {
       await LinkPreview.getPreview('this is a malformed link: ahttps://www.youtube.com/watch?v=wuClZjOdT30');
     } catch (e) {
-      expect(e.error).to.be('React-Native-Preview-Link did not find a link in the text');
+      expect(e.error).to.be('React-Native-Link-Preview did not find a link in the text');
     }
   });
 });

@@ -79,7 +79,7 @@ const findById = function (object, key) {
   let value;
 
   Object.keys(object).some(k => {
-    if (k === key) {
+    if (k.toLowerCase() === key) {
       value = object[k];
       return true;
     }
