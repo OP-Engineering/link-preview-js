@@ -21,7 +21,7 @@ describe('link preview', () => {
     expect(linkInfo.images[0]).to.be.equal('https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg');
     expect(linkInfo.videos.length).to.be.equal(0);
     expect(linkInfo.favicons[0]).to.be.equal('https://www.youtube.com/yts/img/favicon_32-vflOogEID.png');
-    expect(linkInfo.contentType).to.be.equal('text/html; charset=utf-8');
+    expect(linkInfo.contentType.toLowerCase()).to.be.equal('text/html; charset=utf-8');
   });
 
   it('should extract link info from just text with a URL', async () => {
@@ -41,7 +41,7 @@ describe('link preview', () => {
     expect(linkInfo.images[0]).to.be.equal('https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg');
     expect(linkInfo.videos.length).to.be.equal(0);
     expect(linkInfo.favicons[0]).to.be.equal('https://www.youtube.com/yts/img/favicon_32-vflOogEID.png');
-    expect(linkInfo.contentType).to.be.equal('text/html; charset=utf-8');
+    expect(linkInfo.contentType.toLowerCase()).to.be.equal('text/html; charset=utf-8');
   });
 
   it('should handle audio urls', async () => {
@@ -54,7 +54,7 @@ describe('link preview', () => {
 
     expect(linkInfo.url).to.be.equal('https://ondemand.npr.org/anon.npr-mp3/npr/atc/2007/12/20071231_atc_13.mp3');
     expect(linkInfo.mediaType).to.be.equal('audio');
-    expect(linkInfo.contentType).to.be.equal('audio/mpeg');
+    expect(linkInfo.contentType.toLowerCase()).to.be.equal('audio/mpeg');
     expect(linkInfo.favicons[0]).to.be.ok();
   });
 
@@ -68,7 +68,7 @@ describe('link preview', () => {
 
     expect(linkInfo.url).to.be.equal('https://www.w3schools.com/html/mov_bbb.mp4');
     expect(linkInfo.mediaType).to.be.equal('video');
-    expect(linkInfo.contentType).to.be.equal('video/mp4');
+    expect(linkInfo.contentType.toLowerCase()).to.be.equal('video/mp4');
     expect(linkInfo.favicons[0]).to.be.ok();
   });
 
@@ -82,7 +82,7 @@ describe('link preview', () => {
 
     expect(linkInfo.url).to.be.equal('https://media.npr.org/assets/img/2018/04/27/gettyimages-656523922nunes-4bb9a194ab2986834622983bb2f8fe57728a9e5f-s1100-c15.jpg');
     expect(linkInfo.mediaType).to.be.equal('image');
-    expect(linkInfo.contentType).to.be.equal('image/jpeg');
+    expect(linkInfo.contentType.toLowerCase()).to.be.equal('image/jpeg');
     expect(linkInfo.favicons[0]).to.be.ok();
   });
 
@@ -96,7 +96,7 @@ describe('link preview', () => {
 
     expect(linkInfo.url).to.be.equal('https://assets.curtmfg.com/masterlibrary/56282/installsheet/CME_56282_INS.pdf');
     expect(linkInfo.mediaType).to.be.equal('application');
-    expect(linkInfo.contentType).to.be.equal('application/pdf');
+    expect(linkInfo.contentType.toLowerCase()).to.be.equal('application/pdf');
     expect(linkInfo.favicons[0]).to.be.ok();
   });
 
@@ -104,7 +104,7 @@ describe('link preview', () => {
     try {
       await LinkPreview.getPreview('there is no link here');
     } catch (e) {
-      expect(e.error).to.be('React-Native-Preview-Link did not find a link in the text');
+      expect(e.error).to.be('React-Native-Link-Preview did not find a link in the text');
     }
   });
 
@@ -112,7 +112,7 @@ describe('link preview', () => {
     try {
       await LinkPreview.getPreview('this is a malformed link: ahttps://www.youtube.com/watch?v=wuClZjOdT30');
     } catch (e) {
-      expect(e.error).to.be('React-Native-Preview-Link did not find a link in the text');
+      expect(e.error).to.be('React-Native-Link-Preview did not find a link in the text');
     }
   });
 });
