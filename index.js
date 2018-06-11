@@ -4,35 +4,35 @@
 
 const cheerio = require('cheerio-without-node-native');
 const urlObj = require('url');
-const crossFetch = require('cross-fetch');
-var Promise = require('es6-promise').Promise;
+const fetch = require('cross-fetch').fetch;
+require('es6-promise').polyfill();
 
 const CONSTANTS = require('./constants');
 
 exports.getPreview = function(text, options) {
-  return new Promise((resolve, reject) => {
+  return new Promise(function(resolve, reject) {
     if (!text) {
       reject({
         error: 'React-Native-Link-Preview did not receive either a url or text'
       });
     }
 
-    let detectedUrl = null;
+    var detectedUrl = null;
 
-    text.split(' ').forEach(token => {
+    text.split(' ').forEach(function(token) {
       if (CONSTANTS.REGEX_VALID_URL.test(token) && !detectedUrl) {
         detectedUrl = token;
       }
     });
 
     if (detectedUrl) {
-      crossFetch.fetch(detectedUrl)
-        .then(response => {
+      fetch(detectedUrl)
+        .then(function(response) {
           // get final URL (after any redirects)
           const finalUrl = response.url;
 
           // get content type of response
-          let contentType = findById(response.headers, 'content-type');
+          var contentType = findById(response.headers, 'content-type');
           if (!contentType) {
             return reject({ error: 'React-Native-Link-Preview: Could not extract content type for URL.' });
           }
@@ -49,7 +49,7 @@ exports.getPreview = function(text, options) {
             resolve(parseVideoResponse(finalUrl, contentType));
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
             response.text()
-              .then(text => {
+              .then(function(text) {
                 resolve(parseTextResponse(text, finalUrl, options || {}, contentType));
               });
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
@@ -58,7 +58,7 @@ exports.getPreview = function(text, options) {
             reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
           }
         })
-        .catch(error => reject({ error }));
+        .catch(function(error) { reject({ error: error }) });
     } else {
       reject({
         error: 'React-Native-Link-Preview did not find a link in the text'
@@ -70,9 +70,9 @@ exports.getPreview = function(text, options) {
 // recursively search through object to find property with given id
 // returns value if found, undefined if not found
 const findById = function (object, key) {
-  let value;
+  var value;
 
-  Object.keys(object).some(k => {
+  Object.keys(object).some(function(k) {
     if (k.toLowerCase() === key) {
       value = object[k];
       return true;
@@ -88,36 +88,36 @@ const findById = function (object, key) {
 
 const parseImageResponse = function (url, contentType) {
   return {
-    url,
+    url: url,
     mediaType: 'image',
-    contentType,
+    contentType: contentType,
     favicons: [getDefaultFavicon(url)]
   };
 };
 
 const parseAudioResponse = function (url, contentType) {
   return {
-    url,
+    url: url,
     mediaType: 'audio',
-    contentType,
+    contentType: contentType,
     favicons: [getDefaultFavicon(url)]
   };
 };
 
 const parseVideoResponse = function (url, contentType) {
   return {
-    url,
+    url: url,
     mediaType: 'video',
-    contentType,
+    contentType: contentType,
     favicons: [getDefaultFavicon(url)]
   };
 };
 
 const parseApplicationResponse = function (url, contentType) {
   return {
-    url,
+    url: url,
     mediaType: 'application',
-    contentType,
+    contentType: contentType,
     favicons: [getDefaultFavicon(url)]
   };
 };
@@ -126,11 +126,11 @@ const parseTextResponse = function (body, url, options, contentType) {
   const doc = cheerio.load(body);
 
   return {
-    url,
+    url: url,
     title: getTitle(doc),
     description: getDescription(doc),
     mediaType: getMediaType(doc) || 'website',
-    contentType,
+    contentType: contentType,
     images: getImages(doc, url, options.imagesPropertyType),
     videos: getVideos(doc),
     favicons: getFavicons(doc, url)
@@ -138,7 +138,7 @@ const parseTextResponse = function (body, url, options, contentType) {
 };
 
 const getTitle = function(doc) {
-  let title = doc("meta[property='og:title']").attr('content');
+  var title = doc("meta[property='og:title']").attr('content');
 
   if (!title) {
     title = doc('title').text();
@@ -148,7 +148,7 @@ const getTitle = function(doc) {
 };
 
 const getDescription = function(doc) {
-  let description = doc('meta[name=description]').attr('content');
+  var description = doc('meta[name=description]').attr('content');
 
   if (description === undefined) {
     description = doc('meta[name=Description]').attr('content');
@@ -173,15 +173,16 @@ const getMediaType = function(doc) {
 };
 
 const getImages = function(doc, rootUrl, imagesPropertyType) {
-  let images = [],
+  var images = [],
     nodes,
     src,
     dic;
 
-  nodes = doc(`meta[property='${imagesPropertyType || 'og'}:image']`);
+  var imagePropertyType = imagesPropertyType || 'og'
+  nodes = doc('meta[property=\'' + imagePropertyType + ':image\']');
 
   if (nodes.length) {
-    nodes.each((index, node) => {
+    nodes.each(function(index, node) {
       src = node.attribs.content;
       if (src) {
         src = urlObj.resolve(rootUrl, src);
@@ -201,7 +202,7 @@ const getImages = function(doc, rootUrl, imagesPropertyType) {
       if (nodes.length) {
         dic = {};
         images = [];
-        nodes.each((index, node) => {
+        nodes.each(function(index, node) {
           src = node.attribs.src;
           if (src && !dic[src]) {
             dic[src] = 1;
@@ -219,17 +220,17 @@ const getImages = function(doc, rootUrl, imagesPropertyType) {
 
 const getVideos = function(doc) {
   const videos = [];
-  let nodeTypes;
-  let nodeSecureUrls;
-  let nodeType;
-  let nodeSecureUrl;
-  let video;
-  let videoType;
-  let videoSecureUrl;
-  let width;
-  let height;
-  let videoObj;
-  let index;
+  var nodeTypes;
+  var nodeSecureUrls;
+  var nodeType;
+  var nodeSecureUrl;
+  var video;
+  var videoType;
+  var videoSecureUrl;
+  var width;
+  var height;
+  var videoObj;
+  var index;
 
   const nodes = doc("meta[property='og:video']");
   const length = nodes.length;
@@ -253,8 +254,8 @@ const getVideos = function(doc) {
         url: video,
         secureUrl: videoSecureUrl,
         type: videoType,
-        width,
-        height
+        width: width,
+        height: width
       };
       if (videoType.indexOf('video/') === 0) {
         videos.splice(0, 0, videoObj);
@@ -269,19 +270,19 @@ const getVideos = function(doc) {
 
 // returns an array of URL's to favicon images
 const getFavicons = function(doc, rootUrl) {
-  let images = [],
+  var images = [],
     nodes = [],
     src;
 
   const relSelectors = ['rel=icon', 'rel="shortcut icon"', 'rel=apple-touch-icon'];
 
-  relSelectors.forEach((relSelector) => {
+  relSelectors.forEach(function(relSelector) {
     // look for all icon tags
-    nodes = doc(`link[${relSelector}]`);
+    nodes = doc('link[' + relSelector + ']');
 
     // collect all images from icon tags
     if (nodes.length) {
-      nodes.each((index, node) => {
+      nodes.each(function(index, node) {
         src = node.attribs.href;
         if (src) {
           src = urlObj.resolve(rootUrl, src);
