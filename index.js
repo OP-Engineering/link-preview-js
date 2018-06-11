@@ -4,16 +4,9 @@
 
 const cheerio = require('cheerio-without-node-native');
 const urlObj = require('url');
-const { fetch } = require('cross-fetch');
+const crossFetch = require('cross-fetch');
 
-const {
-  REGEX_VALID_URL,
-  REGEX_CONTENT_TYPE_IMAGE,
-  REGEX_CONTENT_TYPE_AUDIO,
-  REGEX_CONTENT_TYPE_VIDEO,
-  REGEX_CONTENT_TYPE_TEXT,
-  REGEX_CONTENT_TYPE_APPLICATION
-} = require('./constants');
+const CONSTANTS = require('./constants');
 
 exports.getPreview = function(text, options) {
   return new Promise((resolve, reject) => {
@@ -26,13 +19,13 @@ exports.getPreview = function(text, options) {
     let detectedUrl = null;
 
     text.split(' ').forEach(token => {
-      if (REGEX_VALID_URL.test(token) && !detectedUrl) {
+      if (CONSTANTS.REGEX_VALID_URL.test(token) && !detectedUrl) {
         detectedUrl = token;
       }
     });
 
     if (detectedUrl) {
-      fetch(detectedUrl)
+      crossFetch.fetch(detectedUrl)
         .then(response => {
           // get final URL (after any redirects)
           const finalUrl = response.url;
@@ -47,18 +40,18 @@ exports.getPreview = function(text, options) {
           }
 
           // parse response depending on content type
-          if (contentType && REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
+          if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
             resolve(parseImageResponse(finalUrl, contentType));
-          } else if (contentType && REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
+          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
             resolve(parseAudioResponse(finalUrl, contentType));
-          } else if (contentType && REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
+          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
             resolve(parseVideoResponse(finalUrl, contentType));
-          } else if (contentType && REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
+          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
             response.text()
               .then(text => {
                 resolve(parseTextResponse(text, finalUrl, options || {}, contentType));
               });
-          } else if (contentType && REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
+          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
             resolve(parseApplicationResponse(finalUrl, contentType));
           } else {
             reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
