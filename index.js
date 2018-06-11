@@ -5,6 +5,7 @@
 const cheerio = require('cheerio-without-node-native');
 const urlObj = require('url');
 const crossFetch = require('cross-fetch');
+var Promise = require('es6-promise').Promise;
 
 const CONSTANTS = require('./constants');
 
