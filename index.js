@@ -25,7 +25,7 @@ exports.getPreview = function(text, options) {
 
     let detectedUrl = null;
 
-    text.replace('\n', ' ').split(' ').forEach(token => {
+    text.replace(/\n/g, ' ').split(' ').forEach(token => {
       if (REGEX_VALID_URL.test(token) && !detectedUrl) {
         detectedUrl = token;
       }

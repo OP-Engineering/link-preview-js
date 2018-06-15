@@ -25,7 +25,8 @@ describe('link preview', () => {
   });
 
   it('should extract link info from a URL with a newline', async () => {
-    const linkInfo = await LinkPreview.getPreview(`https://www.youtube.com/watch?v=wuClZjOdT30
+    const linkInfo = await LinkPreview.getPreview(`
+      https://www.youtube.com/watch?v=wuClZjOdT30
     `);
     // { url: 'https://www.youtube.com/watch?v=wuClZjOdT30',
     //   title: 'Geography Now! Germany - YouTube',
