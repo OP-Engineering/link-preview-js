@@ -19,7 +19,7 @@ exports.getPreview = function(text, options) {
 
     var detectedUrl = null;
 
-    text.split(' ').forEach(function(token) {
+    text.replace(/\n/g, ' ').split(' ').forEach(function(token) {
       if (CONSTANTS.REGEX_VALID_URL.test(token) && !detectedUrl) {
         detectedUrl = token;
       }
