@@ -16,6 +16,7 @@
   "dependencies": {
     "cheerio-without-node-native": "^0.20.1",
     "cross-fetch": "0.0.8",
+    "es6-promise": "^4.2.4",
     "url": "^0.11.0"
   },
   "devDependencies": {
