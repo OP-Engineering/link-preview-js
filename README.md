@@ -1,14 +1,22 @@
 
 # react-native-link-preview
 
-Allows you to extract information from a URL or parse text and retrieve information from the first available link.
+# THIS LIBRARY DOES NOT WORK (AND WILL *NOT* WORK) ON CORS PROTECTED ENVIRONMENTS: CHROME, FIREFOX, SAFARI, ETC
 
-## NodeJS support
-Library should now work on node environments, thanks to @uriva and @itaibs, I will not rename the library because it may cause confusion for people who try to run in a CORS protected environment (ex. google chrome), since this does not happen for RN that was the original intention of the package.
+Pure js library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
+
+## On the naming and runnable environments
+Library should work on node environments (thanks @uriva and @itaibs), library retains it's original name because it was originally created to work on react-native (and re-publishing on npm might break stuff), but in any case, it is a generic js library so it should work wherever you can run JS, EXCEPT:
+
+Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS, period. therefore you cannot use this library or even manually request another domain from your web application, therefore, any ticket created regarding "this does not work on chrome" will be promptly closed.
 
 ## Getting started
 
 `$ npm install -S react-native-link-preview`
+
+or
+
+`$ yarn add react-native-link-preview`
 
 ## Usage
 Library exposes just one method: getPreview, you have to pass a string (doesn't matter if it is just a URL or a piece of text that contains a URL), the library will take care of parsing it and returning the info of first valid URL info it finds.
