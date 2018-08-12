@@ -1,14 +1,14 @@
 
 # react-native-link-preview
 
-# THIS LIBRARY DOES NOT WORK (AND WILL *NOT* WORK) ON CORS PROTECTED ENVIRONMENTS: CHROME, FIREFOX, SAFARI, ETC
+# THIS LIBRARY DOES NOT WORK ON CORS PROTECTED ENVIRONMENTS: CHROME, FIREFOX, SAFARI, ETC
 
 Pure js library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
 
 ## On the naming and runnable environments
-Library should work on node environments (thanks @uriva and @itaibs), library retains it's original name because it was originally created to work on react-native (and re-publishing on npm might break stuff), but in any case, it is a generic js library so it should work wherever you can run JS, EXCEPT:
+Library should work on node environments (thanks @uriva and @itaibs), library retains it's original name because it was originally created to work on react-native (and re-publishing on npm might break stuff), it is a generic js library so it should work wherever you can run JS, EXCEPT:
 
-Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS, period. therefore you cannot use this library or even manually request another domain from your web application, therefore, any ticket created regarding "this does not work on chrome" will be promptly closed.
+Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot use this library or even manually request another domain from your web browser application (read more about CORS https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
 ## Getting started
 
