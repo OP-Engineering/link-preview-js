@@ -4,8 +4,6 @@
 
 const cheerio = require('cheerio-without-node-native');
 const urlObj = require('url');
-const fetch = require('cross-fetch').fetch;
-require('es6-promise').polyfill();
 
 const CONSTANTS = require('./constants');
 
@@ -26,13 +24,18 @@ exports.getPreview = function(text, options) {
     });
 
     if (detectedUrl) {
-      fetch(detectedUrl)
-        .then(function(response) {
+      var request = new XMLHttpRequest();
+      request.onreadystatechange = (e) => {
+        if (request.readyState !== 4) {
+          return;
+        }
+
+        if (request.status === 200) {
           // get final URL (after any redirects)
-          const finalUrl = response.url;
+          const finalUrl = request.responseURL;
 
           // get content type of response
-          var contentType = findById(response.headers, 'content-type');
+          let contentType = findById(request.responseHeaders, 'content-type');
           if (!contentType) {
             return reject({ error: 'React-Native-Link-Preview: Could not extract content type for URL.' });
           }
@@ -48,17 +51,19 @@ exports.getPreview = function(text, options) {
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
             resolve(parseVideoResponse(finalUrl, contentType));
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
-            response.text()
-              .then(function(text) {
-                resolve(parseTextResponse(text, finalUrl, options || {}, contentType));
-              });
+            resolve(parseTextResponse(request._response, finalUrl, options || {}, contentType));
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
             resolve(parseApplicationResponse(finalUrl, contentType));
           } else {
             reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
           }
-        })
-        .catch(function(error) { reject({ error: error }) });
+        } else {
+          console.warn('error');
+        }
+      };
+
+      request.open('GET', detectedUrl);
+      request.send();
     } else {
       reject({
         error: 'React-Native-Link-Preview did not find a link in the text'
