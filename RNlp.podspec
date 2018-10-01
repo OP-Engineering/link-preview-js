@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.license      = "MIT"
   s.author       = package['author']
   s.platform     = :ios, "7.0"
-  s.source       = { :git => "https://github.com/ospfranco/react-native-link-preview" }
+  s.source       = { :git => "https://github.com/ospfranco/react-native-link-preview.git" }
   s.source_files  = "ios/**/*.{h,m}"
   s.requires_arc = true
 
