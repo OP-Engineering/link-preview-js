@@ -51,9 +51,9 @@ exports.getPreview = function(text, options) {
             resolve(parseAudioResponse(finalUrl, contentType));
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
             resolve(parseVideoResponse(finalUrl, contentType));
-          } else if (contentType && REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
+          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
             resolve(parseTextResponse(request._response, finalUrl, options || {}, contentType));
-          } else if (contentType && REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
+          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
             resolve(parseApplicationResponse(finalUrl, contentType));
           } else {
             reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
