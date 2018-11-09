@@ -15,7 +15,6 @@
   "repository": "https://github.com/ospfranco/react-native-link-preview",
   "dependencies": {
     "cheerio-without-node-native": "^0.20.1",
-    "es6-promise": "^4.2.4",
     "url": "^0.11.0"
   },
   "devDependencies": {

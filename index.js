@@ -4,8 +4,6 @@
 
 const cheerio = require('cheerio-without-node-native');
 const urlObj = require('url');
-require('es6-promise').polyfill();
-
 const CONSTANTS = require('./constants');
 
 exports.getPreview = function(text, options) {
