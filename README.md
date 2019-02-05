@@ -10,6 +10,11 @@ Library should work on node environments (thanks @uriva and @itaibs), library re
 
 Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot use this library or even manually request another domain from your web browser application (read more about CORS https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
+## Known issues
+Apparently the fetch especification breaks on some older samsung devices, a patch was made trying to fix this by using XMLHttpRequest, however this brings other problems, including breaking compatibility with node.js, so this was reverted, and this is final.
+
+If you face any problem on some older devices, my suggestion is to handle the error as gracefully as possible or roll your own implemntation on server-side (CORS is there for a reason), you can add pressure for the react-native to patch this issue here: https://github.com/facebook/react-native/issues/10756
+
 ## Getting started
 
 `$ npm install -S react-native-link-preview`
