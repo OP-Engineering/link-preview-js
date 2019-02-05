@@ -1,6 +1,9 @@
 
 # react-native-link-preview
 
+# I'm kinda done maintaining this project, looking for somebody to take over the repo and the npm package, message me if you are interested: ospfranco@protonmail.com
+# MY ADVICE: CORS is there for a reason, it is a bad idea to directly fetch the response from an unkown server into the user device, if you really need this, you should pipe the request through your server, this library is able to do so because it works on node environments (for now, both xmlhttprequest and axios now do CORS requests), so if you need to fetch some sort of link preview do it through a server
+
 # THIS LIBRARY DOES NOT WORK ON CORS PROTECTED ENVIRONMENTS: CHROME, FIREFOX, SAFARI, ETC
 
 Pure js library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
