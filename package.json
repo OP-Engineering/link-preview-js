@@ -1,30 +1,28 @@
 {
   "name": "react-native-link-preview",
-  "version": "1.3.7",
+  "version": "1.4.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "jest"
   },
   "keywords": [
-    "react-native", "javascript", "link", "url"
+    "react-native",
+    "javascript",
+    "link",
+    "url"
   ],
   "author": "Oscar Franco",
   "license": "MIT",
   "peerDependencies": {},
   "repository": "https://github.com/ospfranco/react-native-link-preview",
   "dependencies": {
-    "cheerio-without-node-native": "^0.20.1",
-    "es6-promise": "^4.2.4",
-    "url": "^0.11.0"
+    "cheerio-without-node-native": "1.0.0-rc.2",
+    "es6-promise": "4.2.5",
+    "url": "0.11.0",
+    "cross-fetch": "3.0.1"
   },
   "devDependencies": {
-    "babel-core": "^6.22.1",
-    "babel-eslint": "^7.1.1",
-    "babel-jest": "^18.0.0",
-    "babel-loader": "^6.2.10",
-    "babel-polyfill": "^6.22.0",
-    "babel-preset-react-native": "^1.9.1",
     "eslint": "^3.12.1",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-loader": "^1.6.1",

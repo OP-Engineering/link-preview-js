@@ -1,15 +1,12 @@
-/**
-* @providesModule react-native-link-preview
-*/
-
 const cheerio = require('cheerio-without-node-native');
 const urlObj = require('url');
+const fetch = require('cross-fetch').fetch;
 require('es6-promise').polyfill();
 
 const CONSTANTS = require('./constants');
 
-exports.getPreview = function(text, options) {
-  return new Promise(function(resolve, reject) {
+exports.getPreview = function (text, options) {
+  return new Promise(function (resolve, reject) {
     if (!text) {
       reject({
         error: 'React-Native-Link-Preview did not receive either a url or text'
@@ -18,25 +15,22 @@ exports.getPreview = function(text, options) {
 
     var detectedUrl = null;
 
-    text.replace(/\n/g, ' ').split(' ').forEach(function(token) {
+    text.replace(/\n/g, ' ').split(' ').forEach(function (token) {
       if (CONSTANTS.REGEX_VALID_URL.test(token) && !detectedUrl) {
         detectedUrl = token;
       }
     });
 
     if (detectedUrl) {
-      var request = new XMLHttpRequest();
-      request.onreadystatechange = (e) => {
-        if (request.readyState !== 4) {
-          return;
-        }
+      fetch(detectedUrl)
+        .then(function (response) {
 
-        if (request.status === 200) {
           // get final URL (after any redirects)
-          const finalUrl = request.responseURL;
+          const finalUrl = response.url;
 
           // get content type of response
-          let contentType = findById(request.responseHeaders, 'content-type');
+          var contentType = response.headers.get('content-type');
+
           if (!contentType) {
             return reject({ error: 'React-Native-Link-Preview: Could not extract content type for URL.' });
           }
@@ -52,46 +46,23 @@ exports.getPreview = function(text, options) {
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
             resolve(parseVideoResponse(finalUrl, contentType));
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
-            resolve(parseTextResponse(request._response, finalUrl, options || {}, contentType));
+            response.text()
+              .then(function (text) {
+                resolve(parseTextResponse(text, finalUrl, options || {}, contentType));
+              });
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
             resolve(parseApplicationResponse(finalUrl, contentType));
           } else {
             reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
           }
-        } else {
-          reject({
-            error: 'React-Native-Link-Preview: Could not fetch provided link'
-          })
-        }
-      };
-
-      request.open('GET', detectedUrl);
-      request.send();
+        })
+        .catch(function (error) { reject({ error: error }) });
     } else {
       reject({
         error: 'React-Native-Link-Preview did not find a link in the text'
       });
     }
   });
-};
-
-// recursively search through object to find property with given id
-// returns value if found, undefined if not found
-const findById = function (object, key) {
-  var value;
-
-  Object.keys(object).some(function(k) {
-    if (k.toLowerCase() === key) {
-      value = object[k];
-      return true;
-    }
-    if (object[k] && typeof object[k] === 'object') {
-      value = findById(object[k], key);
-      return value !== undefined;
-    }
-    return false;
-  });
-  return value;
 };
 
 const parseImageResponse = function (url, contentType) {
@@ -145,7 +116,7 @@ const parseTextResponse = function (body, url, options, contentType) {
   };
 };
 
-const getTitle = function(doc) {
+const getTitle = function (doc) {
   var title = doc("meta[property='og:title']").attr('content');
 
   if (!title) {
@@ -155,7 +126,7 @@ const getTitle = function(doc) {
   return title;
 };
 
-const getDescription = function(doc) {
+const getDescription = function (doc) {
   var description = doc('meta[name=description]').attr('content');
 
   if (description === undefined) {
@@ -169,7 +140,7 @@ const getDescription = function(doc) {
   return description;
 };
 
-const getMediaType = function(doc) {
+const getMediaType = function (doc) {
   const node = doc('meta[name=medium]');
 
   if (node.length) {
@@ -180,7 +151,7 @@ const getMediaType = function(doc) {
   }
 };
 
-const getImages = function(doc, rootUrl, imagesPropertyType) {
+const getImages = function (doc, rootUrl, imagesPropertyType) {
   var images = [],
     nodes,
     src,
@@ -190,7 +161,7 @@ const getImages = function(doc, rootUrl, imagesPropertyType) {
   nodes = doc('meta[property=\'' + imagePropertyType + ':image\']');
 
   if (nodes.length) {
-    nodes.each(function(index, node) {
+    nodes.each(function (index, node) {
       src = node.attribs.content;
       if (src) {
         src = urlObj.resolve(rootUrl, src);
@@ -210,7 +181,7 @@ const getImages = function(doc, rootUrl, imagesPropertyType) {
       if (nodes.length) {
         dic = {};
         images = [];
-        nodes.each(function(index, node) {
+        nodes.each(function (index, node) {
           src = node.attribs.src;
           if (src && !dic[src]) {
             dic[src] = 1;
@@ -226,7 +197,7 @@ const getImages = function(doc, rootUrl, imagesPropertyType) {
   return images;
 };
 
-const getVideos = function(doc) {
+const getVideos = function (doc) {
   const videos = [];
   var nodeTypes;
   var nodeSecureUrls;
@@ -277,20 +248,20 @@ const getVideos = function(doc) {
 };
 
 // returns an array of URL's to favicon images
-const getFavicons = function(doc, rootUrl) {
+const getFavicons = function (doc, rootUrl) {
   var images = [],
     nodes = [],
     src;
 
   const relSelectors = ['rel=icon', 'rel="shortcut icon"', 'rel=apple-touch-icon'];
 
-  relSelectors.forEach(function(relSelector) {
+  relSelectors.forEach(function (relSelector) {
     // look for all icon tags
     nodes = doc('link[' + relSelector + ']');
 
     // collect all images from icon tags
     if (nodes.length) {
-      nodes.each(function(index, node) {
+      nodes.each(function (index, node) {
         src = node.attribs.href;
         if (src) {
           src = urlObj.resolve(rootUrl, src);

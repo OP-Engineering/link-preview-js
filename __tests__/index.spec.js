@@ -1,11 +1,10 @@
 const LinkPreview = require('../index.js');
 const expect = require('expect.js');
 
-global.fetch = require('node-fetch');
-
 describe('link preview', () => {
   it('should extract link info from just URL', async () => {
     const linkInfo = await LinkPreview.getPreview('https://www.youtube.com/watch?v=wuClZjOdT30');
+
     // { url: 'https://www.youtube.com/watch?v=wuClZjOdT30',
     //   title: 'Geography Now! Germany - YouTube',
     //   description: 'Gluten free vegetarians beware. Watch at your own risk. We now have a Public mailbox! Feel free to send anything via mail! Our public mailbox address is: 190...',
