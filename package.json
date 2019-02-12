@@ -1,6 +1,6 @@
 {
   "name": "react-native-link-preview",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   "peerDependencies": {},
   "repository": "https://github.com/ospfranco/react-native-link-preview",
   "dependencies": {
-    "cheerio-without-node-native": "1.0.0-rc.2",
+    "cheerio-without-node-native": "0.20.2",
     "es6-promise": "4.2.5",
     "url": "0.11.0",
     "cross-fetch": "3.0.1"
