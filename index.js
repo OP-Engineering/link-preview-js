@@ -236,7 +236,7 @@ const getVideos = function (doc) {
         width: width,
         height: width
       };
-      if (videoType.indexOf('video/') === 0) {
+      if (videoType && videoType.indexOf('video/') === 0) {
         videos.splice(0, 0, videoObj);
       } else {
         videos.push(videoObj);
