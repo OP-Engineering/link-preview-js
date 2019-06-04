@@ -1,9 +1,6 @@
 
 # react-native-link-preview
 
-# I'm kinda done maintaining this project, looking for somebody to take over the repo and the npm package, message me if you are interested: ospfranco@protonmail.com
-# MY ADVICE: CORS is there for a reason, it is a bad idea to directly fetch the response from an unkown server into the user device, if you really need this, you should pipe the request through your server, this library is able to do so because it works on node environments (for now, both xmlhttprequest and axios now do CORS requests), so if you need to fetch some sort of link preview do it through a server
-
 # THIS LIBRARY DOES NOT WORK ON CORS PROTECTED ENVIRONMENTS: CHROME, FIREFOX, SAFARI, ETC
 
 Pure js library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
@@ -13,16 +10,12 @@ Library should work on node environments (thanks @uriva and @itaibs), library re
 
 Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot use this library or even manually request another domain from your web browser application (read more about CORS https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
+MY ADVICE: CORS is there for a reason, it is a bad idea to directly fetch the response from an unkown server into the user device, if you really need this, you should pipe the request through your server, this library is able to do so because it works on node environments (for now, both xmlhttprequest and axios now do CORS requests), so if you need to fetch some sort of link preview do it through a server
+
 ## Known issues
 Apparently the fetch especification breaks on some older samsung devices, a patch was made trying to fix this by using XMLHttpRequest, however this brings other problems, including breaking compatibility with node.js, so this was reverted, and this is final.
 
-If you face any problem on some older devices, my suggestion is to handle the error as gracefully as possible or roll your own implemntation on server-side (CORS is there for a reason), you can add pressure for the react-native to patch this issue here: https://github.com/facebook/react-native/issues/10756
-
 ## Getting started
-
-`$ npm install -S react-native-link-preview`
-
-or
 
 `$ yarn add react-native-link-preview`
 
@@ -122,7 +115,7 @@ in the HTTP response (see below for variations of response).  Rejects with an er
 ## Tests
 
 ```
-npm test
+yarn test
 ```
 
 ## License
