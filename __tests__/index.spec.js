@@ -136,4 +136,12 @@ describe('link preview', () => {
       expect(e.error).to.be('React-Native-Link-Preview did not find a link in the text');
     }
   });
+
+  it('hould handle empty strings gracefully', async () => {
+    try {
+      await LinkPreview.getPreview('');
+    } catch (e) {
+      expect(e.error).to.be('React-Native-Link-Preview did not receive either a url or text');
+    }
+  }) 
 });

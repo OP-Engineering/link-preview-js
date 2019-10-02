@@ -8,7 +8,7 @@ const CONSTANTS = require('./constants');
 exports.getPreview = function (text, options) {
   return new Promise(function (resolve, reject) {
     if (!text) {
-      reject({
+      return reject({
         error: 'React-Native-Link-Preview did not receive either a url or text'
       });
     }
@@ -40,25 +40,25 @@ exports.getPreview = function (text, options) {
 
           // parse response depending on content type
           if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
-            resolve(parseImageResponse(finalUrl, contentType));
+            return resolve(parseImageResponse(finalUrl, contentType));
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
-            resolve(parseAudioResponse(finalUrl, contentType));
+            return resolve(parseAudioResponse(finalUrl, contentType));
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
-            resolve(parseVideoResponse(finalUrl, contentType));
+            return resolve(parseVideoResponse(finalUrl, contentType));
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
             response.text()
               .then(function (text) {
-                resolve(parseTextResponse(text, finalUrl, options || {}, contentType));
+                return resolve(parseTextResponse(text, finalUrl, options || {}, contentType));
               });
           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
-            resolve(parseApplicationResponse(finalUrl, contentType));
+            return resolve(parseApplicationResponse(finalUrl, contentType));
           } else {
-            reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
+            return reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
           }
         })
         .catch(function (error) { reject({ error: error }) });
     } else {
-      reject({
+      return reject({
         error: 'React-Native-Link-Preview did not find a link in the text'
       });
     }
