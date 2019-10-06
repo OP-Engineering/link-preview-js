@@ -1,23 +1,23 @@
 
-# react-native-link-preview
+# react-native-JS
 
 # THIS LIBRARY DOES NOT WORK ON CORS PROTECTED ENVIRONMENTS: CHROME, FIREFOX, SAFARI, ETC
 
 Pure js library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
 
 ## On the naming and runnable environments
-Library should work on node environments (thanks @uriva and @itaibs), library retains it's original name because it was originally created to work on react-native (and re-publishing on npm might break stuff), it is a generic js library so it should work wherever you can run JS, EXCEPT:
+Library should work on node environments (thanks @uriva and @itaibs) and non CORS protected environments, ex: React-Native
 
-Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot use this library or even manually request another domain from your web browser application (read more about CORS https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot use this library or even manually request another domain from your web application (read more about CORS[https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]).
 
 MY ADVICE: CORS is there for a reason, it is a bad idea to directly fetch the response from an unkown server into the user device, if you really need this, you should pipe the request through your server, this library is able to do so because it works on node environments (for now, both xmlhttprequest and axios now do CORS requests), so if you need to fetch some sort of link preview do it through a server
 
-## Known issues
-Apparently the fetch especification breaks on some older samsung devices, a patch was made trying to fix this by using XMLHttpRequest, however this brings other problems, including breaking compatibility with node.js, so this was reverted, and this is final.
+## Known issues for React-Native
+Apparently the fetch especification breaks on some older samsung devices, a patch was made trying to fix this by using XMLHttpRequest, however this brings other problems, including breaking compatibility with node.js, so this was reverted.
 
 ## Getting started
 
-`$ yarn add react-native-link-preview`
+`$ yarn add link-preview-js`
 
 ## Usage
 Library exposes just one method: getPreview, you have to pass a string (doesn't matter if it is just a URL or a piece of text that contains a URL), the library will take care of parsing it and returning the info of first valid URL info it finds.
