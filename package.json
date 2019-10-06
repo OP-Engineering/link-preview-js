@@ -1,21 +1,22 @@
 {
-  "name": "react-native-link-preview",
-  "version": "1.4.2",
+  "name": "js-link-preview",
+  "version": "1.4.3",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "jest"
   },
   "keywords": [
-    "react-native",
     "javascript",
     "link",
-    "url"
+    "url",
+    "http",
+    "preview"
   ],
   "author": "Oscar Franco",
   "license": "MIT",
   "peerDependencies": {},
-  "repository": "https://github.com/ospfranco/react-native-link-preview",
+  "repository": "https://github.com/ospfranco/js-link-preview",
   "dependencies": {
     "cheerio-without-node-native": "0.20.2",
     "es6-promise": "4.2.5",
