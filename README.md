@@ -1,5 +1,5 @@
 
-# react-native-JS
+# link-preview-js
 
 # THIS LIBRARY DOES NOT WORK ON CORS PROTECTED ENVIRONMENTS: CHROME, FIREFOX, SAFARI, ETC
 
@@ -25,7 +25,7 @@ Library exposes just one method: getPreview, you have to pass a string (doesn't 
 URL parsing is done via: https://gist.github.com/dperini/729294
 
 ```javascript
-import LinkPreview from 'react-native-link-preview';
+import LinkPreview from 'link-preview';
 
 ...
 
