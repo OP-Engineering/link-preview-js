@@ -1,5 +1,5 @@
 {
-  "name": "js-link-preview",
+  "name": "link-preview-js",
   "version": "1.4.3",
   "description": "",
   "main": "index.js",
@@ -16,21 +16,21 @@
   "author": "Oscar Franco",
   "license": "MIT",
   "peerDependencies": {},
-  "repository": "https://github.com/ospfranco/js-link-preview",
+  "repository": "https://github.com/ospfranco/link-preview-js",
   "dependencies": {
     "cheerio-without-node-native": "0.20.2",
-    "es6-promise": "4.2.5",
-    "url": "0.11.0",
-    "cross-fetch": "3.0.1"
+    "cross-fetch": "3.0.4",
+    "es6-promise": "4.2.8",
+    "url": "0.11.0"
   },
   "devDependencies": {
-    "eslint": "^3.12.1",
-    "eslint-config-airbnb": "^13.0.0",
-    "eslint-loader": "^1.6.1",
-    "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-jsx-a11y": "^2.2.3",
-    "eslint-plugin-react": "^6.9.0",
-    "expect.js": "^0.3.1",
-    "jest": "^16.0.2"
+    "eslint": "6.5.1",
+    "eslint-config-airbnb": "18.0.1",
+    "eslint-loader": "3.0.2",
+    "eslint-plugin-import": "2.18.2",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-react": "7.16.0",
+    "expect.js": "0.3.1",
+    "jest": "24.9.0"
   }
 }
