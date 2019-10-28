@@ -131,11 +131,6 @@ const getTitle = function (doc) {
 const getSiteName = function (doc) {
   var siteName = doc("meta[property='og:site_name']").attr('content');
 
-  if (!siteName) {
-    // Sites are
-    siteName = doc("link[rel='search']").attr('title');
-  }
-
   return siteName;
 };
 
