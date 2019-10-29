@@ -59,6 +59,7 @@ in the HTTP response (see below for variations of response).  Rejects with an er
 {
   url: "https://www.youtube.com/watch?v=MejbOFk7H6c",
   title: "OK Go - Needing/Getting - Official Video - YouTube",
+  siteName: "YouTube",
   description: "Buy the video on iTunes: https://itunes.apple.com/us/album/needing-getting-bundle-ep/id508124847 See more about the guitars at: http://www.gretschguitars.com...",
   images: ["https://i.ytimg.com/vi/MejbOFk7H6c/maxresdefault.jpg"],
   mediaType: "video.other",
