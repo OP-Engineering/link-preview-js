@@ -24,7 +24,7 @@
     "url": "0.11.0"
   },
   "devDependencies": {
-    "eslint": "6.5.1",
+    "eslint": "^6.6.0",
     "eslint-config-airbnb": "18.0.1",
     "eslint-loader": "3.0.2",
     "eslint-plugin-import": "2.18.2",
