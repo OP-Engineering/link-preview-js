@@ -13,7 +13,7 @@ describe('link preview', () => {
     //   videos: undefined }
 
     expect(linkInfo.url).to.be.equal('https://www.youtube.com/watch?v=wuClZjOdT30');
-    expect(linkInfo.siteName).to.be.null;
+    expect(linkInfo.siteName).to.be.equal('YouTube');
     expect(linkInfo.title).to.be.equal('Geography Now! Germany');
     expect(linkInfo.description).to.be.ok();
     expect(linkInfo.mediaType).to.be.equal('video.other');
@@ -21,28 +21,6 @@ describe('link preview', () => {
     expect(linkInfo.images[0]).to.be.equal('https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg');
     expect(linkInfo.videos.length).to.be.equal(0);
     expect(linkInfo.favicons[0]).to.be.equal('https://www.youtube.com/yts/img/favicon_32-vflOogEID.png');
-    expect(linkInfo.contentType.toLowerCase()).to.be.equal('text/html; charset=utf-8');
-  });
-  
-  it('should extract link info from URL that contains a site name', async () => {
-    const linkInfo = await LinkPreview.getPreview('https://stackoverflow.com/questions/2353818/how-do-i-get-started-with-node-js');
-
-    // { url: 'https://www.youtube.com/watch?v=wuClZjOdT30',
-    //   title: 'Geography Now! Germany - YouTube',
-    //   description: 'Gluten free vegetarians beware. Watch at your own risk. We now have a Public mailbox! Feel free to send anything via mail! Our public mailbox address is: 190...',
-    //   mediaType: 'video',
-    //   images: [ 'https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg' ],
-    //   videos: undefined }
-
-    expect(linkInfo.url).to.be.equal('https://stackoverflow.com/questions/2353818/how-do-i-get-started-with-node-js');
-    expect(linkInfo.siteName).to.be.equal('Stack Overflow');
-    expect(linkInfo.title).to.be.equal('javascript - How do I get started with Node.js - Stack Overflow');
-    expect(linkInfo.description).to.be.ok();
-    expect(linkInfo.mediaType).to.be.equal('website');
-    expect(linkInfo.images.length).to.be.equal(1);
-    expect(linkInfo.images[0]).to.be.equal('https://cdn.sstatic.net/Sites/stackoverflow/img/apple-touch-icon@2.png?v=73d79a89bded');
-    expect(linkInfo.videos.length).to.be.equal(0);
-    expect(linkInfo.favicons[0]).to.be.equal('https://cdn.sstatic.net/Sites/stackoverflow/img/favicon.ico?v=4f32ecc8f43d');
     expect(linkInfo.contentType.toLowerCase()).to.be.equal('text/html; charset=utf-8');
   });
 
@@ -59,7 +37,7 @@ describe('link preview', () => {
 
     expect(linkInfo.url).to.be.equal('https://www.youtube.com/watch?v=wuClZjOdT30');
     expect(linkInfo.title).to.be.equal('Geography Now! Germany');
-    expect(linkInfo.siteName).to.be.null;
+    expect(linkInfo.siteName).to.be.ok();
     expect(linkInfo.description).to.be.ok();
     expect(linkInfo.mediaType).to.be.equal('video.other');
     expect(linkInfo.images.length).to.be.equal(1);
@@ -80,7 +58,7 @@ describe('link preview', () => {
 
     expect(linkInfo.url).to.be.equal('https://www.youtube.com/watch?v=wuClZjOdT30');
     expect(linkInfo.title).to.be.equal('Geography Now! Germany');
-    expect(linkInfo.siteName).to.be.null;
+    expect(linkInfo.siteName).to.be.equal('YouTube');
     expect(linkInfo.description).to.be.ok();
     expect(linkInfo.mediaType).to.be.equal('video.other');
     expect(linkInfo.images.length).to.be.equal(1);
@@ -168,5 +146,5 @@ describe('link preview', () => {
     } catch (e) {
       expect(e.error).to.be('React-Native-Link-Preview did not receive either a url or text');
     }
-  }) 
+  })
 });
