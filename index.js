@@ -107,6 +107,7 @@ const parseTextResponse = function (body, url, options, contentType) {
   return {
     url: url,
     title: getTitle(doc),
+    siteName: getSiteName(doc),
     description: getDescription(doc),
     mediaType: getMediaType(doc) || 'website',
     contentType: contentType,
@@ -124,6 +125,13 @@ const getTitle = function (doc) {
   }
 
   return title;
+};
+
+
+const getSiteName = function (doc) {
+  var siteName = doc("meta[property='og:site_name']").attr('content');
+
+  return siteName;
 };
 
 const getDescription = function (doc) {

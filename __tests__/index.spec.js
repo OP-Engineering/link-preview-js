@@ -13,6 +13,7 @@ describe('link preview', () => {
     //   videos: undefined }
 
     expect(linkInfo.url).to.be.equal('https://www.youtube.com/watch?v=wuClZjOdT30');
+    expect(linkInfo.siteName).to.be.equal('YouTube');
     expect(linkInfo.title).to.be.equal('Geography Now! Germany');
     expect(linkInfo.description).to.be.ok();
     expect(linkInfo.mediaType).to.be.equal('video.other');
@@ -36,6 +37,7 @@ describe('link preview', () => {
 
     expect(linkInfo.url).to.be.equal('https://www.youtube.com/watch?v=wuClZjOdT30');
     expect(linkInfo.title).to.be.equal('Geography Now! Germany');
+    expect(linkInfo.siteName).to.be.ok();
     expect(linkInfo.description).to.be.ok();
     expect(linkInfo.mediaType).to.be.equal('video.other');
     expect(linkInfo.images.length).to.be.equal(1);
@@ -56,6 +58,7 @@ describe('link preview', () => {
 
     expect(linkInfo.url).to.be.equal('https://www.youtube.com/watch?v=wuClZjOdT30');
     expect(linkInfo.title).to.be.equal('Geography Now! Germany');
+    expect(linkInfo.siteName).to.be.equal('YouTube');
     expect(linkInfo.description).to.be.ok();
     expect(linkInfo.mediaType).to.be.equal('video.other');
     expect(linkInfo.images.length).to.be.equal(1);
@@ -143,5 +146,5 @@ describe('link preview', () => {
     } catch (e) {
       expect(e.error).to.be('React-Native-Link-Preview did not receive either a url or text');
     }
-  }) 
+  })
 });
