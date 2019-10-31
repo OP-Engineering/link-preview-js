@@ -13,7 +13,7 @@ exports.getPreview = function (text, options) {
       });
     }
 
-    var detectedUrl = null;
+    let detectedUrl = null;
 
     text.replace(/\n/g, ' ').split(' ').forEach(function (token) {
       if (CONSTANTS.REGEX_VALID_URL.test(token) && !detectedUrl) {
@@ -29,7 +29,7 @@ exports.getPreview = function (text, options) {
           const finalUrl = response.url;
 
           // get content type of response
-          var contentType = response.headers.get('content-type');
+          let contentType = response.headers.get('content-type');
 
           if (!contentType) {
             return reject({ error: 'React-Native-Link-Preview: Could not extract content type for URL.' });
@@ -118,7 +118,7 @@ const parseTextResponse = function (body, url, options, contentType) {
 };
 
 const getTitle = function (doc) {
-  var title = doc("meta[property='og:title']").attr('content');
+  let title = doc("meta[property='og:title']").attr('content');
 
   if (!title) {
     title = doc('title').text();
@@ -129,13 +129,11 @@ const getTitle = function (doc) {
 
 
 const getSiteName = function (doc) {
-  var siteName = doc("meta[property='og:site_name']").attr('content');
-
-  return siteName;
+  return doc("meta[property='og:site_name']").attr('content');
 };
 
 const getDescription = function (doc) {
-  var description = doc('meta[name=description]').attr('content');
+  let description = doc('meta[name=description]').attr('content');
 
   if (description === undefined) {
     description = doc('meta[name=Description]').attr('content');
@@ -160,12 +158,12 @@ const getMediaType = function (doc) {
 };
 
 const getImages = function (doc, rootUrl, imagesPropertyType) {
-  var images = [],
+  let images = [],
     nodes,
     src,
     dic;
 
-  var imagePropertyType = imagesPropertyType || 'og'
+  let imagePropertyType = imagesPropertyType || 'og'
   nodes = doc('meta[property=\'' + imagePropertyType + ':image\']');
 
   if (nodes.length) {
@@ -207,17 +205,17 @@ const getImages = function (doc, rootUrl, imagesPropertyType) {
 
 const getVideos = function (doc) {
   const videos = [];
-  var nodeTypes;
-  var nodeSecureUrls;
-  var nodeType;
-  var nodeSecureUrl;
-  var video;
-  var videoType;
-  var videoSecureUrl;
-  var width;
-  var height;
-  var videoObj;
-  var index;
+  let nodeTypes,
+      nodeSecureUrls,
+      nodeType,
+      nodeSecureUrl,
+      video,
+      videoType,
+      videoSecureUrl,
+      width,
+      height,
+      videoObj,
+      index
 
   const nodes = doc("meta[property='og:video']");
   const length = nodes.length;
@@ -257,7 +255,7 @@ const getVideos = function (doc) {
 
 // returns an array of URL's to favicon images
 const getFavicons = function (doc, rootUrl) {
-  var images = [],
+  let images = [],
     nodes = [],
     src;
 
