@@ -68,6 +68,14 @@ describe('link preview', () => {
     expect(linkInfo.contentType.toLowerCase()).to.be.equal('text/html; charset=utf-8');
   });
 
+  it('should make request with different languages', async () => {
+    let linkInfo = await LinkPreview.getPreview('https://www.hsbc.ca/', {language: 'fr'});
+    expect(linkInfo.title).to.be.equal('Particuliers | HSBC Canada');
+
+    linkInfo = await LinkPreview.getPreview('https://www.hsbc.ca/');
+    expect(linkInfo.title).to.be.equal('HSBC Personal Banking | HSBC Canada');
+  });
+
   it('should handle audio urls', async () => {
     const linkInfo = await LinkPreview.getPreview('https://ondemand.npr.org/anon.npr-mp3/npr/atc/2007/12/20071231_atc_13.mp3');
 

@@ -37,6 +37,7 @@ Additionally you can pass an options object which should add more functionality 
 | Property Name | Result        |
 | ------------- |:-------------:|
 | imagesPropertyType  (**optional**) (ex: 'og')     | Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']` |
+| language  (**optional**) (ex: 'de', 'en-US')     | Fetch content with specific language |
 
 
 ```javascript
@@ -44,6 +45,7 @@ LinkPreview.getPreview(
   'https://www.youtube.com/watch?v=MejbOFk7H6c',
   {
     imagesPropertyType: 'og', // fetches only open-graph images
+    language: 'fr-CA', // fetches site for French language
   })
   .then(data => console.debug(data));
 ```
