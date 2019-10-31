@@ -242,7 +242,7 @@ const getVideos = function (doc) {
         secureUrl: videoSecureUrl,
         type: videoType,
         width: width,
-        height: width
+        height: height
       };
       if (videoType && videoType.indexOf('video/') === 0) {
         videos.splice(0, 0, videoObj);
