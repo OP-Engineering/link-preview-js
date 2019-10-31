@@ -22,7 +22,13 @@ exports.getPreview = function (text, options) {
     });
 
     if (detectedUrl) {
-      fetch(detectedUrl)
+      var fetchOptions = {}
+      if (options && options.language) {
+        fetchOptions.headers = {
+          'Accept-Language': options.language
+        }
+      }
+      fetch(detectedUrl, fetchOptions)
         .then(function (response) {
 
           // get final URL (after any redirects)
