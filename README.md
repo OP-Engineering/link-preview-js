@@ -1,6 +1,8 @@
 
 # link-preview-js
 
+[![CircleCI](https://circleci.com/gh/ospfranco/link-preview-js/tree/master.svg?style=svg)](https://circleci.com/gh/ospfranco/link-preview-js/tree/master) [![npm version](https://badge.fury.io/js/link-preview-js.svg)](https://badge.fury.io/js/link-preview-js)
+
 Pure js library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
 
 # BEFORE YOU START: THIS LIBRARY DOES NOT WORK ON CORS ENVIRONEMNTS, MOST BROWSERS WON'T WORK
