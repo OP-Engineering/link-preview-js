@@ -5,7 +5,7 @@
 
 Pure js library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
 
-# BEFORE YOU START: THIS LIBRARY DOES NOT WORK ON CORS ENVIRONEMNTS, MOST BROWSERS WON'T WORK
+# WARNING: THIS LIBRARY DOES NOT WORK ON CORS PROTECTED ENVIRONEMNTS, RUNNING IT ON BROWSERS WON'T WORK
 
 Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot use this library or even manually request another domain from your web application, read more about [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
