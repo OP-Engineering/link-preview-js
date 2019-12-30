@@ -23,9 +23,10 @@ exports.getPreview = function (text, options) {
 
     if (detectedUrl) {
       var fetchOptions = {}
-      if (options && options.language) {
+      if (options) {
         fetchOptions.headers = {
-          'Accept-Language': options.language
+          'Accept-Language': options.language,
+          ...options.headers,
         }
       }
       fetch(detectedUrl, fetchOptions)
