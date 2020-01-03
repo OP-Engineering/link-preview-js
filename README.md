@@ -40,6 +40,7 @@ Additionally you can pass an options object which should add more functionality 
 | ------------- |:-------------:|
 | imagesPropertyType  (**optional**) (ex: 'og')     | Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']` |
 | language  (**optional**) (ex: 'de', 'en-US')     | Fetch content with specific language |
+| headers  (**optional**) (ex: { 'user-agent': 'googlebot' })     | Add request headers to fetch call |
 
 
 ```javascript
@@ -48,6 +49,10 @@ LinkPreview.getPreview(
   {
     imagesPropertyType: 'og', // fetches only open-graph images
     language: 'fr-CA', // fetches site for French language
+    headers: {
+      'user-agent': 'googlebot', // fetches with googlebot crawler user agent
+      // ...other optional request headers
+    },
   })
   .then(data => console.debug(data));
 ```
@@ -122,4 +127,3 @@ yarn test
 ## License
 
 MIT license
-
