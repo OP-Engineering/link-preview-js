@@ -131,3 +131,7 @@ yarn test
 ## License
 
 MIT license
+
+## Sponsor
+
+If you find this package useful, please considering [sponsoring](https://github.com/sponsors/ospfranco), buying a coffee is enough, thanks!
