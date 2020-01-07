@@ -1,10 +1,11 @@
-exports.REGEX_VALID_URL = new RegExp(
-  "^" +
-    // protocol identifier
-    "(?:(?:https?|ftp)://)" +
-    // user:pass authentication
-    "(?:\\S+(?::\\S*)?@)?" +
-    "(?:" +
+export const CONSTANTS = {
+  REGEX_VALID_URL: new RegExp(
+    "^" +
+      // protocol identifier
+      "(?:(?:https?|ftp)://)" +
+      // user:pass authentication
+      "(?:\\S+(?::\\S*)?@)?" +
+      "(?:" +
       // IP address exclusion
       // private & local networks
       "(?!(?:10|127)(?:\\.\\d{1,3}){3})" +
@@ -18,7 +19,7 @@ exports.REGEX_VALID_URL = new RegExp(
       "(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])" +
       "(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}" +
       "(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))" +
-    "|" +
+      "|" +
       // host name
       "(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)" +
       // domain name
@@ -27,20 +28,22 @@ exports.REGEX_VALID_URL = new RegExp(
       "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))" +
       // TLD may end with dot
       "\\.?" +
-    ")" +
-    // port number
-    "(?::\\d{2,5})?" +
-    // resource path
-    "(?:[/?#]\\S*)?" +
-  "$", "i"
-);
+      ")" +
+      // port number
+      "(?::\\d{2,5})?" +
+      // resource path
+      "(?:[/?#]\\S*)?" +
+      "$",
+    "i"
+  ),
 
-exports.REGEX_CONTENT_TYPE_IMAGE = new RegExp("image\/.*", "i");
+  REGEX_CONTENT_TYPE_IMAGE: new RegExp("image/.*", "i"),
 
-exports.REGEX_CONTENT_TYPE_AUDIO = new RegExp("audio\/.*", "i");
+  REGEX_CONTENT_TYPE_AUDIO: new RegExp("audio/.*", "i"),
 
-exports.REGEX_CONTENT_TYPE_VIDEO = new RegExp("video\/.*", "i");
+  REGEX_CONTENT_TYPE_VIDEO: new RegExp("video/.*", "i"),
 
-exports.REGEX_CONTENT_TYPE_TEXT = new RegExp("text\/.*", "i");
+  REGEX_CONTENT_TYPE_TEXT: new RegExp("text/.*", "i"),
 
-exports.REGEX_CONTENT_TYPE_APPLICATION = new RegExp("application\/.*", "i");
+  REGEX_CONTENT_TYPE_APPLICATION: new RegExp("application/.*", "i")
+};

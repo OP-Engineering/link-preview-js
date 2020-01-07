@@ -1,10 +1,11 @@
 {
   "name": "link-preview-js",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --detectOpenHandles --colors",
+    "build": "tsc"
   },
   "keywords": [
     "javascript",
@@ -20,17 +21,18 @@
   "dependencies": {
     "cheerio-without-node-native": "0.20.2",
     "cross-fetch": "3.0.4",
-    "es6-promise": "4.2.8",
     "url": "0.11.0"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.25",
     "eslint": "^6.6.0",
     "eslint-config-airbnb": "18.0.1",
     "eslint-loader": "3.0.2",
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-react": "7.16.0",
-    "expect.js": "0.3.1",
-    "jest": "24.9.0"
+    "jest": "24.9.0",
+    "ts-jest": "^24.2.0",
+    "typescript": "^3.7.4"
   }
 }
