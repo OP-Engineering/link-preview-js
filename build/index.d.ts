@@ -2,22 +2,26 @@ interface ILinkPreviewOptions {
     headers?: Record<string, string>;
     imagesPropertyType?: string;
 }
-interface ILinkPreviewResponse {
-    url?: string;
-    title?: string;
-    siteName?: string;
-    description?: string;
-    mediaType?: string;
-    contentType?: string;
-    images?: string[];
-    videos?: {
-        url: string;
-        secureUrl: string;
-        type: string;
-        width: number;
-        height: number;
+export declare function getLinkPreview(text: string, options?: ILinkPreviewOptions): Promise<{
+    url: string;
+    mediaType: string;
+    contentType: string;
+    favicons: any[];
+} | {
+    url: string;
+    title: any;
+    siteName: any;
+    description: any;
+    mediaType: any;
+    contentType: string;
+    images: string[];
+    videos: {
+        url: any;
+        secureUrl: any;
+        type: any;
+        width: any;
+        height: any;
     }[];
-    favicons?: string[];
-}
-export declare function getLinkPreview(text: string, options?: ILinkPreviewOptions): Promise<ILinkPreviewResponse>;
+    favicons: any[];
+}>;
 export {};

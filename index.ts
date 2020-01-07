@@ -246,7 +246,7 @@ function parseTextResponse(
 
 export async function getLinkPreview(
   text: string,
-  options: ILinkPreviewOptions,
+  options?: ILinkPreviewOptions,
 ) {
   if (!text || typeof text !== `string`) {
     throw new Error(`link-preview-js did not receive a valid url or text`);

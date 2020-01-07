@@ -39,131 +39,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// const cheerio = require('cheerio-without-node-native');
 var cheerio_without_node_native_1 = __importDefault(require("cheerio-without-node-native"));
 var cross_fetch_1 = require("cross-fetch");
-var constants_1 = require("./constants");
 var url_1 = __importDefault(require("url"));
-function getLinkPreview(text, options) {
-    var _this = this;
-    return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
-        var detectedUrl, fetchOptions, response, finalUrl, contentType, htmlString, e_1;
-        var _a, _b;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0:
-                    if (!text) {
-                        reject(new Error("link-preview-js did not receive either a url or text"));
-                    }
-                    text
-                        .replace(/\n/g, " ")
-                        .split(" ")
-                        .some(function (token) {
-                        if (constants_1.CONSTANTS.REGEX_VALID_URL.test(token)) {
-                            detectedUrl = token;
-                        }
-                    });
-                    if (!detectedUrl) {
-                        reject(new Error("link-preview-js did not receive either a url or text"));
-                    }
-                    fetchOptions = { headers: (_b = (_a = options) === null || _a === void 0 ? void 0 : _a.headers, (_b !== null && _b !== void 0 ? _b : {})) };
-                    _c.label = 1;
-                case 1:
-                    _c.trys.push([1, 9, , 10]);
-                    return [4 /*yield*/, cross_fetch_1.fetch(detectedUrl, fetchOptions)];
-                case 2:
-                    response = _c.sent();
-                    finalUrl = response.url;
-                    contentType = response.headers.get("content-type");
-                    if (!contentType) {
-                        return [2 /*return*/, reject(new Error("link-preview-js could not determine content-type for link"))];
-                    }
-                    if (contentType instanceof Array) {
-                        contentType = contentType[0];
-                    }
-                    if (!constants_1.CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) return [3 /*break*/, 3];
-                    return [2 /*return*/, resolve(parseImageResponse(finalUrl, contentType))];
-                case 3:
-                    if (!constants_1.CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) return [3 /*break*/, 4];
-                    return [2 /*return*/, resolve(parseAudioResponse(finalUrl, contentType))];
-                case 4:
-                    if (!constants_1.CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) return [3 /*break*/, 5];
-                    return [2 /*return*/, resolve(parseVideoResponse(finalUrl, contentType))];
-                case 5:
-                    if (!constants_1.CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) return [3 /*break*/, 7];
-                    return [4 /*yield*/, response.text()];
-                case 6:
-                    htmlString = _c.sent();
-                    resolve(parseTextResponse(htmlString, finalUrl, options, contentType));
-                    return [3 /*break*/, 8];
-                case 7:
-                    if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
-                        return [2 /*return*/, resolve(parseApplicationResponse(finalUrl, contentType))];
-                    }
-                    else {
-                        return [2 /*return*/, reject({
-                                error: "link-preview-js Unknown content type for URL."
-                            })];
-                    }
-                    _c.label = 8;
-                case 8: return [3 /*break*/, 10];
-                case 9:
-                    e_1 = _c.sent();
-                    reject(new Error("link-preview-js could not fetch link information" + e_1.toString()));
-                    return [3 /*break*/, 10];
-                case 10: return [2 /*return*/];
-            }
-        });
-    }); });
-}
-exports.getLinkPreview = getLinkPreview;
-function parseImageResponse(url, contentType) {
-    return {
-        url: url,
-        mediaType: "image",
-        contentType: contentType,
-        favicons: [getDefaultFavicon(url)]
-    };
-}
-function parseAudioResponse(url, contentType) {
-    return {
-        url: url,
-        mediaType: "audio",
-        contentType: contentType,
-        favicons: [getDefaultFavicon(url)]
-    };
-}
-function parseVideoResponse(url, contentType) {
-    return {
-        url: url,
-        mediaType: "video",
-        contentType: contentType,
-        favicons: [getDefaultFavicon(url)]
-    };
-}
-function parseApplicationResponse(url, contentType) {
-    return {
-        url: url,
-        mediaType: "application",
-        contentType: contentType,
-        favicons: [getDefaultFavicon(url)]
-    };
-}
-var parseTextResponse = function (body, url, options, contentType) {
-    if (options === void 0) { options = {}; }
-    var doc = cheerio_without_node_native_1.default.load(body);
-    return {
-        url: url,
-        title: getTitle(doc),
-        siteName: getSiteName(doc),
-        description: getDescription(doc),
-        mediaType: getMediaType(doc) || "website",
-        contentType: contentType,
-        images: getImages(doc, url, options.imagesPropertyType),
-        videos: getVideos(doc),
-        favicons: getFavicons(doc, url)
-    };
-};
+var constants_1 = require("./constants");
 function getTitle(doc) {
     var title = doc("meta[property='og:title']").attr("content");
     if (!title) {
@@ -191,12 +70,13 @@ function getMediaType(doc) {
         var content = node.attr("content");
         return content === "image" ? "photo" : content;
     }
-    else {
-        return doc("meta[property='og:type']").attr("content");
-    }
+    return doc("meta[property='og:type']").attr("content");
 }
 function getImages(doc, rootUrl, imagesPropertyType) {
-    var images = [], nodes, src, dic = {};
+    var images = [];
+    var nodes;
+    var src;
+    var dic = {};
     var imagePropertyType = (imagesPropertyType !== null && imagesPropertyType !== void 0 ? imagesPropertyType : "og");
     nodes = doc("meta[property='" + imagePropertyType + ":image']");
     if (nodes.length) {
@@ -253,7 +133,7 @@ function getVideos(doc) {
         nodeSecureUrls = doc("meta[property='og:video:secure_url']");
         width = doc("meta[property='og:video:width']").attr("content");
         height = doc("meta[property='og:video:height']").attr("content");
-        for (index = 0; index < length; index++) {
+        for (index = 0; index < length; index += 1) {
             video = nodes[index].attribs.content;
             nodeType = nodeTypes[index];
             videoType = nodeType ? nodeType.attribs.content : null;
@@ -264,7 +144,7 @@ function getVideos(doc) {
                 secureUrl: videoSecureUrl,
                 type: videoType,
                 width: width,
-                height: height
+                height: height,
             };
             if (videoType && videoType.indexOf("video/") === 0) {
                 videos.splice(0, 0, videoObj);
@@ -276,13 +156,19 @@ function getVideos(doc) {
     }
     return videos;
 }
+// returns default favicon (//hostname/favicon.ico) for a url
+function getDefaultFavicon(rootUrl) {
+    return url_1.default.resolve(rootUrl, "/favicon.ico");
+}
 // returns an array of URL's to favicon images
 function getFavicons(doc, rootUrl) {
-    var images = [], nodes = [], src;
+    var images = [];
+    var nodes = [];
+    var src;
     var relSelectors = [
         "rel=icon",
-        'rel="shortcut icon"',
-        "rel=apple-touch-icon"
+        "rel=\"shortcut icon\"",
+        "rel=apple-touch-icon",
     ];
     relSelectors.forEach(function (relSelector) {
         // look for all icon tags
@@ -304,7 +190,112 @@ function getFavicons(doc, rootUrl) {
     }
     return images;
 }
-// returns default favicon (//hostname/favicon.ico) for a url
-function getDefaultFavicon(rootUrl) {
-    return url_1.default.resolve(rootUrl, "/favicon.ico");
+function parseImageResponse(url, contentType) {
+    return {
+        url: url,
+        mediaType: "image",
+        contentType: contentType,
+        favicons: [getDefaultFavicon(url)],
+    };
 }
+function parseAudioResponse(url, contentType) {
+    return {
+        url: url,
+        mediaType: "audio",
+        contentType: contentType,
+        favicons: [getDefaultFavicon(url)],
+    };
+}
+function parseVideoResponse(url, contentType) {
+    return {
+        url: url,
+        mediaType: "video",
+        contentType: contentType,
+        favicons: [getDefaultFavicon(url)],
+    };
+}
+function parseApplicationResponse(url, contentType) {
+    return {
+        url: url,
+        mediaType: "application",
+        contentType: contentType,
+        favicons: [getDefaultFavicon(url)],
+    };
+}
+function parseTextResponse(body, url, options, contentType) {
+    if (options === void 0) { options = {}; }
+    var doc = cheerio_without_node_native_1.default.load(body);
+    return {
+        url: url,
+        title: getTitle(doc),
+        siteName: getSiteName(doc),
+        description: getDescription(doc),
+        mediaType: getMediaType(doc) || "website",
+        contentType: contentType,
+        images: getImages(doc, url, options.imagesPropertyType),
+        videos: getVideos(doc),
+        favicons: getFavicons(doc, url),
+    };
+}
+function getLinkPreview(text, options) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function () {
+        var detectedUrl, fetchOptions, response, finalUrl, contentType, htmlString, e_1;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    if (!text || typeof text !== "string") {
+                        throw new Error("link-preview-js did not receive a valid url or text");
+                    }
+                    detectedUrl = text
+                        .replace(/\n/g, " ")
+                        .split(" ")
+                        .find(function (token) { return constants_1.CONSTANTS.REGEX_VALID_URL.test(token); });
+                    if (!detectedUrl) {
+                        throw new Error("link-preview-js did not receive a valid a url or text");
+                    }
+                    fetchOptions = { headers: (_b = (_a = options) === null || _a === void 0 ? void 0 : _a.headers, (_b !== null && _b !== void 0 ? _b : {})) };
+                    _c.label = 1;
+                case 1:
+                    _c.trys.push([1, 5, , 6]);
+                    return [4 /*yield*/, cross_fetch_1.fetch(detectedUrl, fetchOptions)];
+                case 2:
+                    response = _c.sent();
+                    finalUrl = response.url;
+                    contentType = response.headers.get("content-type");
+                    if (!contentType) {
+                        throw new Error("link-preview-js could not determine content-type for link");
+                    }
+                    if (contentType instanceof Array) {
+                        // eslint-disable-next-line prefer-destructuring
+                        contentType = contentType[0];
+                    }
+                    // parse response depending on content type
+                    if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
+                        return [2 /*return*/, parseImageResponse(finalUrl, contentType)];
+                    }
+                    if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
+                        return [2 /*return*/, parseAudioResponse(finalUrl, contentType)];
+                    }
+                    if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
+                        return [2 /*return*/, parseVideoResponse(finalUrl, contentType)];
+                    }
+                    if (!constants_1.CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) return [3 /*break*/, 4];
+                    return [4 /*yield*/, response.text()];
+                case 3:
+                    htmlString = _c.sent();
+                    return [2 /*return*/, parseTextResponse(htmlString, finalUrl, options, contentType)];
+                case 4:
+                    if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
+                        return [2 /*return*/, parseApplicationResponse(finalUrl, contentType)];
+                    }
+                    throw new Error("Unknown content type for URL.");
+                case 5:
+                    e_1 = _c.sent();
+                    throw new Error("link-preview-js could not fetch link information " + e_1.toString());
+                case 6: return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.getLinkPreview = getLinkPreview;
