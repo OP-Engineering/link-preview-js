@@ -30,10 +30,10 @@ import {getLinkPreview} from 'link-preview-js';
 ...
 
 getLinkPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
-  .then((data: ILinkPreviewResponse) => console.debug(data));
+  .then((data) => console.debug(data));
 
 getLinkPreview('This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c')
-  .then((data: ILinkPreviewResponse) => console.debug(data));
+  .then((data) => console.debug(data));
 ```
 
 ## Options
@@ -56,7 +56,7 @@ getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
 }).then(data => console.debug(data));
 ```
 
-## Returns
+## Response
 
 Returns a Promise that resolves with an object describing the provided link.
 The info object returned varies depending on the content type (MIME type) returned

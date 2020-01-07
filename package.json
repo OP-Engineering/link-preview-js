@@ -1,7 +1,7 @@
 {
   "name": "link-preview-js",
   "version": "2.0.0",
-  "description": "",
+  "description": "Javascript module to extract and fetch HTTP link information from blocks of text. ",
   "main": "build/index.js",
   "scripts": {
     "test": "jest --detectOpenHandles --colors",
@@ -15,8 +15,8 @@
     "preview"
   ],
   "author": "Oscar Franco",
+  "email": "ospfranco@protonmail.com",
   "license": "MIT",
-  "peerDependencies": {},
   "repository": "https://github.com/ospfranco/link-preview-js",
   "dependencies": {
     "cheerio-without-node-native": "0.20.2",
@@ -25,14 +25,20 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.25",
-    "eslint": "^6.6.0",
-    "eslint-config-airbnb": "18.0.1",
-    "eslint-loader": "3.0.2",
-    "eslint-plugin-import": "2.18.2",
-    "eslint-plugin-jsx-a11y": "6.2.3",
-    "eslint-plugin-react": "7.16.0",
+    "@typescript-eslint/eslint-plugin": "^2.15.0",
+    "@typescript-eslint/parser": "^2.15.0",
+    "add": "^2.0.6",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-import-resolver-typescript": "^2.0.0",
+    "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-jest": "^23.3.0",
+    "eslint-plugin-json": "^2.0.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.17.0",
     "jest": "24.9.0",
     "ts-jest": "^24.2.0",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.4",
+    "yarn": "^1.21.1"
   }
 }
