@@ -2,11 +2,16 @@
 
 [![CircleCI](https://circleci.com/gh/ospfranco/link-preview-js/tree/master.svg?style=svg)](https://circleci.com/gh/ospfranco/link-preview-js/tree/master) [![npm version](https://badge.fury.io/js/link-preview-js.svg)](https://badge.fury.io/js/link-preview-js)
 
-Pure js library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
+Typescript library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
 
-# WARNING: THIS LIBRARY DOES NOT WORK ON CORS PROTECTED ENVIRONEMNTS, RUNNING IT ON BROWSERS WON'T WORK
+## This library does not work on CORS protected environments, i.e: all the major browsers, do not open any issue if you are trying to run it in a protected environment
 
 Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot use this library or even manually request another domain from your web application, read more about [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS). However you can use this library on React-Native or on your back-end to fetch link-information to your app.
+
+
+## This library uses [cheerio-without-native](https://github.com/oyyd/cheerio-without-node-native), github is now warning me that there are security vunerabilities but the cheerio package has been abandoned for quite some time, I'm not responsible for any security implications this might carry
+
+As of 23 of April of 2020 https://google.com is not returning the apropriate content in the response for the library to parse, before you submit an issue try different domains to see if you get a proper link preview.
 
 ## Known issues for React-Native
 
