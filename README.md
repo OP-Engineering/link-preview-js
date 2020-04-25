@@ -4,26 +4,23 @@
 
 Typescript library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
 
-## This library does not work on CORS protected environments, i.e: all the major browsers, do not open any issue if you are trying to run it in a protected environment
+## This library does not work on CORS protected environments, i.e: all the major browsers
 
-Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot use this library or even manually request another domain from your web application, read more about [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS). However you can use this library on React-Native or on your back-end to fetch link-information to your app.
+Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot request another domain from your web application, read more about [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
+## This library uses [cheerio-without-native](https://github.com/oyyd/cheerio-without-node-native), github is now warning me that there are security vunerabilities because the package has been abandonded, I'm not responsible for any security implications this might carry, I could use cheerio but that means loosing compatibility with RN, which actually might not be a bad idea...
 
-## This library uses [cheerio-without-native](https://github.com/oyyd/cheerio-without-node-native), github is now warning me that there are security vunerabilities but the cheerio package has been abandoned for quite some time, I'm not responsible for any security implications this might carry
+As of 23 of April of 2020: Do not use https://google.com it does not return the appropiate tags to be parsed
 
-As of 23 of April of 2020 https://google.com is not returning the apropriate content in the response for the library to parse, before you submit an issue try different domains to see if you get a proper link preview.
+# Migration to 2.X.X
 
-## Known issues for React-Native
+The api for version 2.X.X changed slightly, there is no longer a default unnamed export, only a named method export `getLinkPreview`
 
-Apparently the fetch especification breaks on some older samsung devices, this is not patchable on this library.
-
-# 2.X.X
-
-The api for version 2.X.X changed slightly, there is no longer a default unnamed export, only a named method export `getLinkPreview`, the library has also been completely re-written on typescript so you now have types and some minor bugs have been fixed.
-
-## Usage
+## Install
 
 `$ yarn add link-preview-js`
+
+## Usage
 
 Library exposes just one method `getLinkPreview`, you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info of first valid HTTP(S) URL info it finds.
 
@@ -31,8 +28,6 @@ URL parsing is done via: https://gist.github.com/dperini/729294
 
 ```typescript
 import {getLinkPreview} from 'link-preview-js';
-
-...
 
 getLinkPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
   .then((data) => console.debug(data));
