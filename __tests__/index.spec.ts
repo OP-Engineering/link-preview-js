@@ -121,6 +121,17 @@ describe(`link preview`, () => {
     expect(linkInfo.favicons[0]).toBeTruthy();
   });
 
+  it(`should handle unknown content type urls`, async () => {
+    const linkInfo = await getLinkPreview(
+      `https://mjml.io/try-it-live`,
+    );
+
+    expect(linkInfo.url).toEqual(
+      `https://mjml.io/try-it-live`,
+    );
+    expect(linkInfo.mediaType).toEqual(`website`);
+  });
+
   // This site changed? it is not returning application any more but rather website
   // it(`should handle application urls`, async () => {
   //   const linkInfo = await getLinkPreview(
