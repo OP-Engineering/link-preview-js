@@ -237,10 +237,14 @@ function parseTextResponse(body, url, options, contentType) {
         favicons: getFavicons(doc, url),
     };
 }
+function parseUnknownResponse(body, url, options, contentType) {
+    if (options === void 0) { options = {}; }
+    return parseTextResponse(body, url, options, contentType);
+}
 function getLinkPreview(text, options) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var detectedUrl, fetchOptions, response, finalUrl, contentType, htmlString, e_1;
+        var detectedUrl, fetchOptions, response, finalUrl, contentType, htmlString_1, htmlString_2, htmlString, e_1;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -257,15 +261,18 @@ function getLinkPreview(text, options) {
                     fetchOptions = { headers: (_b = (_a = options) === null || _a === void 0 ? void 0 : _a.headers, (_b !== null && _b !== void 0 ? _b : {})) };
                     _c.label = 1;
                 case 1:
-                    _c.trys.push([1, 5, , 6]);
+                    _c.trys.push([1, 8, , 9]);
                     return [4 /*yield*/, cross_fetch_1.fetch(detectedUrl, fetchOptions)];
                 case 2:
                     response = _c.sent();
                     finalUrl = response.url;
                     contentType = response.headers.get("content-type");
-                    if (!contentType) {
-                        throw new Error("link-preview-js could not determine content-type for link");
-                    }
+                    if (!!contentType) return [3 /*break*/, 4];
+                    return [4 /*yield*/, response.text()];
+                case 3:
+                    htmlString_1 = _c.sent();
+                    return [2 /*return*/, parseUnknownResponse(htmlString_1, finalUrl, options)];
+                case 4:
                     if (contentType instanceof Array) {
                         // eslint-disable-next-line prefer-destructuring
                         contentType = contentType[0];
@@ -280,20 +287,23 @@ function getLinkPreview(text, options) {
                     if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
                         return [2 /*return*/, parseVideoResponse(finalUrl, contentType)];
                     }
-                    if (!constants_1.CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) return [3 /*break*/, 4];
+                    if (!constants_1.CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) return [3 /*break*/, 6];
                     return [4 /*yield*/, response.text()];
-                case 3:
-                    htmlString = _c.sent();
-                    return [2 /*return*/, parseTextResponse(htmlString, finalUrl, options, contentType)];
-                case 4:
+                case 5:
+                    htmlString_2 = _c.sent();
+                    return [2 /*return*/, parseTextResponse(htmlString_2, finalUrl, options, contentType)];
+                case 6:
                     if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
                         return [2 /*return*/, parseApplicationResponse(finalUrl, contentType)];
                     }
-                    throw new Error("Unknown content type for URL.");
-                case 5:
+                    return [4 /*yield*/, response.text()];
+                case 7:
+                    htmlString = _c.sent();
+                    return [2 /*return*/, parseUnknownResponse(htmlString, finalUrl, options)];
+                case 8:
                     e_1 = _c.sent();
                     throw new Error("link-preview-js could not fetch link information " + e_1.toString());
-                case 6: return [2 /*return*/];
+                case 9: return [2 /*return*/];
             }
         });
     });

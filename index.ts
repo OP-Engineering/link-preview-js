@@ -226,7 +226,7 @@ function parseTextResponse(
   body: string,
   url: string,
   options: ILinkPreviewOptions = {},
-  contentType: string,
+  contentType?: string,
 ) {
   const doc = cheerio.load(body);
 
@@ -243,6 +243,14 @@ function parseTextResponse(
   };
 }
 
+function parseUnknownResponse(
+  body: string,
+  url: string,
+  options: ILinkPreviewOptions = {},
+  contentType?: string,
+) {
+  return parseTextResponse(body, url, options, contentType);
+}
 
 export async function getLinkPreview(
   text: string,
@@ -273,9 +281,8 @@ export async function getLinkPreview(
     let contentType = response.headers.get(`content-type`);
 
     if (!contentType) {
-      throw new Error(
-        `link-preview-js could not determine content-type for link`,
-      );
+      const htmlString = await response.text();
+      return parseUnknownResponse(htmlString, finalUrl, options);
     }
 
     if ((contentType as any) instanceof Array) {
@@ -300,7 +307,8 @@ export async function getLinkPreview(
     if (CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
       return parseApplicationResponse(finalUrl, contentType);
     }
-    throw new Error(`Unknown content type for URL.`);
+    const htmlString = await response.text();
+    return parseUnknownResponse(htmlString, finalUrl, options);
   } catch (e) {
     throw new Error(
       `link-preview-js could not fetch link information ${e.toString()}`,

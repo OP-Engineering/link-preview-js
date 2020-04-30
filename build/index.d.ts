@@ -13,7 +13,7 @@ export declare function getLinkPreview(text: string, options?: ILinkPreviewOptio
     siteName: any;
     description: any;
     mediaType: any;
-    contentType: string;
+    contentType: string | undefined;
     images: string[];
     videos: {
         url: any;
