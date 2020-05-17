@@ -8,7 +8,7 @@ Typescript library that allows you to extract information from a URL or parse te
 
 Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot request another domain from your web application, read more about [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
-## This library uses [cheerio-without-native](https://github.com/oyyd/cheerio-without-node-native), github is now warning me that there are security vunerabilities because the package has been abandonded, I'm not responsible for any security implications this might carry, I could use cheerio but that means loosing compatibility with RN, which actually might not be a bad idea...
+This library uses [cheerio-without-native](https://github.com/oyyd/cheerio-without-node-native), github is now warning me that there are security vunerabilities because the package has been abandonded, I'm not responsible for any security implications this might carry, I could use cheerio but that means loosing compatibility with RN, which actually might not be a bad idea...
 
 As of 23 of April of 2020: Do not use https://google.com it does not return the appropiate tags to be parsed
 
