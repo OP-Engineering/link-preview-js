@@ -134,4 +134,4 @@ MIT license
 
 ## Sponsor
 
-If you find this package useful, please considering [sponsoring](https://github.com/sponsors/ospfranco), buying a coffee is enough, thanks!
+Please considering [sponsoring](https://github.com/sponsors/ospfranco) or buying a copy of [Tempomat](https://tempomat.dev)
