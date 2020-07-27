@@ -6,7 +6,7 @@ Typescript library that allows you to extract information from a URL or parse te
 
 ## Does not work on CORS protected environments, means: **all the browsers**
 
-A (respectable) browser **DOES NOT ALLOW YOU TO DO CROSS ORIGIN REQUESTS**, you cannot do a request to a different domain from your web application, if do not know how *same-origin-policy* works you can read [this](https://dev.to/lydiahallie/cs-visualized-cors-5b8h) fantastic piece written by @lydiahaille
+A (respectable) browser **DOES NOT ALLOW YOU TO DO CROSS ORIGIN REQUESTS**, you cannot do a request to a different domain from your web application, if do not know how *same-origin-policy* works you can read [this](https://dev.to/lydiahallie/cs-visualized-cors-5b8h) fantastic piece written by @lydiahallie
 
 
 ## Security disclaimer
