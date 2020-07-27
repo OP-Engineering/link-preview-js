@@ -4,21 +4,21 @@
 
 Typescript library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
 
-## This library does not work on CORS protected environments, i.e: all the major browsers
+## Does not work on CORS protected environments, means: **all the browsers**
 
-Chrome, Firefox, Safari, etc DO NOT ALLOW YOU TO DO CROSS SITE REQUESTS therefore you cannot request another domain from your web application, read more about [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+A (respectable) browser **DOES NOT ALLOW YOU TO DO CROSS ORIGIN REQUESTS**, you cannot do a request to a different domain from your web application, if do not know how *same-origin-policy* works you can read [this](https://dev.to/lydiahallie/cs-visualized-cors-5b8h) fantastic piece written by @lydiahaille
 
-This library uses [cheerio-without-native](https://github.com/oyyd/cheerio-without-node-native), github is now warning me that there are security vunerabilities because the package has been abandonded, I'm not responsible for any security implications this might carry, I could use cheerio but that means loosing compatibility with RN, which actually might not be a bad idea...
 
-As of 23 of April of 2020: Do not use https://google.com it does not return the appropiate tags to be parsed
+## Security disclaimer
+This library uses [cheerio-without-native](https://github.com/oyyd/cheerio-without-node-native) which unfortunately has been abandoned and now has some security vunerabilities (according to github) I'm not responsible for any security implications this might carry
 
-# Migration to 2.X.X
-
-The api for version 2.X.X changed slightly, there is no longer a default unnamed export, only a named method export `getLinkPreview`
+As of 23 of April of 2020: Do not use https://google.com it does not return the appropiate meta-tags to be parsed, so test with another domain, don't waste your time
 
 ## Install
 
-`$ yarn add link-preview-js`
+```
+yarn add link-preview-js
+```
 
 ## Usage
 
@@ -29,9 +29,13 @@ URL parsing is done via: https://gist.github.com/dperini/729294
 ```typescript
 import {getLinkPreview} from 'link-preview-js';
 
+// pass the link directly
 getLinkPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
   .then((data) => console.debug(data));
 
+// OR
+
+// a chunk of text
 getLinkPreview('This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c')
   .then((data) => console.debug(data));
 ```
@@ -131,7 +135,3 @@ yarn test
 ## License
 
 MIT license
-
-## Sponsor
-
-Please considering [sponsoring](https://github.com/sponsors/ospfranco) or buying a copy of [Tempomat](https://tempomat.dev)
