@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CONSTANTS = {
     REGEX_VALID_URL: new RegExp("^" +
         // protocol identifier
-        "(?:(?:https?|ftp)://)?" +
+        "(?:(?:https?|ftp)://)" +
         // user:pass authentication
         "(?:\\S+(?::\\S*)?@)?" +
         "(?:" +

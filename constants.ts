@@ -2,7 +2,7 @@ export const CONSTANTS = {
   REGEX_VALID_URL: new RegExp(
     "^" +
       // protocol identifier
-      "(?:(?:https?|ftp)://)?" +
+      "(?:(?:https?|ftp)://)" +
       // user:pass authentication
       "(?:\\S+(?::\\S*)?@)?" +
       "(?:" +
