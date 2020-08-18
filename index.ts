@@ -149,7 +149,6 @@ function getDefaultFavicon(rootUrl: string) {
   return urlObj.resolve(rootUrl, `/favicon.ico`);
 }
 
-
 // returns an array of URL's to favicon images
 function getFavicons(doc: any, rootUrl: string) {
   const images = [];
@@ -226,7 +225,7 @@ function parseTextResponse(
   body: string,
   url: string,
   options: ILinkPreviewOptions = {},
-  contentType?: string,
+  contentType?: string
 ) {
   const doc = cheerio.load(body);
 
@@ -247,26 +246,33 @@ function parseUnknownResponse(
   body: string,
   url: string,
   options: ILinkPreviewOptions = {},
-  contentType?: string,
+  contentType?: string
 ) {
   return parseTextResponse(body, url, options, contentType);
 }
 
 export async function getLinkPreview(
   text: string,
-  options?: ILinkPreviewOptions,
+  options?: ILinkPreviewOptions
 ) {
   if (!text || typeof text !== `string`) {
     throw new Error(`link-preview-js did not receive a valid url or text`);
   }
 
-  const detectedUrl = text
+  let detectedUrl = text
     .replace(/\n/g, ` `)
     .split(` `)
     .find((token) => CONSTANTS.REGEX_VALID_URL.test(token));
 
   if (!detectedUrl) {
     throw new Error(`link-preview-js did not receive a valid a url or text`);
+  }
+
+  if (
+    detectedUrl.substring(0, 7) !== `http://` &&
+    detectedUrl.substring(0, 8) !== `https://`
+  ) {
+    detectedUrl = `http://${detectedUrl}`;
   }
 
   const fetchOptions = { headers: options?.headers ?? {} };
@@ -311,7 +317,7 @@ export async function getLinkPreview(
     return parseUnknownResponse(htmlString, finalUrl, options);
   } catch (e) {
     throw new Error(
-      `link-preview-js could not fetch link information ${e.toString()}`,
+      `link-preview-js could not fetch link information ${e.toString()}`
     );
   }
 }
