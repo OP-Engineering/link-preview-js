@@ -258,10 +258,6 @@ function getLinkPreview(text, options) {
                     if (!detectedUrl) {
                         throw new Error("link-preview-js did not receive a valid a url or text");
                     }
-                    if (detectedUrl.substring(0, 7) !== "http://" &&
-                        detectedUrl.substring(0, 8) !== "https://") {
-                        detectedUrl = "http://" + detectedUrl;
-                    }
                     fetchOptions = { headers: (_b = (_a = options) === null || _a === void 0 ? void 0 : _a.headers, (_b !== null && _b !== void 0 ? _b : {})) };
                     _c.label = 1;
                 case 1:
