@@ -1,9 +1,3 @@
-# THIS PACKAGE AND REPO ARE NO LONGER MAINTAINED
-
-After giving it some thought I have chosen to not continue development on this library, the main depency has been abandoned and contains security vunerabilities, I cannot in good conscience recommend developers to use it, giving away my time for free also does not align with my long term goals.
-
-You will still be able to find the package on npm but I urge you not to use it
-
 # link-preview-js
 
 Typescript library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
