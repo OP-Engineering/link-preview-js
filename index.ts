@@ -8,44 +8,49 @@ interface ILinkPreviewOptions {
   imagesPropertyType?: string;
 }
 
-function getTitle(doc: any) {
-  let title = doc(`meta[property='og:title']`).attr(`content`);
+const metaTag = (doc: any, type: string, attr: string) => {
+  const nodes = doc("meta[" + attr + "='" + type + "']");
+  return nodes.length ? nodes : null;
+};
 
+const metaTagContent = (doc: any, type: string, attr: string) =>
+  doc(`meta[${attr}='${type}']`).attr(`content`);
+
+function getTitle(doc: any) {
+  let title =
+    metaTagContent(doc, "og:title", "property") ||
+    metaTagContent(doc, "og:title", "name");
   if (!title) {
     title = doc(`title`).text();
   }
-
   return title;
 }
 
 function getSiteName(doc: any) {
-  const siteName = doc(`meta[property='og:site_name']`).attr(`content`);
-
+  const siteName =
+    metaTagContent(doc, "og:site_name", "property") ||
+    metaTagContent(doc, "og:site_name", "name");
   return siteName;
 }
 
 function getDescription(doc: any) {
-  let description = doc(`meta[name=description]`).attr(`content`);
-
-  if (description === undefined) {
-    description = doc(`meta[name=Description]`).attr(`content`);
-  }
-
-  if (description === undefined) {
-    description = doc(`meta[property='og:description']`).attr(`content`);
-  }
-
+  const description =
+    metaTagContent(doc, "description", "name") ||
+    metaTagContent(doc, "Description", "name") ||
+    metaTagContent(doc, "og:description", "property");
   return description;
 }
 
 function getMediaType(doc: any) {
-  const node = doc(`meta[name=medium]`);
-
-  if (node.length) {
+  const node = metaTag(doc, `medium`, "name");
+  if (node) {
     const content = node.attr(`content`);
     return content === `image` ? `photo` : content;
   }
-  return doc(`meta[property='og:type']`).attr(`content`);
+  return (
+    metaTagContent(doc, "og:type", "property") ||
+    metaTagContent(doc, "og:type", "name")
+  );
 }
 
 function getImages(doc: any, rootUrl: string, imagesPropertyType?: string) {
@@ -55,9 +60,11 @@ function getImages(doc: any, rootUrl: string, imagesPropertyType?: string) {
   let dic: Record<string, boolean> = {};
 
   const imagePropertyType = imagesPropertyType ?? `og`;
-  nodes = doc(`meta[property='${imagePropertyType}:image']`);
+  nodes =
+    metaTag(doc, `${imagePropertyType}:image`, "property") ||
+    metaTag(doc, `${imagePropertyType}:image`, "name");
 
-  if (nodes.length) {
+  if (nodes) {
     nodes.each((_: number, node: any) => {
       src = node.attribs.content;
       if (src) {
@@ -75,7 +82,7 @@ function getImages(doc: any, rootUrl: string, imagesPropertyType?: string) {
     } else {
       nodes = doc(`img`);
 
-      if (nodes.length) {
+      if (nodes) {
         dic = {};
         images = [];
         nodes.each((_: number, node: any) => {
@@ -108,16 +115,24 @@ function getVideos(doc: any) {
   let videoObj;
   let index;
 
-  const nodes = doc(`meta[property='og:video']`);
-  const { length } = nodes;
+  const nodes =
+    metaTag(doc, `og:video`, "property") || metaTag(doc, `og:video`, "name");
 
-  if (length) {
-    nodeTypes = doc(`meta[property='og:video:type']`);
-    nodeSecureUrls = doc(`meta[property='og:video:secure_url']`);
-    width = doc(`meta[property='og:video:width']`).attr(`content`);
-    height = doc(`meta[property='og:video:height']`).attr(`content`);
+  if (nodes) {
+    nodeTypes =
+      metaTag(doc, `og:video:type`, "property") ||
+      metaTag(doc, `og:video:type`, "name");
+    nodeSecureUrls =
+      metaTag(doc, `og:video:secure_url`, "property") ||
+      metaTag(doc, `og:video:secure_url`, "name");
+    width =
+      metaTagContent(doc, `og:video:width`, "property") ||
+      metaTagContent(doc, `og:video:width`, "name");
+    height =
+      metaTagContent(doc, `og:video:height`, "property") ||
+      metaTagContent(doc, `og:video:height`, "name");
 
-    for (index = 0; index < length; index += 1) {
+    for (index = 0; index < nodes.length; index += 1) {
       video = nodes[index].attribs.content;
 
       nodeType = nodeTypes[index];
@@ -148,7 +163,6 @@ function getVideos(doc: any) {
 function getDefaultFavicon(rootUrl: string) {
   return urlObj.resolve(rootUrl, `/favicon.ico`);
 }
-
 
 // returns an array of URL's to favicon images
 function getFavicons(doc: any, rootUrl: string) {
@@ -226,7 +240,7 @@ function parseTextResponse(
   body: string,
   url: string,
   options: ILinkPreviewOptions = {},
-  contentType?: string,
+  contentType?: string
 ) {
   const doc = cheerio.load(body);
 
@@ -247,14 +261,14 @@ function parseUnknownResponse(
   body: string,
   url: string,
   options: ILinkPreviewOptions = {},
-  contentType?: string,
+  contentType?: string
 ) {
   return parseTextResponse(body, url, options, contentType);
 }
 
 export async function getLinkPreview(
   text: string,
-  options?: ILinkPreviewOptions,
+  options?: ILinkPreviewOptions
 ) {
   if (!text || typeof text !== `string`) {
     throw new Error(`link-preview-js did not receive a valid url or text`);
@@ -311,7 +325,7 @@ export async function getLinkPreview(
     return parseUnknownResponse(htmlString, finalUrl, options);
   } catch (e) {
     throw new Error(
-      `link-preview-js could not fetch link information ${e.toString()}`,
+      `link-preview-js could not fetch link information ${e.toString()}`
     );
   }
 }
