@@ -244,25 +244,23 @@ function parseUnknownResponse(body, url, options, contentType) {
 function getLinkPreview(text, options) {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function () {
-        var detectedUrl, fetchOptions, response, finalUrl, contentType, htmlString_1, htmlString_2, htmlString, e_1;
+        var detectedUrl, fetchOptions, fetchUrl, response, finalUrl, contentType, htmlString_1, htmlString_2, htmlString, e_1;
         return __generator(this, function (_e) {
             switch (_e.label) {
                 case 0:
                     if (!text || typeof text !== "string") {
                         throw new Error("link-preview-js did not receive a valid url or text");
                     }
-                    detectedUrl = (((_a = options) === null || _a === void 0 ? void 0 : _a.proxyUrl) ? options.proxyUrl.concat(text) : text)
-                        .replace(/\n/g, " ")
-                        .split(" ")
-                        .find(function (token) { return constants_1.CONSTANTS.REGEX_VALID_URL.test(token); });
+                    detectedUrl = text.replace(/\n/g, " ").split(" ").find(function (token) { return constants_1.CONSTANTS.REGEX_VALID_URL.test(token); });
                     if (!detectedUrl) {
                         throw new Error("link-preview-js did not receive a valid a url or text");
                     }
-                    fetchOptions = { headers: (_c = (_b = options) === null || _b === void 0 ? void 0 : _b.headers, (_c !== null && _c !== void 0 ? _c : {})) };
+                    fetchOptions = { headers: (_b = (_a = options) === null || _a === void 0 ? void 0 : _a.headers, (_b !== null && _b !== void 0 ? _b : {})) };
+                    fetchUrl = ((_c = options) === null || _c === void 0 ? void 0 : _c.proxyUrl) ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
                     _e.label = 1;
                 case 1:
                     _e.trys.push([1, 8, , 9]);
-                    return [4 /*yield*/, cross_fetch_1.fetch(detectedUrl, fetchOptions)];
+                    return [4 /*yield*/, cross_fetch_1.fetch(fetchUrl, fetchOptions)];
                 case 2:
                     response = _e.sent();
                     finalUrl = ((_d = options) === null || _d === void 0 ? void 0 : _d.proxyUrl) ? response.url.replace(options.proxyUrl, "")
