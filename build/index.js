@@ -47,26 +47,20 @@ var metaTag = function (doc, type, attr) {
     var nodes = doc("meta[" + attr + "='" + type + "']");
     return nodes.length ? nodes : null;
 };
-var metaTagContent = function (doc, type, attr) {
-    return doc("meta[" + attr + "='" + type + "']").attr("content");
-};
+var metaTagContent = function (doc, type, attr) { return doc("meta[" + attr + "='" + type + "']").attr("content"); };
 function getTitle(doc) {
-    var title = metaTagContent(doc, "og:title", "property") ||
-        metaTagContent(doc, "og:title", "name");
+    var title = metaTagContent(doc, "og:title", "property") || metaTagContent(doc, "og:title", "name");
     if (!title) {
         title = doc("title").text();
     }
     return title;
 }
 function getSiteName(doc) {
-    var siteName = metaTagContent(doc, "og:site_name", "property") ||
-        metaTagContent(doc, "og:site_name", "name");
+    var siteName = metaTagContent(doc, "og:site_name", "property") || metaTagContent(doc, "og:site_name", "name");
     return siteName;
 }
 function getDescription(doc) {
-    var description = metaTagContent(doc, "description", "name") ||
-        metaTagContent(doc, "Description", "name") ||
-        metaTagContent(doc, "og:description", "property");
+    var description = metaTagContent(doc, "description", "name") || metaTagContent(doc, "Description", "name") || metaTagContent(doc, "og:description", "property");
     return description;
 }
 function getMediaType(doc) {
@@ -75,18 +69,16 @@ function getMediaType(doc) {
         var content = node.attr("content");
         return content === "image" ? "photo" : content;
     }
-    return (metaTagContent(doc, "og:type", "property") ||
-        metaTagContent(doc, "og:type", "name"));
+    return (metaTagContent(doc, "og:type", "property") || metaTagContent(doc, "og:type", "name"));
 }
 function getImages(doc, rootUrl, imagesPropertyType) {
+    var _a;
     var images = [];
     var nodes;
     var src;
     var dic = {};
     var imagePropertyType = (imagesPropertyType !== null && imagesPropertyType !== void 0 ? imagesPropertyType : "og");
-    nodes =
-        metaTag(doc, imagePropertyType + ":image", "property") ||
-            metaTag(doc, imagePropertyType + ":image", "name");
+    nodes = metaTag(doc, imagePropertyType + ":image", "property") || metaTag(doc, imagePropertyType + ":image", "name");
     if (nodes) {
         nodes.each(function (_, node) {
             src = node.attribs.content;
@@ -104,7 +96,7 @@ function getImages(doc, rootUrl, imagesPropertyType) {
         }
         else {
             nodes = doc("img");
-            if (nodes) {
+            if ((_a = nodes) === null || _a === void 0 ? void 0 : _a.length) {
                 dic = {};
                 images = [];
                 nodes.each(function (_, node) {
@@ -136,18 +128,10 @@ function getVideos(doc) {
     var index;
     var nodes = metaTag(doc, "og:video", "property") || metaTag(doc, "og:video", "name");
     if (nodes) {
-        nodeTypes =
-            metaTag(doc, "og:video:type", "property") ||
-                metaTag(doc, "og:video:type", "name");
-        nodeSecureUrls =
-            metaTag(doc, "og:video:secure_url", "property") ||
-                metaTag(doc, "og:video:secure_url", "name");
-        width =
-            metaTagContent(doc, "og:video:width", "property") ||
-                metaTagContent(doc, "og:video:width", "name");
-        height =
-            metaTagContent(doc, "og:video:height", "property") ||
-                metaTagContent(doc, "og:video:height", "name");
+        nodeTypes = metaTag(doc, "og:video:type", "property") || metaTag(doc, "og:video:type", "name");
+        nodeSecureUrls = metaTag(doc, "og:video:secure_url", "property") || metaTag(doc, "og:video:secure_url", "name");
+        width = metaTagContent(doc, "og:video:width", "property") || metaTagContent(doc, "og:video:width", "name");
+        height = metaTagContent(doc, "og:video:height", "property") || metaTagContent(doc, "og:video:height", "name");
         for (index = 0; index < nodes.length; index += 1) {
             video = nodes[index].attribs.content;
             nodeType = nodeTypes[index];
