@@ -6,6 +6,7 @@ import { CONSTANTS } from "./constants";
 interface ILinkPreviewOptions {
   headers?: Record<string, string>;
   imagesPropertyType?: string;
+  proxyUrl?: string;
 }
 
 function getTitle(doc: any) {
@@ -149,7 +150,6 @@ function getDefaultFavicon(rootUrl: string) {
   return urlObj.resolve(rootUrl, `/favicon.ico`);
 }
 
-
 // returns an array of URL's to favicon images
 function getFavicons(doc: any, rootUrl: string) {
   const images = [];
@@ -260,7 +260,7 @@ export async function getLinkPreview(
     throw new Error(`link-preview-js did not receive a valid url or text`);
   }
 
-  const detectedUrl = text
+  const detectedUrl = (options?.proxyUrl ? options.proxyUrl.concat(text) : text)
     .replace(/\n/g, ` `)
     .split(` `)
     .find((token) => CONSTANTS.REGEX_VALID_URL.test(token));
@@ -275,7 +275,9 @@ export async function getLinkPreview(
     const response = await fetch(detectedUrl, fetchOptions);
 
     // get final URL (after any redirects)
-    const finalUrl = response.url;
+    const finalUrl = options?.proxyUrl
+      ? response.url.replace(options.proxyUrl, ``)
+      : response.url;
 
     // get content type of response
     let contentType = response.headers.get(`content-type`);
