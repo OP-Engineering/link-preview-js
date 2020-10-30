@@ -1,6 +1,7 @@
 interface ILinkPreviewOptions {
     headers?: Record<string, string>;
     imagesPropertyType?: string;
+    proxyUrl?: string;
 }
 export declare function getLinkPreview(text: string, options?: ILinkPreviewOptions): Promise<{
     url: string;

@@ -6,6 +6,7 @@ import { CONSTANTS } from "./constants";
 interface ILinkPreviewOptions {
   headers?: Record<string, string>;
   imagesPropertyType?: string;
+  proxyUrl?: string;
 }
 
 const metaTag = (doc: any, type: string, attr: string) => {
@@ -252,10 +253,7 @@ export async function getLinkPreview(
     throw new Error(`link-preview-js did not receive a valid url or text`);
   }
 
-  const detectedUrl = text
-    .replace(/\n/g, ` `)
-    .split(` `)
-    .find((token) => CONSTANTS.REGEX_VALID_URL.test(token));
+  const detectedUrl = text.replace(/\n/g, ` `).split(` `).find((token) => CONSTANTS.REGEX_VALID_URL.test(token));
 
   if (!detectedUrl) {
     throw new Error(`link-preview-js did not receive a valid a url or text`);
@@ -263,11 +261,15 @@ export async function getLinkPreview(
 
   const fetchOptions = { headers: options?.headers ?? {} };
 
-  try {
-    const response = await fetch(detectedUrl, fetchOptions);
+  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
 
-    // get final URL (after any redirects)
-    const finalUrl = response.url;
+  try {
+    const response = await fetch(fetchUrl, fetchOptions);
+
+    // get final URL (after any redirects, strip out proxy url from response url)
+    const finalUrl = options?.proxyUrl
+      ? response.url.replace(options.proxyUrl, ``)
+      : response.url;
 
     // get content type of response
     let contentType = response.headers.get(`content-type`);

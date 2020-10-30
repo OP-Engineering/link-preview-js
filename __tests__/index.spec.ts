@@ -150,7 +150,30 @@ describe(`link preview`, () => {
     ).rejects.toThrowErrorMatchingSnapshot();
   });
 
-  it(`hould handle empty strings gracefully`, async () => {
+  it(`should handle empty strings gracefully`, async () => {
     await expect(getLinkPreview(``)).rejects.toThrowErrorMatchingSnapshot();
+  });
+
+  it(`should handle a proxy url option`, async () => {
+    // origin header is required by cors-anywhere
+    const linkInfo: any = await getLinkPreview(
+      `https://www.youtube.com/watch?v=wuClZjOdT30`,
+      { proxyUrl: `https://cors-anywhere.herokuapp.com/`, headers: { Origin: `http://localhost:8000`, "Accept-Language": `en-US` } },
+    );
+
+    expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
+    expect(linkInfo.siteName).toEqual(`YouTube`);
+    expect(linkInfo.title).toEqual(`Geography Now! Germany`);
+    expect(linkInfo.description).toBeTruthy();
+    expect(linkInfo.mediaType).toEqual(`video.other`);
+    expect(linkInfo.images.length).toEqual(1);
+    expect(linkInfo.images[0]).toEqual(
+      `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
+    );
+    expect(linkInfo.videos.length).toEqual(0);
+    expect(linkInfo.favicons[0]).not.toBe(``);
+    expect(linkInfo.contentType.toLowerCase()).toEqual(
+      `text/html; charset=utf-8`,
+    );
   });
 });

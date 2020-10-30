@@ -242,35 +242,34 @@ function parseUnknownResponse(body, url, options, contentType) {
     return parseTextResponse(body, url, options, contentType);
 }
 function getLinkPreview(text, options) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function () {
-        var detectedUrl, fetchOptions, response, finalUrl, contentType, htmlString_1, htmlString_2, htmlString, e_1;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var detectedUrl, fetchOptions, fetchUrl, response, finalUrl, contentType, htmlString_1, htmlString_2, htmlString, e_1;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
                 case 0:
                     if (!text || typeof text !== "string") {
                         throw new Error("link-preview-js did not receive a valid url or text");
                     }
-                    detectedUrl = text
-                        .replace(/\n/g, " ")
-                        .split(" ")
-                        .find(function (token) { return constants_1.CONSTANTS.REGEX_VALID_URL.test(token); });
+                    detectedUrl = text.replace(/\n/g, " ").split(" ").find(function (token) { return constants_1.CONSTANTS.REGEX_VALID_URL.test(token); });
                     if (!detectedUrl) {
                         throw new Error("link-preview-js did not receive a valid a url or text");
                     }
                     fetchOptions = { headers: (_b = (_a = options) === null || _a === void 0 ? void 0 : _a.headers, (_b !== null && _b !== void 0 ? _b : {})) };
-                    _c.label = 1;
+                    fetchUrl = ((_c = options) === null || _c === void 0 ? void 0 : _c.proxyUrl) ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
+                    _e.label = 1;
                 case 1:
-                    _c.trys.push([1, 8, , 9]);
-                    return [4 /*yield*/, cross_fetch_1.fetch(detectedUrl, fetchOptions)];
+                    _e.trys.push([1, 8, , 9]);
+                    return [4 /*yield*/, cross_fetch_1.fetch(fetchUrl, fetchOptions)];
                 case 2:
-                    response = _c.sent();
-                    finalUrl = response.url;
+                    response = _e.sent();
+                    finalUrl = ((_d = options) === null || _d === void 0 ? void 0 : _d.proxyUrl) ? response.url.replace(options.proxyUrl, "")
+                        : response.url;
                     contentType = response.headers.get("content-type");
                     if (!!contentType) return [3 /*break*/, 4];
                     return [4 /*yield*/, response.text()];
                 case 3:
-                    htmlString_1 = _c.sent();
+                    htmlString_1 = _e.sent();
                     return [2 /*return*/, parseUnknownResponse(htmlString_1, finalUrl, options)];
                 case 4:
                     if (contentType instanceof Array) {
@@ -290,7 +289,7 @@ function getLinkPreview(text, options) {
                     if (!constants_1.CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) return [3 /*break*/, 6];
                     return [4 /*yield*/, response.text()];
                 case 5:
-                    htmlString_2 = _c.sent();
+                    htmlString_2 = _e.sent();
                     return [2 /*return*/, parseTextResponse(htmlString_2, finalUrl, options, contentType)];
                 case 6:
                     if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
@@ -298,10 +297,10 @@ function getLinkPreview(text, options) {
                     }
                     return [4 /*yield*/, response.text()];
                 case 7:
-                    htmlString = _c.sent();
+                    htmlString = _e.sent();
                     return [2 /*return*/, parseUnknownResponse(htmlString, finalUrl, options)];
                 case 8:
-                    e_1 = _c.sent();
+                    e_1 = _e.sent();
                     throw new Error("link-preview-js could not fetch link information " + e_1.toString());
                 case 9: return [2 /*return*/];
             }
