@@ -43,43 +43,43 @@ var cheerio_without_node_native_1 = __importDefault(require("cheerio-without-nod
 var cross_fetch_1 = require("cross-fetch");
 var url_1 = __importDefault(require("url"));
 var constants_1 = require("./constants");
+var metaTag = function (doc, type, attr) {
+    var nodes = doc("meta[" + attr + "='" + type + "']");
+    return nodes.length ? nodes : null;
+};
+var metaTagContent = function (doc, type, attr) { return doc("meta[" + attr + "='" + type + "']").attr("content"); };
 function getTitle(doc) {
-    var title = doc("meta[property='og:title']").attr("content");
+    var title = metaTagContent(doc, "og:title", "property") || metaTagContent(doc, "og:title", "name");
     if (!title) {
         title = doc("title").text();
     }
     return title;
 }
 function getSiteName(doc) {
-    var siteName = doc("meta[property='og:site_name']").attr("content");
+    var siteName = metaTagContent(doc, "og:site_name", "property") || metaTagContent(doc, "og:site_name", "name");
     return siteName;
 }
 function getDescription(doc) {
-    var description = doc("meta[name=description]").attr("content");
-    if (description === undefined) {
-        description = doc("meta[name=Description]").attr("content");
-    }
-    if (description === undefined) {
-        description = doc("meta[property='og:description']").attr("content");
-    }
+    var description = metaTagContent(doc, "description", "name") || metaTagContent(doc, "Description", "name") || metaTagContent(doc, "og:description", "property");
     return description;
 }
 function getMediaType(doc) {
-    var node = doc("meta[name=medium]");
-    if (node.length) {
+    var node = metaTag(doc, "medium", "name");
+    if (node) {
         var content = node.attr("content");
         return content === "image" ? "photo" : content;
     }
-    return doc("meta[property='og:type']").attr("content");
+    return (metaTagContent(doc, "og:type", "property") || metaTagContent(doc, "og:type", "name"));
 }
 function getImages(doc, rootUrl, imagesPropertyType) {
+    var _a;
     var images = [];
     var nodes;
     var src;
     var dic = {};
     var imagePropertyType = (imagesPropertyType !== null && imagesPropertyType !== void 0 ? imagesPropertyType : "og");
-    nodes = doc("meta[property='" + imagePropertyType + ":image']");
-    if (nodes.length) {
+    nodes = metaTag(doc, imagePropertyType + ":image", "property") || metaTag(doc, imagePropertyType + ":image", "name");
+    if (nodes) {
         nodes.each(function (_, node) {
             src = node.attribs.content;
             if (src) {
@@ -96,7 +96,7 @@ function getImages(doc, rootUrl, imagesPropertyType) {
         }
         else {
             nodes = doc("img");
-            if (nodes.length) {
+            if ((_a = nodes) === null || _a === void 0 ? void 0 : _a.length) {
                 dic = {};
                 images = [];
                 nodes.each(function (_, node) {
@@ -114,6 +114,7 @@ function getImages(doc, rootUrl, imagesPropertyType) {
     return images;
 }
 function getVideos(doc) {
+    var _a;
     var videos = [];
     var nodeTypes;
     var nodeSecureUrls;
@@ -126,14 +127,13 @@ function getVideos(doc) {
     var height;
     var videoObj;
     var index;
-    var nodes = doc("meta[property='og:video']");
-    var length = nodes.length;
-    if (length) {
-        nodeTypes = doc("meta[property='og:video:type']");
-        nodeSecureUrls = doc("meta[property='og:video:secure_url']");
-        width = doc("meta[property='og:video:width']").attr("content");
-        height = doc("meta[property='og:video:height']").attr("content");
-        for (index = 0; index < length; index += 1) {
+    var nodes = metaTag(doc, "og:video", "property") || metaTag(doc, "og:video", "name");
+    if ((_a = nodes) === null || _a === void 0 ? void 0 : _a.length) {
+        nodeTypes = metaTag(doc, "og:video:type", "property") || metaTag(doc, "og:video:type", "name");
+        nodeSecureUrls = metaTag(doc, "og:video:secure_url", "property") || metaTag(doc, "og:video:secure_url", "name");
+        width = metaTagContent(doc, "og:video:width", "property") || metaTagContent(doc, "og:video:width", "name");
+        height = metaTagContent(doc, "og:video:height", "property") || metaTagContent(doc, "og:video:height", "name");
+        for (index = 0; index < nodes.length; index += 1) {
             video = nodes[index].attribs.content;
             nodeType = nodeTypes[index];
             videoType = nodeType ? nodeType.attribs.content : null;
