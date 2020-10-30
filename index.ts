@@ -104,7 +104,7 @@ function getVideos(doc: any) {
 
   const nodes = metaTag(doc, `og:video`, `property`) || metaTag(doc, `og:video`, `name`);
 
-  if (nodes) {
+  if (nodes?.length) {
     nodeTypes = metaTag(doc, `og:video:type`, `property`) || metaTag(doc, `og:video:type`, `name`);
     nodeSecureUrls = metaTag(doc, `og:video:secure_url`, `property`) || metaTag(doc, `og:video:secure_url`, `name`);
     width = metaTagContent(doc, `og:video:width`, `property`) || metaTagContent(doc, `og:video:width`, `name`);

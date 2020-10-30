@@ -114,6 +114,7 @@ function getImages(doc, rootUrl, imagesPropertyType) {
     return images;
 }
 function getVideos(doc) {
+    var _a;
     var videos = [];
     var nodeTypes;
     var nodeSecureUrls;
@@ -127,7 +128,7 @@ function getVideos(doc) {
     var videoObj;
     var index;
     var nodes = metaTag(doc, "og:video", "property") || metaTag(doc, "og:video", "name");
-    if (nodes) {
+    if ((_a = nodes) === null || _a === void 0 ? void 0 : _a.length) {
         nodeTypes = metaTag(doc, "og:video:type", "property") || metaTag(doc, "og:video:type", "name");
         nodeSecureUrls = metaTag(doc, "og:video:secure_url", "property") || metaTag(doc, "og:video:secure_url", "name");
         width = metaTagContent(doc, "og:video:width", "property") || metaTagContent(doc, "og:video:width", "name");
