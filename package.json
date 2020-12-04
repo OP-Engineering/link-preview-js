@@ -21,7 +21,7 @@
   "repository": "https://github.com/ospfranco/link-preview-js",
   "dependencies": {
     "cheerio-without-node-native": "0.20.2",
-    "cross-fetch": "3.0.4",
+    "cross-fetch": "3.0.6",
     "url": "0.11.0"
   },
   "devDependencies": {
