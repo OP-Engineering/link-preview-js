@@ -9,9 +9,9 @@ interface ILinkPreviewOptions {
   proxyUrl?: string;
 }
 
-interface PrefetchedResource {
+interface IPrefetchedResource {
   headers: Record<string, string>;
-  status?: number,
+  status?: number;
   imagesPropertyType?: string;
   proxyUrl?: string;
   url: string;
@@ -254,6 +254,13 @@ function parseUnknownResponse(
   return parseTextResponse(body, url, options, contentType);
 }
 
+/**
+ * Parses the text, extracts the first link it finds and does a HTTP request
+ * to fetch the website content, afterwards it tries to parse the internal HTML
+ * and extract the information via meta tags
+ * @param text string, text to be parsed
+ * @param options ILinkPreviewOptions
+ */
 export async function getLinkPreview(
   text: string,
   options?: ILinkPreviewOptions,
@@ -319,8 +326,15 @@ export async function getLinkPreview(
   }
 }
 
+/**
+ * Skip the library fetching the website for you, instead pass a response object
+ * from whatever source you get and use the internal parsing of the HTML to return
+ * the necessary information
+ * @param response Preview Response
+ * @param options IPreviewLinkOptions
+ */
 export async function getPreviewFromContent(
-  response: PrefetchedResource,
+  response: IPrefetchedResource,
   options?: ILinkPreviewOptions,
 ) {
   if (!response || typeof response !== `object`) {
@@ -331,12 +345,14 @@ export async function getPreviewFromContent(
     throw new Error(`link-preview-js did not receive a valid response object`);
   }
 
-  try {
+  // @TODO: Repeated code from the getLinkPreview function, refactor into a single function
 
+  try {
     // get content type of response
-    let contentType = response.headers['content-type'];
-    if(contentType.indexOf(';')){
-      contentType = contentType.split(';')[0];
+    let contentType = response.headers[`content-type`];
+    if (contentType.indexOf(`;`)) {
+      // eslint-disable-next-line prefer-destructuring
+      contentType = contentType.split(`;`)[0];
     }
 
     if (!contentType) {
