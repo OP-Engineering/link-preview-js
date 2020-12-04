@@ -20,9 +20,11 @@ yarn add link-preview-js
 
 ## Usage
 
-Library exposes just one method `getLinkPreview`, you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info of first valid HTTP(S) URL info it finds.
+Library exposes two methods: 
 
-URL parsing is done via: https://gist.github.com/dperini/729294
+`getLinkPreview`, you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info of first valid HTTP(S) URL info it finds. (URL parsing is done via: https://gist.github.com/dperini/729294).
+
+`getPreviewFromContent`, useful for passing a pre-fetched Response object from an existing async/etc. call. Refer to example below for required object values.
 
 ```typescript
 import {getLinkPreview} from 'link-preview-js';
@@ -41,11 +43,23 @@ getLinkPreview('This is a text supposed to be parsed and the first link displaye
 // OR
 
 // a pre-fetched response object
-// (useful for CORS issues in Cordova apps, etc.)
 yourAjaxCall(url, (response) => {
   getPreviewFromContent(response)
     .then((data) => console.debug(data));
   })
+
+// The passed response object should include, at minimum:
+{
+  data: '<!DOCTYPE...><html>...',     // response content
+  headers: {
+    ...
+    // should include content-type
+    content-type: "text/html; charset=ISO-8859-1",
+    ...
+  },
+  url: 'https://domain.com/'          // resolved url
+}
+
 ```
 
 ## Options
