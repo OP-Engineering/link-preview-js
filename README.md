@@ -38,6 +38,16 @@ getLinkPreview('This is a text supposed to be parsed and the first link displaye
   .then((data) => console.debug(data));
 ```
 
+// OR
+
+// a pre-fetched response object
+// (useful for CORS issues in Cordova apps, etc.)
+yourAjaxCall(url, (response) => {
+  getPreviewFromContent(response)
+    .then((data) => console.debug(data));
+  })
+```
+
 ## Options
 
 Additionally you can pass an options object which should add more functionality to the parsing of the link

@@ -9,6 +9,15 @@ interface ILinkPreviewOptions {
   proxyUrl?: string;
 }
 
+interface PrefetchedResource {
+  headers: Record<string, string>;
+  status?: number,
+  imagesPropertyType?: string;
+  proxyUrl?: string;
+  url: string;
+  data: string;
+}
+
 const metaTag = (doc: any, type: string, attr: string) => {
   const nodes = doc(`meta[${attr}='${type}']`);
   return nodes.length ? nodes : null;
@@ -303,6 +312,61 @@ export async function getLinkPreview(
     }
     const htmlString = await response.text();
     return parseUnknownResponse(htmlString, finalUrl, options);
+  } catch (e) {
+    throw new Error(
+      `link-preview-js could not fetch link information ${e.toString()}`,
+    );
+  }
+}
+
+export async function getPreviewFromContent(
+  response: PrefetchedResource,
+  options?: ILinkPreviewOptions,
+) {
+  if (!response || typeof response !== `object`) {
+    throw new Error(`link-preview-js did not receive a valid response object`);
+  }
+
+  if (!response.url) {
+    throw new Error(`link-preview-js did not receive a valid response object`);
+  }
+
+  try {
+
+    // get content type of response
+    let contentType = response.headers['content-type'];
+    if(contentType.indexOf(';')){
+      contentType = contentType.split(';')[0];
+    }
+
+    if (!contentType) {
+      return parseUnknownResponse(response.data, response.url, options);
+    }
+
+    if ((contentType as any) instanceof Array) {
+      // eslint-disable-next-line prefer-destructuring
+      contentType = contentType[0];
+    }
+
+    // parse response depending on content type
+    if (CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
+      return parseImageResponse(response.url, contentType);
+    }
+    if (CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
+      return parseAudioResponse(response.url, contentType);
+    }
+    if (CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
+      return parseVideoResponse(response.url, contentType);
+    }
+    if (CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
+      const htmlString = response.data;
+      return parseTextResponse(htmlString, response.url, options, contentType);
+    }
+    if (CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
+      return parseApplicationResponse(response.url, contentType);
+    }
+    const htmlString = response.data;
+    return parseUnknownResponse(htmlString, response.url, options);
   } catch (e) {
     throw new Error(
       `link-preview-js could not fetch link information ${e.toString()}`,
