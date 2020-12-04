@@ -337,6 +337,7 @@ export async function getPreviewFromContent(
   response: IPrefetchedResource,
   options?: ILinkPreviewOptions,
 ) {
+  // @TODO add tests for this method
   if (!response || typeof response !== `object`) {
     throw new Error(`link-preview-js did not receive a valid response object`);
   }

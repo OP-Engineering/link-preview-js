@@ -241,6 +241,13 @@ function parseUnknownResponse(body, url, options, contentType) {
     if (options === void 0) { options = {}; }
     return parseTextResponse(body, url, options, contentType);
 }
+/**
+ * Parses the text, extracts the first link it finds and does a HTTP request
+ * to fetch the website content, afterwards it tries to parse the internal HTML
+ * and extract the information via meta tags
+ * @param text string, text to be parsed
+ * @param options ILinkPreviewOptions
+ */
 function getLinkPreview(text, options) {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function () {
@@ -308,3 +315,63 @@ function getLinkPreview(text, options) {
     });
 }
 exports.getLinkPreview = getLinkPreview;
+/**
+ * Skip the library fetching the website for you, instead pass a response object
+ * from whatever source you get and use the internal parsing of the HTML to return
+ * the necessary information
+ * @param response Preview Response
+ * @param options IPreviewLinkOptions
+ */
+function getPreviewFromContent(response, options) {
+    return __awaiter(this, void 0, void 0, function () {
+        var contentType, htmlString_3, htmlString;
+        return __generator(this, function (_a) {
+            // @TODO add tests for this method
+            if (!response || typeof response !== "object") {
+                throw new Error("link-preview-js did not receive a valid response object");
+            }
+            if (!response.url) {
+                throw new Error("link-preview-js did not receive a valid response object");
+            }
+            // @TODO: Repeated code from the getLinkPreview function, refactor into a single function
+            try {
+                contentType = response.headers["content-type"];
+                if (contentType.indexOf(";")) {
+                    // eslint-disable-next-line prefer-destructuring
+                    contentType = contentType.split(";")[0];
+                }
+                if (!contentType) {
+                    return [2 /*return*/, parseUnknownResponse(response.data, response.url, options)];
+                }
+                if (contentType instanceof Array) {
+                    // eslint-disable-next-line prefer-destructuring
+                    contentType = contentType[0];
+                }
+                // parse response depending on content type
+                if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
+                    return [2 /*return*/, parseImageResponse(response.url, contentType)];
+                }
+                if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
+                    return [2 /*return*/, parseAudioResponse(response.url, contentType)];
+                }
+                if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
+                    return [2 /*return*/, parseVideoResponse(response.url, contentType)];
+                }
+                if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
+                    htmlString_3 = response.data;
+                    return [2 /*return*/, parseTextResponse(htmlString_3, response.url, options, contentType)];
+                }
+                if (constants_1.CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
+                    return [2 /*return*/, parseApplicationResponse(response.url, contentType)];
+                }
+                htmlString = response.data;
+                return [2 /*return*/, parseUnknownResponse(htmlString, response.url, options)];
+            }
+            catch (e) {
+                throw new Error("link-preview-js could not fetch link information " + e.toString());
+            }
+            return [2 /*return*/];
+        });
+    });
+}
+exports.getPreviewFromContent = getPreviewFromContent;
