@@ -5,6 +5,7 @@
   "main": "build/index.js",
   "scripts": {
     "test": "jest --detectOpenHandles --colors",
+    "test:ci": "jest --testLocationInResults --ci --outputFile=test_results.json --json",
     "build": "tsc",
     "publishPackage": "tsc && jest --detectOpenHandles && npm publish "
   },
