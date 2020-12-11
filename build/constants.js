@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CONSTANTS = {
+export const CONSTANTS = {
     REGEX_VALID_URL: new RegExp("^" +
         // protocol identifier
         "(?:(?:https?|ftp)://)" +
