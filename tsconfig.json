@@ -7,11 +7,12 @@
     "lib": ["es5", "es6", "es7", "es2017"],
     "moduleResolution": "node",
     "declaration": true,
-    "target": "es5",
+    "target": "es6",
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "strict": true,
-    "typeRoots": ["src/typings", "./node_modules/@types"]
+    "typeRoots": ["src/typings", "./node_modules/@types"],
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules", "build", "__tests__"]
 }

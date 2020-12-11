@@ -1,6 +1,8 @@
-import { getLinkPreview } from "../build/index";
+import { getLinkPreview, getPreviewFromContent } from "../index";
+import prefetchedResponse from "./sampleResponse.json";
 
-describe(`link preview`, () => {
+
+describe(`#getLinkPreview()`, () => {
   it(`should extract link info from just URL`, async () => {
     const linkInfo: any = await getLinkPreview(
       `https://www.youtube.com/watch?v=wuClZjOdT30`,
@@ -19,7 +21,7 @@ describe(`link preview`, () => {
     expect(linkInfo.videos.length).toEqual(0);
     expect(linkInfo.favicons[0]).not.toBe(``);
     expect(linkInfo.contentType.toLowerCase()).toEqual(
-      `text/html; charset=utf-8`,
+      `text/html`,
     );
   });
 
@@ -43,7 +45,7 @@ describe(`link preview`, () => {
     expect(linkInfo.videos.length).toEqual(0);
     expect(linkInfo.favicons[0]).not.toBe(``);
     expect(linkInfo.contentType.toLowerCase()).toEqual(
-      `text/html; charset=utf-8`,
+      `text/html`,
     );
   });
 
@@ -65,7 +67,7 @@ describe(`link preview`, () => {
     expect(linkInfo.videos.length).toEqual(0);
     expect(linkInfo.favicons[0]).toBeTruthy();
     expect(linkInfo.contentType.toLowerCase()).toEqual(
-      `text/html; charset=utf-8`,
+      `text/html`,
     );
   });
 
@@ -87,7 +89,7 @@ describe(`link preview`, () => {
       `https://ondemand.npr.org/anon.npr-mp3/npr/atc/2007/12/20071231_atc_13.mp3`,
     );
     expect(linkInfo.mediaType).toEqual(`audio`);
-    expect(linkInfo.contentType.toLowerCase()).toEqual(`audio/mpeg`);
+    expect(linkInfo.contentType?.toLowerCase()).toEqual(`audio/mpeg`);
     expect(linkInfo.favicons[0]).toBeTruthy();
   });
 
@@ -98,7 +100,7 @@ describe(`link preview`, () => {
 
     expect(linkInfo.url).toEqual(`https://www.w3schools.com/html/mov_bbb.mp4`);
     expect(linkInfo.mediaType).toEqual(`video`);
-    expect(linkInfo.contentType.toLowerCase()).toEqual(`video/mp4`);
+    expect(linkInfo.contentType?.toLowerCase()).toEqual(`video/mp4`);
     expect(linkInfo.favicons[0]).toBeTruthy();
   });
 
@@ -111,7 +113,7 @@ describe(`link preview`, () => {
       `https://media.npr.org/assets/img/2018/04/27/gettyimages-656523922nunes-4bb9a194ab2986834622983bb2f8fe57728a9e5f-s1100-c15.jpg`,
     );
     expect(linkInfo.mediaType).toEqual(`image`);
-    expect(linkInfo.contentType.toLowerCase()).toEqual(`image/jpeg`);
+    expect(linkInfo.contentType?.toLowerCase()).toEqual(`image/jpeg`);
     expect(linkInfo.favicons[0]).toBeTruthy();
   });
 
@@ -132,7 +134,7 @@ describe(`link preview`, () => {
       `https://assets.curtmfg.com/masterlibrary/56282/installsheet/CME_56282_INS.pdf`,
     );
     expect(linkInfo.mediaType).toEqual(`application`);
-    expect(linkInfo.contentType.toLowerCase()).toEqual(`application/pdf`);
+    expect(linkInfo.contentType?.toLowerCase()).toEqual(`application/pdf`);
     expect(linkInfo.favicons[0]).toBeTruthy();
   });
 
@@ -154,11 +156,17 @@ describe(`link preview`, () => {
     await expect(getLinkPreview(``)).rejects.toThrowErrorMatchingSnapshot();
   });
 
-  it(`should handle a proxy url option`, async () => {
+  it.skip(`should handle a proxy url option`, async () => {
     // origin header is required by cors-anywhere
     const linkInfo: any = await getLinkPreview(
       `https://www.youtube.com/watch?v=wuClZjOdT30`,
-      { proxyUrl: `https://cors-anywhere.herokuapp.com/`, headers: { Origin: `http://localhost:8000`, "Accept-Language": `en-US` } },
+      {
+        proxyUrl: `https://cors-anywhere.herokuapp.com/`,
+        headers: {
+          Origin: `http://localhost:8000`,
+          "Accept-Language": `en-US`,
+        },
+      },
     );
 
     expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
@@ -173,7 +181,28 @@ describe(`link preview`, () => {
     expect(linkInfo.videos.length).toEqual(0);
     expect(linkInfo.favicons[0]).not.toBe(``);
     expect(linkInfo.contentType.toLowerCase()).toEqual(
-      `text/html; charset=utf-8`,
+      `text/html`,
+    );
+  });
+});
+
+describe(`#getPreviewFromContent`, () => {
+  it(`Basic parsing`, async () => {
+    const linkInfo: any = await getPreviewFromContent(prefetchedResponse);
+
+    expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
+    expect(linkInfo.siteName).toEqual(`YouTube`);
+    expect(linkInfo.title).toEqual(`Geography Now! Germany`);
+    expect(linkInfo.description).toBeTruthy();
+    expect(linkInfo.mediaType).toEqual(`video.other`);
+    expect(linkInfo.images.length).toEqual(1);
+    expect(linkInfo.images[0]).toEqual(
+      `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
+    );
+    expect(linkInfo.videos.length).toEqual(0);
+    expect(linkInfo.favicons[0]).not.toBe(``);
+    expect(linkInfo.contentType.toLowerCase()).toEqual(
+      `text/html`,
     );
   });
 });

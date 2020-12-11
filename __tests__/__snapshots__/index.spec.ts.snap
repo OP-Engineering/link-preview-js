@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`link preview no link in text should fail gracefully 1`] = `"link-preview-js did not receive a valid a url or text"`;
+exports[`#getLinkPreview() no link in text should fail gracefully 1`] = `"link-preview-js did not receive a valid a url or text"`;
 
-exports[`link preview should handle empty strings gracefully 1`] = `"link-preview-js did not receive a valid url or text"`;
+exports[`#getLinkPreview() should handle empty strings gracefully 1`] = `"link-preview-js did not receive a valid url or text"`;
 
-exports[`link preview should handle malformed urls gracefully 1`] = `"link-preview-js did not receive a valid a url or text"`;
+exports[`#getLinkPreview() should handle malformed urls gracefully 1`] = `"link-preview-js did not receive a valid a url or text"`;

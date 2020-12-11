@@ -254,106 +254,17 @@ function parseUnknownResponse(
   return parseTextResponse(body, url, options, contentType);
 }
 
-/**
- * Parses the text, extracts the first link it finds and does a HTTP request
- * to fetch the website content, afterwards it tries to parse the internal HTML
- * and extract the information via meta tags
- * @param text string, text to be parsed
- * @param options ILinkPreviewOptions
- */
-export async function getLinkPreview(
-  text: string,
+function parseResponse(
+  response: IPrefetchedResource | any,
   options?: ILinkPreviewOptions,
 ) {
-  if (!text || typeof text !== `string`) {
-    throw new Error(`link-preview-js did not receive a valid url or text`);
-  }
-
-  const detectedUrl = text.replace(/\n/g, ` `).split(` `).find((token) => CONSTANTS.REGEX_VALID_URL.test(token));
-
-  if (!detectedUrl) {
-    throw new Error(`link-preview-js did not receive a valid a url or text`);
-  }
-
-  const fetchOptions = { headers: options?.headers ?? {} };
-
-  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
-
   try {
-    const response = await fetch(fetchUrl, fetchOptions);
-
-    // get final URL (after any redirects, strip out proxy url from response url)
-    const finalUrl = options?.proxyUrl
-      ? response.url.replace(options.proxyUrl, ``)
-      : response.url;
-
-    // get content type of response
-    let contentType = response.headers.get(`content-type`);
-
-    if (!contentType) {
-      const htmlString = await response.text();
-      return parseUnknownResponse(htmlString, finalUrl, options);
-    }
-
-    if ((contentType as any) instanceof Array) {
-      // eslint-disable-next-line prefer-destructuring
-      contentType = contentType[0];
-    }
-
-    // parse response depending on content type
-    if (CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
-      return parseImageResponse(finalUrl, contentType);
-    }
-    if (CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
-      return parseAudioResponse(finalUrl, contentType);
-    }
-    if (CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
-      return parseVideoResponse(finalUrl, contentType);
-    }
-    if (CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
-      const htmlString = await response.text();
-      return parseTextResponse(htmlString, finalUrl, options, contentType);
-    }
-    if (CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
-      return parseApplicationResponse(finalUrl, contentType);
-    }
-    const htmlString = await response.text();
-    return parseUnknownResponse(htmlString, finalUrl, options);
-  } catch (e) {
-    throw new Error(
-      `link-preview-js could not fetch link information ${e.toString()}`,
-    );
-  }
-}
-
-/**
- * Skip the library fetching the website for you, instead pass a response object
- * from whatever source you get and use the internal parsing of the HTML to return
- * the necessary information
- * @param response Preview Response
- * @param options IPreviewLinkOptions
- */
-export async function getPreviewFromContent(
-  response: IPrefetchedResource,
-  options?: ILinkPreviewOptions,
-) {
-  // @TODO add tests for this method
-  if (!response || typeof response !== `object`) {
-    throw new Error(`link-preview-js did not receive a valid response object`);
-  }
-
-  if (!response.url) {
-    throw new Error(`link-preview-js did not receive a valid response object`);
-  }
-
-  // @TODO: Repeated code from the getLinkPreview function, refactor into a single function
-
-  try {
-    // get content type of response
     let contentType = response.headers[`content-type`];
-    if (contentType.indexOf(`;`)) {
+    // console.warn(`original content type`, contentType);
+    if (contentType?.indexOf(`;`)) {
       // eslint-disable-next-line prefer-destructuring
       contentType = contentType.split(`;`)[0];
+      // console.warn(`splitting content type`, contentType);
     }
 
     if (!contentType) {
@@ -361,7 +272,7 @@ export async function getPreviewFromContent(
     }
 
     if ((contentType as any) instanceof Array) {
-      // eslint-disable-next-line prefer-destructuring
+      // eslint-disable-next-line no-param-reassign, prefer-destructuring
       contentType = contentType[0];
     }
 
@@ -389,4 +300,70 @@ export async function getPreviewFromContent(
       `link-preview-js could not fetch link information ${e.toString()}`,
     );
   }
+}
+
+/**
+ * Parses the text, extracts the first link it finds and does a HTTP request
+ * to fetch the website content, afterwards it tries to parse the internal HTML
+ * and extract the information via meta tags
+ * @param text string, text to be parsed
+ * @param options ILinkPreviewOptions
+ */
+export async function getLinkPreview(
+  text: string,
+  options?: ILinkPreviewOptions,
+) {
+  if (!text || typeof text !== `string`) {
+    throw new Error(`link-preview-js did not receive a valid url or text`);
+  }
+
+  const detectedUrl = text.replace(/\n/g, ` `).split(` `).find((token) => CONSTANTS.REGEX_VALID_URL.test(token));
+
+  if (!detectedUrl) {
+    throw new Error(`link-preview-js did not receive a valid a url or text`);
+  }
+
+  const fetchOptions = { headers: options?.headers ?? {} };
+
+  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
+
+
+  const response = await fetch(fetchUrl, fetchOptions);
+
+  const headers: Record<string, string> = {};
+  response.headers.forEach((header, key) => {
+    headers[key] = header;
+  });
+
+  const normalizedResponse: IPrefetchedResource = {
+    url: options?.proxyUrl
+      ? response.url.replace(options.proxyUrl, ``)
+      : response.url,
+    headers,
+    data: await response.text(),
+  };
+
+  return parseResponse(normalizedResponse, options);
+}
+
+/**
+ * Skip the library fetching the website for you, instead pass a response object
+ * from whatever source you get and use the internal parsing of the HTML to return
+ * the necessary information
+ * @param response Preview Response
+ * @param options IPreviewLinkOptions
+ */
+export async function getPreviewFromContent(
+  response: IPrefetchedResource,
+  options?: ILinkPreviewOptions,
+) {
+  if (!response || typeof response !== `object`) {
+    throw new Error(`link-preview-js did not receive a valid response object`);
+  }
+
+  if (!response.url) {
+    throw new Error(`link-preview-js did not receive a valid response object`);
+  }
+
+  return parseResponse(response, options);
 }
