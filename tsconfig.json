@@ -9,7 +9,7 @@
     "target": "es6",
     "skipLibCheck": true,
     "strict": true,
-    "typeRoots": ["src/typings"],
+    "typeRoots": ["src/typings", "./node_modules/@types"],
     "resolveJsonModule": true
   },
   "exclude": ["node_modules", "build", "__tests__"]
