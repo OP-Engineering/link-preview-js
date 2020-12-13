@@ -27,7 +27,7 @@ Library exposes two methods:
 `getPreviewFromContent`, useful for passing a pre-fetched Response object from an existing async/etc. call. Refer to example below for required object values.
 
 ```typescript
-import {getLinkPreview} from 'link-preview-js';
+import { getLinkPreview, getPreviewFromContent } from 'link-preview-js';
 
 // pass the link directly
 getLinkPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
