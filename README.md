@@ -90,7 +90,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Text/HTML URL
 
-```json
+```javascript
 {
   url: "https://www.youtube.com/watch?v=MejbOFk7H6c",
   title: "OK Go - Needing/Getting - Official Video - YouTube",
@@ -106,7 +106,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Image URL
 
-```json
+```javascript
 {
   url: "https://media.npr.org/assets/img/2018/04/27/gettyimages-656523922nunes-4bb9a194ab2986834622983bb2f8fe57728a9e5f-s1100-c15.jpg",
   mediaType: "image",
@@ -117,7 +117,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Audio URL
 
-```json
+```javascript
 {
   url: "https://ondemand.npr.org/anon.npr-mp3/npr/atc/2007/12/20071231_atc_13.mp3",
   mediaType: "audio",
@@ -128,7 +128,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Video URL
 
-```json
+```javascript
 {
   url: "https://www.w3schools.com/html/mov_bbb.mp4",
   mediaType: "video",
@@ -139,7 +139,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Application URL
 
-```json
+```javascript
 {
   url: "https://assets.curtmfg.com/masterlibrary/56282/installsheet/CME_56282_INS.pdf",
   mediaType: "application",
