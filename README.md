@@ -1,25 +1,25 @@
 # link-preview-js
 
-Typescript library that allows you to extract information from a URL or parse text and retrieve information from the first available link.
+Typescript library (27kb unpacked) that allows you to extract information from a HTTP url/link and/or parse text and retrieve information from the first available link.
 
-## Does not work on CORS protected environments, means: **all the browsers**
+## CORS
 
-A (respectable) browser **DOES NOT ALLOW YOU TO DO CROSS ORIGIN REQUESTS**, you cannot do a request to a different domain from your web application, if do not know how *same-origin-policy* works you can read [this](https://dev.to/lydiahallie/cs-visualized-cors-5b8h) fantastic piece
+**BROWSERS DO NOT ALLOW YOU TO DO CROSS ORIGIN REQUESTS (CORS)**, you cannot request a different domain from your web app, period.
+
+If do not know how *same-origin-policy* works you can read [this](https://dev.to/lydiahallie/cs-visualized-cors-5b8h)
 
 
 ## Disclaimer
 
-This library no longer depends on a custom fork of cheerio and it is using the official cheerio lib! 🎉 all security issues should be resolved!
+As Google continues to wage war upon the internet and break it on all the ways only convenient to Google, sometimes it's domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data... 🖕 Google, feel free to submit a PR but I won't spend my time trying to accommodate all edge cases
 
-As google continues to take over the web and break it on all the ways only convenient to google, sometimes it's domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data... 🖕 Google, feel free to try to fix this issues yourself by opening a PR but I won't spend my time trying to accommodate all edge cases
+## How to use
 
-## Install
+Install the lib
 
 ```
 yarn add link-preview-js
 ```
-
-## Usage
 
 Library exposes two methods: 
 
@@ -147,12 +147,6 @@ in the HTTP response (see below for variations of response). Rejects with an err
   contentType: "application/pdf",
   favicons: [ "https://assets.curtmfg.com/favicon.ico" ]
 }
-```
-
-## Tests
-
-```
-yarn test
 ```
 
 ## License
