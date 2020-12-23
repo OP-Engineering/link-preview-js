@@ -8,24 +8,25 @@ Typescript library (27kb unpacked) that allows you to extract information from a
 
 If do not know how *same-origin-policy* works you can read [this](https://dev.to/lydiahallie/cs-visualized-cors-5b8h)
 
+This library therefore works on node (back-end environments) and certain mobile run-times (cordova or react-native)
 
 ## Disclaimer
 
-As Google continues to wage war upon the internet and break it on all the ways only convenient to Google, sometimes it's domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data... 🖕 Google, feel free to submit a PR but I won't spend my time trying to accommodate all edge cases
+As Google continues to wage war upon the internet and break it on all the ways only convenient to Google, sometimes it's domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data... 🖕 Google, feel free to submit a PR if you want to accommodate the trillion dollar corporation.
 
 ## How to use
 
-Install the lib
+### Install the lib
 
 ```
 yarn add link-preview-js
 ```
 
-Library exposes two methods: 
+### Use the methods
 
-`getLinkPreview`, you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info of first valid HTTP(S) URL info it finds. (URL parsing is done via: https://gist.github.com/dperini/729294).
+`getLinkPreview`: you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info of first valid HTTP(S) URL info it finds. (URL parsing is done via: https://gist.github.com/dperini/729294).
 
-`getPreviewFromContent`, useful for passing a pre-fetched Response object from an existing async/etc. call. Refer to example below for required object values.
+`getPreviewFromContent`: useful for passing a pre-fetched Response object from an existing async/etc. call. Refer to example below for required object values.
 
 ```typescript
 import { getLinkPreview, getPreviewFromContent } from 'link-preview-js';
@@ -36,14 +37,14 @@ getLinkPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
 
 ////////////////////////// OR //////////////////////////
 
-// a chunk of text
+// pass a chunk of text
 getLinkPreview('This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c')
   .then((data) => console.debug(data));
 
 
 ////////////////////////// OR //////////////////////////
 
-// a pre-fetched response object
+// pass a pre-fetched response object
 // The passed response object should include, at minimum:
 // {
 //   data: '<!DOCTYPE...><html>...',     // response content
@@ -59,8 +60,6 @@ yourAjaxCall(url, (response) => {
   getPreviewFromContent(response)
     .then((data) => console.debug(data));
   })
-
-
 ```
 
 ## Options
@@ -91,7 +90,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Text/HTML URL
 
-```
+```json
 {
   url: "https://www.youtube.com/watch?v=MejbOFk7H6c",
   title: "OK Go - Needing/Getting - Official Video - YouTube",
@@ -107,7 +106,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Image URL
 
-```
+```json
 {
   url: "https://media.npr.org/assets/img/2018/04/27/gettyimages-656523922nunes-4bb9a194ab2986834622983bb2f8fe57728a9e5f-s1100-c15.jpg",
   mediaType: "image",
@@ -118,7 +117,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Audio URL
 
-```
+```json
 {
   url: "https://ondemand.npr.org/anon.npr-mp3/npr/atc/2007/12/20071231_atc_13.mp3",
   mediaType: "audio",
@@ -129,7 +128,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Video URL
 
-```
+```json
 {
   url: "https://www.w3schools.com/html/mov_bbb.mp4",
   mediaType: "video",
@@ -140,7 +139,7 @@ in the HTTP response (see below for variations of response). Rejects with an err
 
 ### Application URL
 
-```
+```json
 {
   url: "https://assets.curtmfg.com/masterlibrary/56282/installsheet/CME_56282_INS.pdf",
   mediaType: "application",
