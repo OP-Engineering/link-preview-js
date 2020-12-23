@@ -1,0 +1,10 @@
+.github
+__tests__
+.vscode
+.eslintrc.js
+index.ts
+jest.config.js
+LICENSE
+README.md
+tsconfig.json
+typings.d.ts
