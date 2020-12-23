@@ -1,2 +1,1 @@
-declare module "cheerio-without-node-native";
-declare module "url";
+/* eslint-disable quotes */

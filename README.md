@@ -4,13 +4,14 @@ Typescript library that allows you to extract information from a URL or parse te
 
 ## Does not work on CORS protected environments, means: **all the browsers**
 
-A (respectable) browser **DOES NOT ALLOW YOU TO DO CROSS ORIGIN REQUESTS**, you cannot do a request to a different domain from your web application, if do not know how *same-origin-policy* works you can read [this](https://dev.to/lydiahallie/cs-visualized-cors-5b8h) fantastic piece written by @lydiahallie
+A (respectable) browser **DOES NOT ALLOW YOU TO DO CROSS ORIGIN REQUESTS**, you cannot do a request to a different domain from your web application, if do not know how *same-origin-policy* works you can read [this](https://dev.to/lydiahallie/cs-visualized-cors-5b8h) fantastic piece
 
 
-## Security disclaimer
-This library uses [cheerio-without-native](https://github.com/oyyd/cheerio-without-node-native) which unfortunately has been abandoned and now has some security vunerabilities (according to github) I'm not responsible for any security implications this might carry
+## Disclaimer
 
-As of 23 of April of 2020: Do not use https://google.com it does not return the appropiate meta-tags to be parsed, so test with another domain, don't waste your time
+This library no longer depends on a custom fork of cheerio and it is using the official cheerio lib! 🎉 all security issues should be resolved!
+
+As google continues to take over the web and break it on all the ways only convenient to google, sometimes it's domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data... 🖕 Google, feel free to try to fix this issues yourself by opening a PR but I won't spend my time trying to accommodate all edge cases
 
 ## Install
 

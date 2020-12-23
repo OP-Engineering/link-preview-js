@@ -1,4 +1,4 @@
-import cheerio from "cheerio-without-node-native";
+import cheerio from "cheerio";
 import { fetch } from "cross-fetch";
 import urlObj from "url";
 import { CONSTANTS } from "./constants";
@@ -323,7 +323,10 @@ export async function getLinkPreview(
     throw new Error(`link-preview-js did not receive a valid a url or text`);
   }
 
-  const fetchOptions = { headers: options?.headers ?? {} };
+  const fetchOptions = {
+    headers: options?.headers ?? {},
+    redirect: `follow` as `follow`,
+  };
 
   const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
 
