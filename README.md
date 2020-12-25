@@ -1,5 +1,3 @@
-# link-preview-js
-
 Typescript library (27kb unpacked) that allows you to extract information from a HTTP url/link and/or parse text and retrieve information from the first available link.
 
 ## CORS
@@ -13,6 +11,8 @@ This library therefore works on node (back-end environments) and certain mobile 
 ## Disclaimer
 
 As Google continues to wage war upon the internet and break it on all the ways only convenient to Google, sometimes it's domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data... 🖕 Google, feel free to submit a PR if you want to accommodate the trillion dollar corporation.
+
+Current compilation target is ES6 which should run on a modern Node (12+) environment and react-native versions, it won't run on outdated versions (which you shouldn't be running anyways).
 
 ## How to use
 
