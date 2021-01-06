@@ -247,7 +247,7 @@ function parseTextResponse(
 }
 
 // get channel id of youtube video url
-const getChannelID = function (doc) {
+const getChannelID = function (doc: any) {
   var channel_id = null;
   // yt-uix-button yt-uix-button-size-default yt-uix-button-subscribe-branded yt-uix-button-has-icon no-icon-markup yt-uix-subscription-button yt-can-buffer yt-uix-servicelink vve-check - class name
   channel_id = doc('button[class="yt-uix-button yt-uix-button-size-default yt-uix-button-subscribe-branded yt-uix-button-has-icon no-icon-markup yt-uix-subscription-button yt-can-buffer yt-uix-servicelink vve-check"]').attr('data-channel-external-id');
