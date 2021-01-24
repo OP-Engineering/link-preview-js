@@ -1,3 +1,5 @@
+# Link Preview JS
+
 Typescript library (29.2kb unpacked) that allows you to extract information from a HTTP url/link and/or parse text and retrieve information from the first available link.
 
 ## CORS
