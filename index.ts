@@ -153,9 +153,9 @@ function getDefaultFavicon(rootUrl: string) {
 }
 
 // returns an array of URL's to favicon images
-function getFavicons(doc: any, rootUrl: string) {
+function getFavicons(doc: cheerio.Root, rootUrl: string) {
   const images = [];
-  let nodes = [];
+  let nodes: cheerio.Cheerio | never[] = [];
   let src;
 
   const relSelectors = [
