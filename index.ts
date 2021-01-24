@@ -52,7 +52,7 @@ function getMediaType(doc: cheerio.Root) {
   return (metaTagContent(doc, `og:type`, `property`) || metaTagContent(doc, `og:type`, `name`));
 }
 
-function getImages(doc: any, rootUrl: string, imagesPropertyType?: string) {
+function getImages(doc: cheerio.Root, rootUrl: string, imagesPropertyType?: string) {
   let images: string[] = [];
   let nodes;
   let src;
