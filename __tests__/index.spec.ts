@@ -28,7 +28,7 @@ describe(`#getLinkPreview()`, () => {
   it(`should extract link info from a URL with a newline`, async () => {
     const linkInfo: any = await getLinkPreview(
       `
-      https://www.youtube.com/watch?v=wuClZjOdT30,
+      https://www.youtube.com/watch?v=wuClZjOdT30
     `,
       { headers: { "Accept-Language": `en-US` } },
     );
