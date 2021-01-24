@@ -26,6 +26,7 @@
     "url": "0.11.0"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.23",
     "@types/jest": "^26.0.19",
     "@typescript-eslint/eslint-plugin": "^2.15.0",
     "@typescript-eslint/parser": "^2.15.0",

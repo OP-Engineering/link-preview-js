@@ -18,14 +18,14 @@ interface IPrefetchedResource {
   data: string;
 }
 
-const metaTag = (doc: any, type: string, attr: string) => {
+const metaTag = (doc: cheerio.Root, type: string, attr: string) => {
   const nodes = doc(`meta[${attr}='${type}']`);
   return nodes.length ? nodes : null;
 };
 
-const metaTagContent = (doc: any, type: string, attr: string) => doc(`meta[${attr}='${type}']`).attr(`content`);
+const metaTagContent = (doc: cheerio.Root, type: string, attr: string) => doc(`meta[${attr}='${type}']`).attr(`content`);
 
-function getTitle(doc: any) {
+function getTitle(doc: cheerio.Root) {
   let title = metaTagContent(doc, `og:title`, `property`) || metaTagContent(doc, `og:title`, `name`);
   if (!title) {
     title = doc(`title`).text();
@@ -33,17 +33,17 @@ function getTitle(doc: any) {
   return title;
 }
 
-function getSiteName(doc: any) {
+function getSiteName(doc: cheerio.Root) {
   const siteName = metaTagContent(doc, `og:site_name`, `property`) || metaTagContent(doc, `og:site_name`, `name`);
   return siteName;
 }
 
-function getDescription(doc: any) {
+function getDescription(doc: cheerio.Root) {
   const description = metaTagContent(doc, `description`, `name`) || metaTagContent(doc, `Description`, `name`) || metaTagContent(doc, `og:description`, `property`);
   return description;
 }
 
-function getMediaType(doc: any) {
+function getMediaType(doc: cheerio.Root) {
   const node = metaTag(doc, `medium`, `name`);
   if (node) {
     const content = node.attr(`content`);
@@ -52,7 +52,7 @@ function getMediaType(doc: any) {
   return (metaTagContent(doc, `og:type`, `property`) || metaTagContent(doc, `og:type`, `name`));
 }
 
-function getImages(doc: any, rootUrl: string, imagesPropertyType?: string) {
+function getImages(doc: cheerio.Root, rootUrl: string, imagesPropertyType?: string) {
   let images: string[] = [];
   let nodes;
   let src;
@@ -98,7 +98,7 @@ function getImages(doc: any, rootUrl: string, imagesPropertyType?: string) {
   return images;
 }
 
-function getVideos(doc: any) {
+function getVideos(doc: cheerio.Root) {
   const videos = [];
   let nodeTypes;
   let nodeSecureUrls;
@@ -121,12 +121,13 @@ function getVideos(doc: any) {
     height = metaTagContent(doc, `og:video:height`, `property`) || metaTagContent(doc, `og:video:height`, `name`);
 
     for (index = 0; index < nodes.length; index += 1) {
-      video = nodes[index].attribs.content;
+      const node: any = nodes[index]
+      video = node.attribs.content;
 
-      nodeType = nodeTypes[index];
+      nodeType = <any>nodeTypes![index];
       videoType = nodeType ? nodeType.attribs.content : null;
 
-      nodeSecureUrl = nodeSecureUrls[index];
+      nodeSecureUrl = <any>nodeSecureUrls![index];
       videoSecureUrl = nodeSecureUrl ? nodeSecureUrl.attribs.content : null;
 
       videoObj = {
@@ -153,9 +154,9 @@ function getDefaultFavicon(rootUrl: string) {
 }
 
 // returns an array of URL's to favicon images
-function getFavicons(doc: any, rootUrl: string) {
+function getFavicons(doc: cheerio.Root, rootUrl: string) {
   const images = [];
-  let nodes = [];
+  let nodes: cheerio.Cheerio | never[] = [];
   let src;
 
   const relSelectors = [
