@@ -23,7 +23,7 @@ const metaTag = (doc: cheerio.Root, type: string, attr: string) => {
   return nodes.length ? nodes : null;
 };
 
-const metaTagContent = (doc: any, type: string, attr: string) => doc(`meta[${attr}='${type}']`).attr(`content`);
+const metaTagContent = (doc: cheerio.Root, type: string, attr: string) => doc(`meta[${attr}='${type}']`).attr(`content`);
 
 function getTitle(doc: cheerio.Root) {
   let title = metaTagContent(doc, `og:title`, `property`) || metaTagContent(doc, `og:title`, `name`);
