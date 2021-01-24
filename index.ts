@@ -43,7 +43,7 @@ function getDescription(doc: cheerio.Root) {
   return description;
 }
 
-function getMediaType(doc: any) {
+function getMediaType(doc: cheerio.Root) {
   const node = metaTag(doc, `medium`, `name`);
   if (node) {
     const content = node.attr(`content`);
