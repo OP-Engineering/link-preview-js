@@ -38,7 +38,7 @@ function getSiteName(doc: cheerio.Root) {
   return siteName;
 }
 
-function getDescription(doc: any) {
+function getDescription(doc: cheerio.Root) {
   const description = metaTagContent(doc, `description`, `name`) || metaTagContent(doc, `Description`, `name`) || metaTagContent(doc, `og:description`, `property`);
   return description;
 }
