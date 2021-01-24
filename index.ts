@@ -98,7 +98,7 @@ function getImages(doc: cheerio.Root, rootUrl: string, imagesPropertyType?: stri
   return images;
 }
 
-function getVideos(doc: any) {
+function getVideos(doc: cheerio.Root) {
   const videos = [];
   let nodeTypes;
   let nodeSecureUrls;
