@@ -18,7 +18,7 @@ interface IPrefetchedResource {
   data: string;
 }
 
-const metaTag = (doc: any, type: string, attr: string) => {
+const metaTag = (doc: cheerio.Root, type: string, attr: string) => {
   const nodes = doc(`meta[${attr}='${type}']`);
   return nodes.length ? nodes : null;
 };
@@ -121,12 +121,13 @@ function getVideos(doc: cheerio.Root) {
     height = metaTagContent(doc, `og:video:height`, `property`) || metaTagContent(doc, `og:video:height`, `name`);
 
     for (index = 0; index < nodes.length; index += 1) {
-      video = nodes[index].attribs.content;
+      const node: any = nodes[index]
+      video = node.attribs.content;
 
-      nodeType = nodeTypes[index];
+      nodeType = <any>nodeTypes![index];
       videoType = nodeType ? nodeType.attribs.content : null;
 
-      nodeSecureUrl = nodeSecureUrls[index];
+      nodeSecureUrl = <any>nodeSecureUrls![index];
       videoSecureUrl = nodeSecureUrl ? nodeSecureUrl.attribs.content : null;
 
       videoObj = {
