@@ -25,7 +25,7 @@ const metaTag = (doc: any, type: string, attr: string) => {
 
 const metaTagContent = (doc: any, type: string, attr: string) => doc(`meta[${attr}='${type}']`).attr(`content`);
 
-function getTitle(doc: any) {
+function getTitle(doc: cheerio.Root) {
   let title = metaTagContent(doc, `og:title`, `property`) || metaTagContent(doc, `og:title`, `name`);
   if (!title) {
     title = doc(`title`).text();
