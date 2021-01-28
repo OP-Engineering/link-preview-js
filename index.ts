@@ -159,7 +159,7 @@ function getDefaultFavicon(rootUrl: string) {
 function getFavicons(doc: cheerio.Root, rootUrl: string) {
   const images = [];
   let nodes: cheerio.Cheerio | never[] = [];
-  let src;
+  let src: string | undefined;
 
   const relSelectors = [
     `rel=icon`,
@@ -173,8 +173,8 @@ function getFavicons(doc: cheerio.Root, rootUrl: string) {
 
     // collect all images from icon tags
     if (nodes.length) {
-      nodes.each((_: number, node: any) => {
-        src = node.attribs.href;
+      nodes.each((_: number, node: cheerio.Element) => {
+        if (node.type !== 'text') src = node.attribs.href;
         if (src) {
           src = urlObj.resolve(rootUrl, src);
           images.push(src);
