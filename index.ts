@@ -123,14 +123,14 @@ function getVideos(doc: cheerio.Root) {
     height = metaTagContent(doc, `og:video:height`, `property`) || metaTagContent(doc, `og:video:height`, `name`);
 
     for (index = 0; index < nodes.length; index += 1) {
-      const node: any = nodes[index]
-      video = node.attribs.content;
+      const node = nodes[index];
+      if (node.type !== 'text') video = node.attribs.content;
 
-      nodeType = <any>nodeTypes![index];
-      videoType = nodeType ? nodeType.attribs.content : null;
+      nodeType = nodeTypes![index];
+      if (nodeType.type !== 'text') videoType = nodeType ? nodeType.attribs.content : null;
 
-      nodeSecureUrl = <any>nodeSecureUrls![index];
-      videoSecureUrl = nodeSecureUrl ? nodeSecureUrl.attribs.content : null;
+      nodeSecureUrl = nodeSecureUrls![index];
+      if (nodeSecureUrl.type !== 'text') videoSecureUrl = nodeSecureUrl ? nodeSecureUrl.attribs.content : null;
 
       videoObj = {
         url: video,
