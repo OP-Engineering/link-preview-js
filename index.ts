@@ -256,7 +256,7 @@ function parseUnknownResponse(
 }
 
 function parseResponse(
-  response: IPrefetchedResource | any,
+  response: IPrefetchedResource,
   options?: ILinkPreviewOptions,
 ) {
   try {
