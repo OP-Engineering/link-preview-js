@@ -85,9 +85,7 @@ function getImages(doc: cheerio.Root, rootUrl: string, imagesPropertyType?: stri
         dic = {};
         images = [];
         nodes.each((_: number, node: cheerio.Element) => {
-          if (node.type !== 'text') {
-            src = node.attribs.src;
-          }
+          if (node.type !== 'text') src = node.attribs.src;
           if (src && !dic[src]) {
             dic[src] = true;
             // width = node.attribs.width;
