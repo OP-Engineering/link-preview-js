@@ -1,6 +1,6 @@
 # Link Preview JS
 
-Typescript library (29.2kb unpacked) that allows you to extract information from a HTTP url/link and/or parse text and retrieve information from the first available link.
+Typescript library (29.2kb unpacked) that allows you to extract information from a HTTP url/link (or parse a HTML document) and retrieve meta information such as title, description, images, videos, etc.
 
 ## CORS
 
@@ -12,7 +12,13 @@ This library therefore works on node (back-end environments) and certain mobile 
 
 ## Disclaimer
 
-As Google continues to wage war upon the internet and break it on all the ways only convenient to Google, sometimes it's domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data... 🖕 Google, feel free to submit a PR if you want to accommodate the trillion dollar corporation.
+As Google continues to wage war upon the internet and break it on all the ways only convenient to Google, sometimes it's domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data. The trillion dollar corporations are not your friends.
+
+Created by **Oscar Franco**
+
+<img src="https://github.com/ospfranco/tempomat/blob/main/src/assets/image/profile.jpg?raw=true?raw=true" height=60 width=60/>
+
+Follow me on [Twitter](www.twitter.com/ospfranco) or please consider [sponsoring](https://github.com/sponsors/ospfranco) to support the development.
 
 ## How to use
 
