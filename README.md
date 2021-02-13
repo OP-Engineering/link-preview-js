@@ -12,7 +12,7 @@ This library therefore works on node (back-end environments) and certain mobile 
 
 ## Disclaimer
 
-As Google continues to wage war upon the internet and break it on all the ways only convenient to Google, sometimes it's domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data. The trillion dollar corporations are not your friends.
+As Google continues to wage war upon the internet and break it on all the ways only convenient to Google, sometimes its domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data. The trillion dollar corporations are not your friends.
 
 Created by **Oscar Franco**
 
