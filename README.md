@@ -4,15 +4,16 @@ Allows you to extract information from a HTTP url/link (or parse a HTML document
 
 ## CORS
 
-**BROWSERS DO NOT ALLOW YOU TO DO CROSS ORIGIN REQUESTS (CORS)**, you cannot request a different domain from your web app, period.
+**Browsers do not allow you to do requests to a different domain, you cannot request a different domain from your web app.**
 
-If do not know how *same-origin-policy* works you can read [this](https://dev.to/lydiahallie/cs-visualized-cors-5b8h)
+If do not know how *same-origin-policy* works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h)
 
-This library therefore works on node (back-end environments) and certain mobile run-times (cordova or react-native)
+Therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
 
-## Disclaimer
+## GOTCHAs
 
-As Google continues to wage war upon the internet and break it on all the ways only convenient to Google, sometimes its domains break the standards, to be more specific: www.google.com does not return a required meta data and YouTube does funny re-directions on mobile which also causes this library to return wrong data. The trillion dollar corporations are not your friends.
+- www.google.com does not return a required meta data, test with another domain.
+- If you are running on a mobile, **please think about what you are doing**, this library does not do magic it simply fetches the website and parses data, therefore it as if the user would visit the page, YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to registration pages, you can try to change the user-agent header (try with google-bot), but there is nothing wrong with this library, work around these issues yourself.
 
 Created by **Oscar Franco**
 
@@ -22,13 +23,15 @@ Follow me on [Twitter](www.twitter.com/ospfranco) or please consider [sponsoring
 
 ## How to use
 
-### Install the lib
+### Install
 
 ```
 yarn add link-preview-js
+-- OR --
+npm install link-preview-js
 ```
 
-### Use the methods
+### API
 
 `getLinkPreview`: you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info of first valid HTTP(S) URL info it finds. (URL parsing is done via: https://gist.github.com/dperini/729294).
 
