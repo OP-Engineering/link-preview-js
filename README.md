@@ -13,7 +13,7 @@ Therefore this library works on node (back-end environments) and certain mobile 
 ## GOTCHAs
 
 - www.google.com does not return a required meta data, test with another domain.
-- If you are running on a mobile, **please think about what you are doing**, this library does not do magic it simply fetches the website and parses data, therefore it as if the user would visit the page, YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to registration pages, you can try to change the user-agent header (try with google-bot), but there is nothing wrong with this library, work around these issues yourself.
+- If you are running on a mobile, **please think about what you are doing**, this library does not do magic, it simply fetches the website and parses it's html, therefore it acts as if the user would visit the page: YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to a sign up page, you can try to change the user-agent header (try with "google-bot"), but there is nothing wrong with this library, work around these issues yourself.
 
 Created by **Oscar Franco**
 
