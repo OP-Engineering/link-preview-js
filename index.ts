@@ -23,10 +23,13 @@ const metaTag = (doc: cheerio.Root, type: string, attr: string) => {
   return nodes.length ? nodes : null;
 };
 
-const metaTagContent = (doc: cheerio.Root, type: string, attr: string) => doc(`meta[${attr}='${type}']`).attr(`content`);
+const metaTagContent = (doc: cheerio.Root, type: string, attr: string) =>
+  doc(`meta[${attr}='${type}']`).attr(`content`);
 
 function getTitle(doc: cheerio.Root) {
-  let title = metaTagContent(doc, `og:title`, `property`) || metaTagContent(doc, `og:title`, `name`);
+  let title =
+    metaTagContent(doc, `og:title`, `property`) ||
+    metaTagContent(doc, `og:title`, `name`);
   if (!title) {
     title = doc(`title`).text();
   }
@@ -34,12 +37,17 @@ function getTitle(doc: cheerio.Root) {
 }
 
 function getSiteName(doc: cheerio.Root) {
-  const siteName = metaTagContent(doc, `og:site_name`, `property`) || metaTagContent(doc, `og:site_name`, `name`);
+  const siteName =
+    metaTagContent(doc, `og:site_name`, `property`) ||
+    metaTagContent(doc, `og:site_name`, `name`);
   return siteName;
 }
 
 function getDescription(doc: cheerio.Root) {
-  const description = metaTagContent(doc, `description`, `name`) || metaTagContent(doc, `Description`, `name`) || metaTagContent(doc, `og:description`, `property`);
+  const description =
+    metaTagContent(doc, `description`, `name`) ||
+    metaTagContent(doc, `Description`, `name`) ||
+    metaTagContent(doc, `og:description`, `property`);
   return description;
 }
 
@@ -49,21 +57,30 @@ function getMediaType(doc: cheerio.Root) {
     const content = node.attr(`content`);
     return content === `image` ? `photo` : content;
   }
-  return (metaTagContent(doc, `og:type`, `property`) || metaTagContent(doc, `og:type`, `name`));
+  return (
+    metaTagContent(doc, `og:type`, `property`) ||
+    metaTagContent(doc, `og:type`, `name`)
+  );
 }
 
-function getImages(doc: cheerio.Root, rootUrl: string, imagesPropertyType?: string) {
+function getImages(
+  doc: cheerio.Root,
+  rootUrl: string,
+  imagesPropertyType?: string
+) {
   let images: string[] = [];
   let nodes: cheerio.Cheerio | null;
   let src: string | undefined;
   let dic: Record<string, boolean> = {};
 
   const imagePropertyType = imagesPropertyType ?? `og`;
-  nodes = metaTag(doc, `${imagePropertyType}:image`, `property`) || metaTag(doc, `${imagePropertyType}:image`, `name`);
+  nodes =
+    metaTag(doc, `${imagePropertyType}:image`, `property`) ||
+    metaTag(doc, `${imagePropertyType}:image`, `name`);
 
   if (nodes) {
     nodes.each((_: number, node: cheerio.Element) => {
-      if (node.type !== 'text') {
+      if (node.type === "tag") {
         src = node.attribs.content;
         if (src) {
           src = urlObj.resolve(rootUrl, src);
@@ -85,7 +102,7 @@ function getImages(doc: cheerio.Root, rootUrl: string, imagesPropertyType?: stri
         dic = {};
         images = [];
         nodes.each((_: number, node: cheerio.Element) => {
-          if (node.type !== 'text') src = node.attribs.src;
+          if (node.type === "tag") src = node.attribs.src;
           if (src && !dic[src]) {
             dic[src] = true;
             // width = node.attribs.width;
@@ -114,23 +131,34 @@ function getVideos(doc: cheerio.Root) {
   let videoObj;
   let index;
 
-  const nodes = metaTag(doc, `og:video`, `property`) || metaTag(doc, `og:video`, `name`);
+  const nodes =
+    metaTag(doc, `og:video`, `property`) || metaTag(doc, `og:video`, `name`);
 
   if (nodes?.length) {
-    nodeTypes = metaTag(doc, `og:video:type`, `property`) || metaTag(doc, `og:video:type`, `name`);
-    nodeSecureUrls = metaTag(doc, `og:video:secure_url`, `property`) || metaTag(doc, `og:video:secure_url`, `name`);
-    width = metaTagContent(doc, `og:video:width`, `property`) || metaTagContent(doc, `og:video:width`, `name`);
-    height = metaTagContent(doc, `og:video:height`, `property`) || metaTagContent(doc, `og:video:height`, `name`);
+    nodeTypes =
+      metaTag(doc, `og:video:type`, `property`) ||
+      metaTag(doc, `og:video:type`, `name`);
+    nodeSecureUrls =
+      metaTag(doc, `og:video:secure_url`, `property`) ||
+      metaTag(doc, `og:video:secure_url`, `name`);
+    width =
+      metaTagContent(doc, `og:video:width`, `property`) ||
+      metaTagContent(doc, `og:video:width`, `name`);
+    height =
+      metaTagContent(doc, `og:video:height`, `property`) ||
+      metaTagContent(doc, `og:video:height`, `name`);
 
     for (index = 0; index < nodes.length; index += 1) {
       const node = nodes[index];
-      if (node.type !== 'text') video = node.attribs.content;
+      if (node.type === "tag") video = node.attribs.content;
 
       nodeType = nodeTypes![index];
-      if (nodeType.type !== 'text') videoType = nodeType ? nodeType.attribs.content : null;
+      if (nodeType.type === "tag")
+        videoType = nodeType ? nodeType.attribs.content : null;
 
       nodeSecureUrl = nodeSecureUrls![index];
-      if (nodeSecureUrl.type !== 'text') videoSecureUrl = nodeSecureUrl ? nodeSecureUrl.attribs.content : null;
+      if (nodeSecureUrl.type === "tag")
+        videoSecureUrl = nodeSecureUrl ? nodeSecureUrl.attribs.content : null;
 
       videoObj = {
         url: video,
@@ -174,7 +202,7 @@ function getFavicons(doc: cheerio.Root, rootUrl: string) {
     // collect all images from icon tags
     if (nodes.length) {
       nodes.each((_: number, node: cheerio.Element) => {
-        if (node.type !== 'text') src = node.attribs.href;
+        if (node.type === "tag") src = node.attribs.href;
         if (src) {
           src = urlObj.resolve(rootUrl, src);
           images.push(src);
@@ -231,7 +259,7 @@ function parseTextResponse(
   body: string,
   url: string,
   options: ILinkPreviewOptions = {},
-  contentType?: string,
+  contentType?: string
 ) {
   const doc = cheerio.load(body);
 
@@ -252,14 +280,14 @@ function parseUnknownResponse(
   body: string,
   url: string,
   options: ILinkPreviewOptions = {},
-  contentType?: string,
+  contentType?: string
 ) {
   return parseTextResponse(body, url, options, contentType);
 }
 
 function parseResponse(
   response: IPrefetchedResource,
-  options?: ILinkPreviewOptions,
+  options?: ILinkPreviewOptions
 ) {
   try {
     let contentType = response.headers[`content-type`];
@@ -300,7 +328,7 @@ function parseResponse(
     return parseUnknownResponse(htmlString, response.url, options);
   } catch (e) {
     throw new Error(
-      `link-preview-js could not fetch link information ${e.toString()}`,
+      `link-preview-js could not fetch link information ${e.toString()}`
     );
   }
 }
@@ -314,13 +342,16 @@ function parseResponse(
  */
 export async function getLinkPreview(
   text: string,
-  options?: ILinkPreviewOptions,
+  options?: ILinkPreviewOptions
 ) {
   if (!text || typeof text !== `string`) {
     throw new Error(`link-preview-js did not receive a valid url or text`);
   }
 
-  const detectedUrl = text.replace(/\n/g, ` `).split(` `).find((token) => CONSTANTS.REGEX_VALID_URL.test(token));
+  const detectedUrl = text
+    .replace(/\n/g, ` `)
+    .split(` `)
+    .find((token) => CONSTANTS.REGEX_VALID_URL.test(token));
 
   if (!detectedUrl) {
     throw new Error(`link-preview-js did not receive a valid a url or text`);
@@ -331,8 +362,9 @@ export async function getLinkPreview(
     redirect: `follow` as `follow`,
   };
 
-  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
-
+  const fetchUrl = options?.proxyUrl
+    ? options.proxyUrl.concat(detectedUrl)
+    : detectedUrl;
 
   const response = await fetch(fetchUrl, fetchOptions);
 
@@ -361,7 +393,7 @@ export async function getLinkPreview(
  */
 export async function getPreviewFromContent(
   response: IPrefetchedResource,
-  options?: ILinkPreviewOptions,
+  options?: ILinkPreviewOptions
 ) {
   if (!response || typeof response !== `object`) {
     throw new Error(`link-preview-js did not receive a valid response object`);
