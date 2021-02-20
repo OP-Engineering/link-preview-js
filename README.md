@@ -1,6 +1,6 @@
 # Link Preview JS
 
-Typescript library (29.2kb unpacked) that allows you to extract information from a HTTP url/link (or parse a HTML document) and retrieve meta information such as title, description, images, videos, etc.
+Allows you to extract information from a HTTP url/link (or parse a HTML document) and retrieve meta information such as title, description, images, videos, etc. Written in Typescript.
 
 ## CORS
 
