@@ -4,17 +4,10 @@ Allows you to extract information from a HTTP url/link (or parse a HTML document
 
 **The best way to contribute to the project (besides opening PRs) is by leaving a star! please do so!**
 
-## CORS
-
-**Browsers do not allow you to do requests to a different domain, you cannot request a different domain from your web app.**
-
-If do not know how *same-origin-policy* works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h)
-
-Therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
-
 ## GOTCHAs
 
-- www.google.com does not return a required meta data, test with another domain.
+- **Browsers do not allow you to do requests to a different domain, you cannot request a different domain from your web app.** If do not know how *same-origin-policy* works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
+- **www.google.com** does not return a required meta data, test with another domain.
 - If you are running on a mobile, **please think about what you are doing**, this library does not do magic, it simply fetches the website and parses its html, therefore it acts as if the user would visit the page: YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to a sign up page, you can try to change the user-agent header (try with "google-bot"), but there is nothing wrong with this library, work around these issues yourself.
 
 Created by **Oscar Franco**
