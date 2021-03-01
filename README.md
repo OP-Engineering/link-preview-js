@@ -2,6 +2,8 @@
 
 Allows you to extract information from a HTTP url/link (or parse a HTML document) and retrieve meta information such as title, description, images, videos, etc. Written in Typescript.
 
+**The best way to contribute to the project (besides opening PRs) is by leaving a star! please do so!**
+
 ## CORS
 
 **Browsers do not allow you to do requests to a different domain, you cannot request a different domain from your web app.**
