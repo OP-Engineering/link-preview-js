@@ -1,4 +1,4 @@
-## I'm no longer interested in maintaining this package, if you want to take over send me an email to ospfranco@protonmail.com, if no one steps up until 1st April, I will just archive it and call it a day
+## This package is no longer maintained, I had fun creating it and improving it but not interested in maintaining it and taking care of issues, if you need it fork it, release a copy, etc
 
 # Link Preview JS
 
