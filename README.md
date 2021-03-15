@@ -1,8 +1,8 @@
+## I'm no longer interested in maintaining this package, if you want to take over send me an email to ospfranco@protonmail.com, if no one steps up until 1st April, I will just archive it and call it a day
+
 # Link Preview JS
 
 Allows you to extract information from a HTTP url/link (or parse a HTML document) and retrieve meta information such as title, description, images, videos, etc. Written in Typescript. The information is extracted directly from the HTML from facebook OpenGraph protocol.
-
-**I'm done maintaining this package, if you want to take over send me an email to ospfranco@protonmail.com, if no one steps up until 1st April, I will just archive it and call it a day**
 
 ## GOTCHAs
 
