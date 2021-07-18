@@ -2,7 +2,7 @@
 
 Allows you to extract information from a HTTP url/link (or parse a HTML document) and retrieve meta information such as title, description, images, videos, etc. Written in Typescript. The information is extracted directly from the HTML from facebook OpenGraph protocol.
 
-Created by [Created by Oscar Franco](www.twitter.com/ospfranco).
+Created by [Oscar Franco](www.twitter.com/ospfranco).
 
 ## GOTCHAs
 
