@@ -26,8 +26,8 @@
   "license": "MIT",
   "repository": "https://github.com/ospfranco/link-preview-js",
   "dependencies": {
-    "cheerio": "1.0.0-rc.5",
-    "cross-fetch": "3.0.6",
+    "cheerio": "1.0.0-rc.10",
+    "cross-fetch": "3.1.4",
     "url": "0.11.0"
   },
   "files": [
