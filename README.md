@@ -6,7 +6,7 @@ Created by [Oscar Franco](www.twitter.com/ospfranco).
 
 ## GOTCHAs
 
-- **You cannot request a different domain from your web app (Browser's limit cross-origin-requests).** If do not know how *same-origin-policy* works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
+- **You cannot request a different domain from your web app (Browsers block cross-origin-requests).** If do not know how *same-origin-policy* works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
 - This library fetches the website and parses its html, **as if the user would visit the page**, this means: YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to a sign up page, you can try to change the user-agent header (try with `google-bot`) and the response you get then might be mangled, but there is nothing wrong with this library, you need to work around these issues yourself.
 - When you are testing this library do not use **google.com**, it does not return the necessary headers and you will think the library is broken.
 
