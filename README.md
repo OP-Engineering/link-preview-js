@@ -1,20 +1,14 @@
-## This package is no longer maintained, I had fun creating it and improving it but not interested in maintaining it and taking care of issues, if you need it fork it, release a copy, etc
-
 # Link Preview JS
 
 Allows you to extract information from a HTTP url/link (or parse a HTML document) and retrieve meta information such as title, description, images, videos, etc. Written in Typescript. The information is extracted directly from the HTML from facebook OpenGraph protocol.
 
+Created by [Created by Oscar Franco](www.twitter.com/ospfranco).
+
 ## GOTCHAs
 
-- **Browsers do not allow you to do requests to a different domain, you cannot request a different domain from your web app.** If do not know how *same-origin-policy* works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
-- **www.google.com** does not return a required meta data, test with another domain.
-- If you are running on a mobile, **please think about what you are doing**, this library does not do magic, it simply fetches the website and parses its html, therefore it acts as if the user would visit the page: YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to a sign up page, you can try to change the user-agent header (try with "google-bot"), but there is nothing wrong with this library, work around these issues yourself.
-
-Created by **Oscar Franco**
-
-<img src="https://github.com/ospfranco/tempomat/blob/main/src/assets/image/profile.jpg?raw=true?raw=true" height=60 width=60/>
-
-Follow me on [Twitter](www.twitter.com/ospfranco) or please consider [sponsoring](https://github.com/sponsors/ospfranco) to support the development.
+- **You cannot request a different domain from your web app (Browser's limit cross-origin-requests).** If do not know how *same-origin-policy* works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
+- This library fetches the website and parses its html, **as if the user would visit the page**, this means: YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to a sign up page, you can try to change the user-agent header (try with `google-bot`) and the response you get then might be mangled, but there is nothing wrong with this library, you need to work around these issues yourself.
+- When you are testing this library do not use **google.com**, it does not return the necessary headers and you will think the library is broken.
 
 ## How to use
 
@@ -22,8 +16,6 @@ Follow me on [Twitter](www.twitter.com/ospfranco) or please consider [sponsoring
 
 ```
 yarn add link-preview-js
--- OR --
-npm install link-preview-js
 ```
 
 ### API
