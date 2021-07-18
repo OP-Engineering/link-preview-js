@@ -10,17 +10,16 @@ Created by [Oscar Franco](www.twitter.com/ospfranco).
 - This library fetches the website and parses its html, **as if the user would visit the page**, this means: YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to a sign up page, you can try to change the user-agent header (try with `google-bot`) and the response you get then might be mangled, but there is nothing wrong with this library, you need to work around these issues yourself.
 - When you are testing this library do not use **google.com**, it does not return the necessary headers and you will think the library is broken.
 
-## How to use
 
-### Install
+## Install
 
 ```
 yarn add link-preview-js
 ```
 
-### API
+## API
 
-`getLinkPreview`: you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info of first valid HTTP(S) URL info it finds. (URL parsing is done via: https://gist.github.com/dperini/729294).
+`getLinkPreview`: you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info of first valid HTTP(S) URL info it finds.
 
 `getPreviewFromContent`: useful for passing a pre-fetched Response object from an existing async/etc. call. Refer to example below for required object values.
 
