@@ -1,6 +1,6 @@
 # Link Preview JS
 
-Allows you to extract information from a HTTP url/link (or parse a HTML document) and retrieve meta information such as title, description, images, videos, etc. Written in Typescript. The information is extracted directly from the HTML from facebook OpenGraph protocol.
+Allows you to extract information from a HTTP url/link (or parse a HTML string) and retrieve meta information such as title, description, images, videos, etc. The information is extracted from facebook's OpenGraph protocol.
 
 Created by [Oscar Franco](www.twitter.com/ospfranco).
 
