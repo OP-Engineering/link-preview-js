@@ -1,7 +1,7 @@
 {
   "name": "link-preview-js",
   "version": "2.1.6",
-  "description": "Javascript module to extract and fetch HTTP link information from blocks of text. ",
+  "description": "Javascript module to extract and fetch HTTP link information from blocks of text.",
   "main": "build/index.js",
   "exports": {
     "require": "./build/index.js",
@@ -26,6 +26,7 @@
   "license": "MIT",
   "repository": "https://github.com/ospfranco/link-preview-js",
   "dependencies": {
+    "abort-controller": "^3.0.0",
     "cheerio": "1.0.0-rc.10",
     "cross-fetch": "3.1.4",
     "url": "0.11.0"

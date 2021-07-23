@@ -1,5 +1,6 @@
 import cheerio from "cheerio";
 import { fetch } from "cross-fetch";
+import AbortController from "abort-controller";
 import urlObj from "url";
 import { CONSTANTS } from "./constants";
 
@@ -7,6 +8,7 @@ interface ILinkPreviewOptions {
   headers?: Record<string, string>;
   imagesPropertyType?: string;
   proxyUrl?: string;
+  timeout?: number;
 }
 
 interface IPrefetchedResource {
@@ -357,16 +359,29 @@ export async function getLinkPreview(
     throw new Error(`link-preview-js did not receive a valid a url or text`);
   }
 
+  const timeout = options?.timeout ?? 3000; // 3 second timeout default
+  const controller = new AbortController();
+  const timeoutCounter = setTimeout(() => controller.abort(), timeout);
+
   const fetchOptions = {
     headers: options?.headers ?? {},
     redirect: `follow` as `follow`,
+    signal: controller.signal,
   };
 
   const fetchUrl = options?.proxyUrl
     ? options.proxyUrl.concat(detectedUrl)
     : detectedUrl;
 
-  const response = await fetch(fetchUrl, fetchOptions);
+  const response = await fetch(fetchUrl, fetchOptions).catch((e) => {
+    if (e.name === "AbortError") {
+      throw new Error("Request timeout");
+    }
+
+    throw e;
+  });
+
+  clearTimeout(timeoutCounter);
 
   const headers: Record<string, string> = {};
   response.headers.forEach((header, key) => {
