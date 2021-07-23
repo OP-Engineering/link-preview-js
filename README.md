@@ -6,10 +6,9 @@ Created by [Oscar Franco](www.twitter.com/ospfranco).
 
 ## GOTCHAs
 
-- **You cannot request a different domain from your web app (Browsers block cross-origin-requests).** If do not know how *same-origin-policy* works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
+- **You cannot request a different domain from your web app (Browsers block cross-origin-requests).** If do not know how _same-origin-policy_ works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
 - This library fetches the website and parses its html, **as if the user would visit the page**, this means: YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to a sign up page, you can try to change the user-agent header (try with `google-bot`) and the response you get then might be mangled, but there is nothing wrong with this library, you need to work around these issues yourself.
 - When you are testing this library do not use **google.com**, it does not return the necessary headers and you will think the library is broken.
-
 
 ## Install
 
@@ -24,18 +23,19 @@ yarn add link-preview-js
 `getPreviewFromContent`: useful for passing a pre-fetched Response object from an existing async/etc. call. Refer to example below for required object values.
 
 ```typescript
-import { getLinkPreview, getPreviewFromContent } from 'link-preview-js';
+import { getLinkPreview, getPreviewFromContent } from "link-preview-js";
 
 // pass the link directly
-getLinkPreview('https://www.youtube.com/watch?v=MejbOFk7H6c')
-  .then((data) => console.debug(data));
+getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c").then((data) =>
+  console.debug(data)
+);
 
 ////////////////////////// OR //////////////////////////
 
 // pass a chunk of text
-getLinkPreview('This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c')
-  .then((data) => console.debug(data));
-
+getLinkPreview(
+  "This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c"
+).then((data) => console.debug(data));
 
 ////////////////////////// OR //////////////////////////
 
@@ -52,9 +52,8 @@ getLinkPreview('This is a text supposed to be parsed and the first link displaye
 //   url: 'https://domain.com/'          // resolved url
 // }
 yourAjaxCall(url, (response) => {
-  getPreviewFromContent(response)
-    .then((data) => console.debug(data));
-  })
+  getPreviewFromContent(response).then((data) => console.debug(data));
+});
 ```
 
 ## Options
@@ -65,6 +64,7 @@ Additionally you can pass an options object which should add more functionality 
 | -------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------: |
 | imagesPropertyType (**optional**) (ex: 'og')                                           | Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']` |
 | headers (**optional**) (ex: { 'user-agent': 'googlebot', 'Accept-Language': 'en-US' }) |                                Add request headers to fetch call                                |
+| timeout (**optional**) (ex: 1000)                                                      |                                 Timeout for the request to fail                                 |
 
 ```javascript
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
@@ -73,7 +73,8 @@ getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
     "user-agent": "googlebot" // fetches with googlebot crawler user agent
     "Accept-Language": "fr-CA", // fetches site for French language
     // ...other optional HTTP request headers
-  }
+  },
+  timeout: 1000
 }).then(data => console.debug(data));
 ```
 
