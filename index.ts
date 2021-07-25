@@ -11,7 +11,7 @@ interface ILinkPreviewOptions {
   timeout?: number;
 }
 
-interface IPrefetchedResource {
+interface IPreFetchedResource {
   headers: Record<string, string>;
   status?: number;
   imagesPropertyType?: string;
@@ -185,7 +185,7 @@ function getDefaultFavicon(rootUrl: string) {
   return urlObj.resolve(rootUrl, `/favicon.ico`);
 }
 
-// returns an array of URL's to favicon images
+// returns an array of URLs to favicon images
 function getFavicons(doc: cheerio.Root, rootUrl: string) {
   const images = [];
   let nodes: cheerio.Cheerio | never[] = [];
@@ -288,7 +288,7 @@ function parseUnknownResponse(
 }
 
 function parseResponse(
-  response: IPrefetchedResource,
+  response: IPreFetchedResource,
   options?: ILinkPreviewOptions
 ) {
   try {
@@ -388,7 +388,7 @@ export async function getLinkPreview(
     headers[key] = header;
   });
 
-  const normalizedResponse: IPrefetchedResource = {
+  const normalizedResponse: IPreFetchedResource = {
     url: options?.proxyUrl
       ? response.url.replace(options.proxyUrl, ``)
       : response.url,
@@ -407,7 +407,7 @@ export async function getLinkPreview(
  * @param options IPreviewLinkOptions
  */
 export async function getPreviewFromContent(
-  response: IPrefetchedResource,
+  response: IPreFetchedResource,
   options?: ILinkPreviewOptions
 ) {
   if (!response || typeof response !== `object`) {
