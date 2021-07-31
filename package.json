@@ -12,7 +12,7 @@
     "test": "jest",
     "test:ci": "jest --testLocationInResults --ci --outputFile=test_results.json --json",
     "build": "tsc",
-    "publishPackage": "tsc && jest --detectOpenHandles && npm publish "
+    "publish": "tsc && jest --detectOpenHandles && npm publish"
   },
   "keywords": [
     "javascript",

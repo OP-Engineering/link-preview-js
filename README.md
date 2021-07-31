@@ -1,20 +1,26 @@
-# Link Preview JS
+<h1 align="center">Link Preview JS</h1>
+
+<div align="center">
+<pre align="center">
+npm i link-preview-js
+</pre>
+
+<a align="center" href="https://github.com/ospfranco?tab=followers">
+    <img src="https://img.shields.io/github/followers/ospfranco?label=Follow%20%40ospfranco&style=social" />
+  </a>
+  <br />
+  <a align="center" href="https://twitter.com/ospfranco">
+    <img src="https://img.shields.io/twitter/follow/ospfranco?label=Follow%20%40ospfranco&style=social" />
+  </a>
+</div>
 
 Allows you to extract information from a HTTP url/link (or parse a HTML string) and retrieve meta information such as title, description, images, videos, etc. The information is extracted from facebook's OpenGraph protocol.
-
-Created by [Oscar Franco](www.twitter.com/ospfranco).
 
 ## GOTCHAs
 
 - **You cannot request a different domain from your web app (Browsers block cross-origin-requests).** If do not know how _same-origin-policy_ works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
-- This library fetches the website and parses its html, **as if the user would visit the page**, this means: YouTube re-directs you to the mobile site and Instagram (and other social sites) might redirect you to a sign up page, you can try to change the user-agent header (try with `google-bot`) and the response you get then might be mangled, but there is nothing wrong with this library, you need to work around these issues yourself.
+- **This library works as if the user would visit the page, sites might re-direct you to sign-up pages, consent screens, etc.** You can try to change the user-agent header (try with `google-bot`), but you need to work around these issues yourself.
 - When you are testing this library do not use **google.com**, it does not return the necessary headers and you will think the library is broken.
-
-## Install
-
-```
-yarn add link-preview-js
-```
 
 ## API
 
