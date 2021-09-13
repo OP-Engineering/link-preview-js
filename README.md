@@ -16,12 +16,12 @@ npm i link-preview-js
   </a>
 </div>
 
-Allows you to extract information from a HTTP url/link (or parse a HTML string) and retrieve meta information such as title, description, images, videos, etc. The information is extracted from facebook's OpenGraph protocol.
+Allows you to extract information from a HTTP url/link (or parse a HTML string) and retrieve meta information such as title, description, images, videos, etc.
 
 ## GOTCHAs
 
-- **You cannot request a different domain from your web app (Browsers block cross-origin-requests).** If do not know how _same-origin-policy_ works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore this library works on node (back-end environments) and certain mobile run-times (cordova or react-native).
-- **This library works as if the user would visit the page, sites might re-direct you to sign-up pages, consent screens, etc.** You can try to change the user-agent header (try with `google-bot`), but you need to work around these issues yourself.
+- You cannot request a different domain from your web app (Browsers block cross-origin-requests). If you don't know how _same-origin-policy_ works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore **this library works on node (back-end environments) and certain mobile run-times (cordova or react-native)**.
+- **This library acts as if the user would visit the page, sites might re-direct you to sign-up pages, consent screens, etc.** You can try to change the user-agent header (try with `google-bot`), but you need to work around these issues yourself.
 - When you are testing this library do not use **google.com**, it does not return the necessary headers and you will think the library is broken.
 
 ## API
