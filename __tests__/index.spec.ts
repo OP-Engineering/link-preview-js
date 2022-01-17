@@ -219,13 +219,13 @@ describe(`#getPreviewFromContent`, () => {
   });
 });
 
-describe(`simple test`, () => {
-  it("fetch my repo", async () => {
-    const linkInfo: any = await getLinkPreview(
-      "https://github.com/ospfranco/link-preview-js"
-    );
-    console.warn({ linkInfo });
+// describe(`simple test`, () => {
+//   it("fetch my repo", async () => {
+//     const linkInfo: any = await getLinkPreview(
+//       "https://github.com/ospfranco/link-preview-js"
+//     );
+//     console.warn({ linkInfo });
 
-    expect(1).toEqual(2);
-  });
-});
+//     expect(1).toEqual(2);
+//   });
+// });
