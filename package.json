@@ -4,8 +4,11 @@
   "description": "Javascript module to extract and fetch HTTP link information from blocks of text.",
   "main": "build/index.js",
   "exports": {
-    "require": "./build/index.js",
-    "import": "./build/index.js"
+    ".": {
+      "require": "./build/index.js",
+      "import": "./build/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "types": "build/index.d.ts",
   "scripts": {
