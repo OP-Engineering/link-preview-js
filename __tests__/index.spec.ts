@@ -218,3 +218,14 @@ describe(`#getPreviewFromContent`, () => {
     expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
   });
 });
+
+describe(`simple test`, () => {
+  it("fetch my repo", async () => {
+    const linkInfo: any = await getLinkPreview(
+      "https://github.com/ospfranco/link-preview-js"
+    );
+    console.warn({ linkInfo });
+
+    expect(1).toEqual(2);
+  });
+});
