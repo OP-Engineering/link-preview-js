@@ -8,6 +8,6 @@ git add .
 
 git commit -m "Bump version"
 
-git tag $PACKAGE_VERSION
+# git tag $PACKAGE_VERSION
 
 git push
