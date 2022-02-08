@@ -15,7 +15,6 @@
     "test": "jest",
     "test:ci": "jest --testLocationInResults --ci --outputFile=test_results.json --json",
     "build": "tsc",
-    "publish": "tsc && jest --detectOpenHandles && npm publish",
     "bump": "./bump-version.sh"
   },
   "keywords": [
