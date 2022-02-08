@@ -67,6 +67,7 @@ describe(`#getLinkPreview()`, () => {
   it(`should make request with different languages`, async () => {
     let linkInfo: any = await getLinkPreview(`https://www.hsbc.ca/`, {
       headers: { "Accept-Language": `fr` },
+      followRedirects: true,
     });
     expect(linkInfo.title).toEqual(`Particuliers | HSBC Canada`);
 
