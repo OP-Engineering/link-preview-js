@@ -67,6 +67,7 @@ describe(`#getLinkPreview()`, () => {
   it(`should make request with different languages`, async () => {
     let linkInfo: any = await getLinkPreview(`https://www.hsbc.ca/`, {
       headers: { "Accept-Language": `fr` },
+      followRedirects: true,
     });
     expect(linkInfo.title).toEqual(`Particuliers | HSBC Canada`);
 
@@ -196,6 +197,16 @@ describe(`#getLinkPreview()`, () => {
       );
     } catch (e) {
       expect(e.message).toEqual("Request timeout");
+    }
+  });
+  
+  it(`should handle followRedirects option is false`, async () => {
+    try {
+      await getLinkPreview(`http://google.com/`, { followRedirects: false });
+    } catch (e) {
+      expect(e.message).toEqual(
+        `uri requested responds with a redirect, redirect mode is set to error: http://google.com/`,
+      );
     }
   });
 });

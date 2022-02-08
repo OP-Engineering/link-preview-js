@@ -9,6 +9,7 @@ interface ILinkPreviewOptions {
   imagesPropertyType?: string;
   proxyUrl?: string;
   timeout?: number;
+  followRedirects?: boolean;
 }
 
 interface IPreFetchedResource {
@@ -365,7 +366,9 @@ export async function getLinkPreview(
 
   const fetchOptions = {
     headers: options?.headers ?? {},
-    redirect: `follow` as `follow`,
+    redirect: options?.followRedirects
+      ? (`follow` as `follow`)
+      : (`error` as `error`),
     signal: controller.signal,
   };
 
