@@ -73,7 +73,7 @@ Additionally you can pass an options object which should add more functionality 
 | imagesPropertyType (**optional**) (ex: 'og')                                           | Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']` |
 | headers (**optional**) (ex: { 'user-agent': 'googlebot', 'Accept-Language': 'en-US' }) |                                Add request headers to fetch call                                |
 | timeout (**optional**) (ex: 1000)                                                      |                                 Timeout for the request to fail                                 |
-| followRedirects (**optional**) (default false)                                                      |                                 For security reasons, the follow redirects option has been made optional                                 |
+| followRedirects (**optional**) (default false)                                                      |                                 For security reasons, the library does not automatically follow redirects, a malicious agent can exploit redirects to steal data, turn this on at your own risk                                 |
 
 ```javascript
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
