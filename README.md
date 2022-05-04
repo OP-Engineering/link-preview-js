@@ -16,7 +16,19 @@ npm i link-preview-js
   </a>
 </div>
 
-Allows you to extract information from a HTTP url/link (or parse a HTML string) and retrieve meta information such as title, description, images, videos, etc.
+> **READ BEFORE CREATING AN ISSUE**
+>
+> It's more than likely there is nothing wrong with the library for some simple reasons:
+>
+> - It's very simple: fetch html, parse html, look for OpenGraph html tags.
+> - The library will never break unless the entire web all of the sudden decides to break itself (by changing ALL OpenGraph tags ALL AT ONCE)
+> - If the target website you are trying to preview redirects you to a login page **the preview will "fail"**
+> - If the target website does not have OpenGraph tags **the preview will most likely "fail"**
+> - **You cannot preview (read: HTTP get) another web page from YOUR web page. This is an intentional security feature of browsers called CORS**
+>
+> If you haven't read this and create an issue "Amazon/Youtube/Instagram/Whatever doesn't work" I will just close the issue
+
+Allows you to extract information from a HTTP url/link (or parse a HTML string) and retrieve meta information such as title, description, images, videos, etc. via **Facebook OpenGraph** tags.
 
 ## GOTCHAs
 
@@ -68,12 +80,12 @@ yourAjaxCall(url, (response) => {
 
 Additionally you can pass an options object which should add more functionality to the parsing of the link
 
-| Property Name                                                                          |                                             Result                                              |
-| -------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------: |
-| imagesPropertyType (**optional**) (ex: 'og')                                           | Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']` |
-| headers (**optional**) (ex: { 'user-agent': 'googlebot', 'Accept-Language': 'en-US' }) |                                Add request headers to fetch call                                |
-| timeout (**optional**) (ex: 1000)                                                      |                                 Timeout for the request to fail                                 |
-| followRedirects (**optional**) (default false)                                                      |                                 For security reasons, the library does not automatically follow redirects, a malicious agent can exploit redirects to steal data, turn this on at your own risk                                 |
+| Property Name                                                                          |                                                                             Result                                                                              |
+| -------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| imagesPropertyType (**optional**) (ex: 'og')                                           |                                 Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']`                                 |
+| headers (**optional**) (ex: { 'user-agent': 'googlebot', 'Accept-Language': 'en-US' }) |                                                                Add request headers to fetch call                                                                |
+| timeout (**optional**) (ex: 1000)                                                      |                                                                 Timeout for the request to fail                                                                 |
+| followRedirects (**optional**) (default false)                                         | For security reasons, the library does not automatically follow redirects, a malicious agent can exploit redirects to steal data, turn this on at your own risk |
 
 ```javascript
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
