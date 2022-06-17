@@ -16,25 +16,25 @@ npm i link-preview-js
   </a>
 </div>
 
-> **READ BEFORE CREATING AN ISSUE**
->
-> It's more than likely there is nothing wrong with the library for some simple reasons:
->
-> - It's very simple: fetch html, parse html, look for OpenGraph html tags.
-> - The library will never break unless the entire web all of the sudden decides to break itself (by changing ALL OpenGraph tags ALL AT ONCE)
-> - If the target website you are trying to preview redirects you to a login page **the preview will "fail"**
-> - If the target website does not have OpenGraph tags **the preview will most likely "fail"**
-> - **You cannot preview (read: HTTP get) another web page from YOUR web page. This is an intentional security feature of browsers called CORS**
->
-> If you haven't read this and create an issue "Amazon/Youtube/Instagram/Whatever doesn't work" I will just close the issue
+**Before creating an issue**
 
-Allows you to extract information from a HTTP url/link (or parse a HTML string) and retrieve meta information such as title, description, images, videos, etc. via **Facebook OpenGraph** tags.
+It's more than likely there is nothing wrong with the library:
+- It's very simple; fetch html, parse html, look for OpenGraph html tags.
+- Unless HTML or the OpenGraph standard change, the library will not break
+- If the target website you are trying to preview redirects you to a login page **the preview will "fail"**, becuase it will parse the login page
+- If the target website does not have OpenGraph tags **the preview will most likely "fail"**, there are some fallbacks but in general it will not work
+- **You cannot preview (fetch) another web page from YOUR web page. This is an intentional security feature of browsers called CORS**
+
+Any opened issue that does not take this points into account will just be closed.
+
+# Link Preview
+
+Allows you to extract information from a HTTP url/link (or parse a HTML string) and retrieve meta information such as title, description, images, videos, etc. via **OpenGraph** tags.
 
 ## GOTCHAs
 
 - You cannot request a different domain from your web app (Browsers block cross-origin-requests). If you don't know how _same-origin-policy_ works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore **this library works on node (back-end environments) and certain mobile run-times (cordova or react-native)**.
 - **This library acts as if the user would visit the page, sites might re-direct you to sign-up pages, consent screens, etc.** You can try to change the user-agent header (try with `google-bot` or with `Twitterbot`), but you need to work around these issues yourself.
-- When you are testing this library do not use **google.com**, it does not return the necessary headers and you will think the library is broken.
 
 ## API
 
