@@ -83,7 +83,7 @@ function getImages(
 
   if (nodes) {
     nodes.each((_: number, node: cheerio.Element) => {
-      if (node.type === "tag") {
+      if (node.type === `tag`) {
         src = node.attribs.content;
         if (src) {
           src = urlObj.resolve(rootUrl, src);
@@ -105,7 +105,7 @@ function getImages(
         dic = {};
         images = [];
         nodes.each((_: number, node: cheerio.Element) => {
-          if (node.type === "tag") src = node.attribs.src;
+          if (node.type === `tag`) src = node.attribs.src;
           if (src && !dic[src]) {
             dic[src] = true;
             // width = node.attribs.width;
@@ -153,15 +153,17 @@ function getVideos(doc: cheerio.Root) {
 
     for (index = 0; index < nodes.length; index += 1) {
       const node = nodes[index];
-      if (node.type === "tag") video = node.attribs.content;
+      if (node.type === `tag`) video = node.attribs.content;
 
       nodeType = nodeTypes![index];
-      if (nodeType.type === "tag")
+      if (nodeType.type === `tag`) {
         videoType = nodeType ? nodeType.attribs.content : null;
+      }
 
       nodeSecureUrl = nodeSecureUrls![index];
-      if (nodeSecureUrl.type === "tag")
+      if (nodeSecureUrl.type === `tag`) {
         videoSecureUrl = nodeSecureUrl ? nodeSecureUrl.attribs.content : null;
+      }
 
       videoObj = {
         url: video,
@@ -205,7 +207,7 @@ function getFavicons(doc: cheerio.Root, rootUrl: string) {
     // collect all images from icon tags
     if (nodes.length) {
       nodes.each((_: number, node: cheerio.Element) => {
-        if (node.type === "tag") src = node.attribs.href;
+        if (node.type === `tag`) src = node.attribs.href;
         if (src) {
           src = urlObj.resolve(rootUrl, src);
           images.push(src);
@@ -377,8 +379,8 @@ export async function getLinkPreview(
     : detectedUrl;
 
   const response = await fetch(fetchUrl, fetchOptions).catch((e) => {
-    if (e.name === "AbortError") {
-      throw new Error("Request timeout");
+    if (e.name === `AbortError`) {
+      throw new Error(`Request timeout`);
     }
 
     throw e;
