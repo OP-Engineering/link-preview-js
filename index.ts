@@ -10,6 +10,7 @@ interface ILinkPreviewOptions {
   proxyUrl?: string;
   timeout?: number;
   followRedirects?: boolean;
+  resolveDNSHost?: (url: string) => Promise<string>;
 }
 
 interface IPreFetchedResource {
@@ -21,13 +22,20 @@ interface IPreFetchedResource {
   data: string;
 }
 
-const metaTag = (doc: cheerio.Root, type: string, attr: string) => {
+function throwOnLoopback(address: string) {
+  if (address === "localhost" || address === "127.0.0.1") {
+    throw new Error("SSRF request detected, trying to query host");
+  }
+}
+
+function metaTag(doc: cheerio.Root, type: string, attr: string) {
   const nodes = doc(`meta[${attr}='${type}']`);
   return nodes.length ? nodes : null;
-};
+}
 
-const metaTagContent = (doc: cheerio.Root, type: string, attr: string) =>
-  doc(`meta[${attr}='${type}']`).attr(`content`);
+function metaTagContent(doc: cheerio.Root, type: string, attr: string) {
+  return doc(`meta[${attr}='${type}']`).attr(`content`);
+}
 
 function getTitle(doc: cheerio.Root) {
   let title =
@@ -333,7 +341,9 @@ function parseResponse(
     return parseUnknownResponse(htmlString, response.url, options);
   } catch (e) {
     throw new Error(
-      `link-preview-js could not fetch link information ${e.toString()}`
+      `link-preview-js could not fetch link information ${(
+        e as any
+      ).toString()}`
     );
   }
 }
@@ -362,6 +372,12 @@ export async function getLinkPreview(
     throw new Error(`link-preview-js did not receive a valid a url or text`);
   }
 
+  if (!!options?.resolveDNSHost) {
+    const resolvedUrl = await options.resolveDNSHost(detectedUrl);
+
+    throwOnLoopback(resolvedUrl);
+  }
+
   const timeout = options?.timeout ?? 3000; // 3 second timeout default
   const controller = new AbortController();
   const timeoutCounter = setTimeout(() => controller.abort(), timeout);
@@ -378,7 +394,9 @@ export async function getLinkPreview(
     ? options.proxyUrl.concat(detectedUrl)
     : detectedUrl;
 
-  const response = await fetch(fetchUrl, fetchOptions).catch((e) => {
+  // Seems like fetchOptions type definition is out of date
+  // https://github.com/node-fetch/node-fetch/issues/741
+  const response = await fetch(fetchUrl, fetchOptions as any).catch((e) => {
     if (e.name === `AbortError`) {
       throw new Error(`Request timeout`);
     }
