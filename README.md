@@ -19,6 +19,7 @@ npm i link-preview-js
 **Before creating an issue**
 
 It's more than likely there is nothing wrong with the library:
+
 - It's very simple; fetch html, parse html, look for OpenGraph html tags.
 - Unless HTML or the OpenGraph standard change, the library will not break
 - If the target website you are trying to preview redirects you to a login page **the preview will "fail"**, becuase it will parse the login page
@@ -86,6 +87,7 @@ Additionally you can pass an options object which should add more functionality 
 | headers (**optional**) (ex: { 'user-agent': 'googlebot', 'Accept-Language': 'en-US' }) |                                                                Add request headers to fetch call                                                                |
 | timeout (**optional**) (ex: 1000)                                                      |                                                                 Timeout for the request to fail                                                                 |
 | followRedirects (**optional**) (default false)                                         | For security reasons, the library does not automatically follow redirects, a malicious agent can exploit redirects to steal data, turn this on at your own risk |
+| resolveDNSHost (**optional**)                                                          |                                   Function that resolves the final address of the detected/parsed URL to prevent SSRF attacks                                   |
 
 ```javascript
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
@@ -98,6 +100,33 @@ getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
   timeout: 1000
 }).then(data => console.debug(data));
 ```
+
+## SSRF Concerns
+
+Doing requests on behalf of your users or using user provided URLs is dangerous. One of such attacks is a trying to fetch a domain which redirects to localhost and so the users getting the contents of your server (doesn't affect mobile runtimes). In order to mittigate this attack you can use the resolveDNSHost option:
+
+```ts
+// example how to use node's dns resolver
+const dns = require("node:dns");
+getLinkPreview("http://maliciousLocalHostRedirection.com", {
+  resolveDNSHost: async (url: string) => {
+    return new Promise((resolve, reject) => {
+      dns.lookup(url, (err, address, family) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(address); // if address resolves to localhost or '127.0.0.1' library will throw an error
+      });
+    });
+  },
+}).catch((e) => {
+  // will throw a detected redirection to localhost
+});
+```
+
+This might add some latency to your request but prevents loopback attacks.
 
 ## Response
 
