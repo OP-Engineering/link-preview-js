@@ -111,7 +111,8 @@ const dns = require("node:dns");
 getLinkPreview("http://maliciousLocalHostRedirection.com", {
   resolveDNSHost: async (url: string) => {
     return new Promise((resolve, reject) => {
-      dns.lookup(url, (err, address, family) => {
+      const hostname = new URL(url).hostname;
+      dns.lookup(hostname, (err, address, family) => {
         if (err) {
           reject(err);
           return;
