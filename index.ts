@@ -23,7 +23,7 @@ interface IPreFetchedResource {
 }
 
 function throwOnLoopback(address: string) {
-  if (address === "localhost" || address === "127.0.0.1") {
+  if (CONSTANTS.REGEX_LOOPBACK.test(address)) {
     throw new Error("SSRF request detected, trying to query host");
   }
 }
