@@ -11,7 +11,7 @@ interface ILinkPreviewOptions {
   timeout?: number;
   followRedirects?: `follow` | `error` | `manual`;
   resolveDNSHost?: (url: string) => Promise<string>;
-  handleRedirects?: (url: string) => boolean;
+  handleRedirects?: (forwardedURL: string) => boolean;
 }
 
 interface IPreFetchedResource {
