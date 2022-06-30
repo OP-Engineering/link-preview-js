@@ -11,7 +11,7 @@ interface ILinkPreviewOptions {
   timeout?: number;
   followRedirects?: `follow` | `error` | `manual`;
   resolveDNSHost?: (url: string) => Promise<string>;
-  handleRedirects?: (forwardedURL: string) => boolean;
+  handleRedirects?: (baseURL: string, forwardedURL: string) => boolean;
 }
 
 interface IPreFetchedResource {
@@ -401,10 +401,14 @@ export async function getLinkPreview(
   // https://github.com/node-fetch/node-fetch/issues/741
   const response = await fetch(fetchUrl, fetchOptions as any)
     .then((res) => {
-      if ((res.status === 301 || res.status === 302) && fetchOptions.redirect === `manual` && options?.handleRedirects) {
-        if(!options.handleRedirects(res.headers.get(`location`) || `` )){
+      if (
+        (res.status === 301 || res.status === 302) &&
+        fetchOptions.redirect === `manual` &&
+        options?.handleRedirects
+      ) {
+        if (!options.handleRedirects(fetchUrl, (res.headers.get(`location`) || ``))) {
           throw new Error(`link-preview-js could not handle redirect`);
-        } 
+        }
         return fetch(res.headers.get(`location`) || ``, fetchOptions as any);
       }
       return res;

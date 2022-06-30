@@ -223,7 +223,7 @@ describe(`#getLinkPreview()`, () => {
   it(`should handle followRedirects option is manual with handleRedirects function`, async () => {
     const response = await getLinkPreview(`http://google.com/`, {
       followRedirects: `manual`,
-      handleRedirects: (forwardedURL: string) => {
+      handleRedirects: (baseURL: string, forwardedURL: string) => {
         if (forwardedURL !== `http://www.google.com/`) {
           return false;
         } 
