@@ -9,8 +9,9 @@ interface ILinkPreviewOptions {
   imagesPropertyType?: string;
   proxyUrl?: string;
   timeout?: number;
-  followRedirects?: boolean;
+  followRedirects?: `follow` | `error` | `manual`;
   resolveDNSHost?: (url: string) => Promise<string>;
+  handleRedirects?: (baseURL: string, forwardedURL: string) => boolean;
 }
 
 interface IPreFetchedResource {
@@ -372,6 +373,10 @@ export async function getLinkPreview(
     throw new Error(`link-preview-js did not receive a valid a url or text`);
   }
 
+  if (options?.followRedirects === `manual` && !options?.handleRedirects) {
+    throw new Error(`link-preview-js followRedirects is set to manual, but no handleRedirects function was provided`);
+  }
+
   if (!!options?.resolveDNSHost) {
     const resolvedUrl = await options.resolveDNSHost(detectedUrl);
 
@@ -384,9 +389,7 @@ export async function getLinkPreview(
 
   const fetchOptions = {
     headers: options?.headers ?? {},
-    redirect: options?.followRedirects
-      ? (`follow` as `follow`)
-      : (`error` as `error`),
+    redirect: options?.followRedirects ?? `error`,
     signal: controller.signal,
   };
 
@@ -396,13 +399,26 @@ export async function getLinkPreview(
 
   // Seems like fetchOptions type definition is out of date
   // https://github.com/node-fetch/node-fetch/issues/741
-  const response = await fetch(fetchUrl, fetchOptions as any).catch((e) => {
-    if (e.name === `AbortError`) {
-      throw new Error(`Request timeout`);
-    }
-
-    throw e;
-  });
+  const response = await fetch(fetchUrl, fetchOptions as any)
+    .then((res) => {
+      if (
+        (res.status === 301 || res.status === 302) &&
+        fetchOptions.redirect === `manual` &&
+        options?.handleRedirects
+      ) {
+        if (!options.handleRedirects(fetchUrl, (res.headers.get(`location`) || ``))) {
+          throw new Error(`link-preview-js could not handle redirect`);
+        }
+        return fetch(res.headers.get(`location`) || ``, fetchOptions as any);
+      }
+      return res;
+    })
+    .catch((e) => {
+      if (e.name === `AbortError`) {
+        throw new Error(`Request timeout`);
+      }
+      throw e;
+    });
 
   clearTimeout(timeoutCounter);
 

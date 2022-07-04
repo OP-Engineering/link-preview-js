@@ -67,7 +67,7 @@ describe(`#getLinkPreview()`, () => {
   it(`should make request with different languages`, async () => {
     let linkInfo: any = await getLinkPreview(`https://www.hsbc.ca/`, {
       headers: { "Accept-Language": `fr` },
-      followRedirects: true,
+      followRedirects: `follow`,
     });
     expect(linkInfo.title).toEqual(`Particuliers | HSBC Canada`);
 
@@ -200,15 +200,42 @@ describe(`#getLinkPreview()`, () => {
     }
   });
   
-  it(`should handle followRedirects option is false`, async () => {
+  it(`should handle followRedirects option is error`, async () => {
     try {
-      await getLinkPreview(`http://google.com/`, { followRedirects: false });
+      await getLinkPreview(`http://google.com/`, { followRedirects: `error` });
     } catch (e) {
       expect(e.message).toEqual(
         `uri requested responds with a redirect, redirect mode is set to error: http://google.com/`,
       );
     }
   });
+
+  it(`should handle followRedirects option is manual but handleRedirects was not provided`, async () => {
+    try {
+      await getLinkPreview(`http://google.com/`, { followRedirects: `manual` });
+    } catch (e) {
+      expect(e.message).toEqual(
+        `link-preview-js followRedirects is set to manual, but no handleRedirects function was provided`
+      );
+    }
+  });
+
+  it(`should handle followRedirects option is manual with handleRedirects function`, async () => {
+    const response = await getLinkPreview(`http://google.com/`, {
+      followRedirects: `manual`,
+      handleRedirects: (baseURL: string, forwardedURL: string) => {
+        if (forwardedURL !== `http://www.google.com/`) {
+          return false;
+        } 
+        return true;
+      },
+    });
+
+    expect(response.contentType).toEqual(`text/html`);
+    expect(response.url).toEqual(`http://www.google.com/`);
+    expect(response.mediaType).toEqual(`website`);
+  });
+
 });
 
 describe(`#getPreviewFromContent`, () => {
