@@ -81,13 +81,14 @@ yourAjaxCall(url, (response) => {
 
 Additionally you can pass an options object which should add more functionality to the parsing of the link
 
-| Property Name                                                                          |                                                                             Result                                                                              |
-| -------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| imagesPropertyType (**optional**) (ex: 'og')                                           |                                 Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']`                                 |
-| headers (**optional**) (ex: { 'user-agent': 'googlebot', 'Accept-Language': 'en-US' }) |                                                                Add request headers to fetch call                                                                |
-| timeout (**optional**) (ex: 1000)                                                      |                                                                 Timeout for the request to fail                                                                 |
-| followRedirects (**optional**) (default false)                                         | For security reasons, the library does not automatically follow redirects, a malicious agent can exploit redirects to steal data, turn this on at your own risk |
-| resolveDNSHost (**optional**)                                                          |                                   Function that resolves the final address of the detected/parsed URL to prevent SSRF attacks                                   |
+| Property Name                                                                          |                                                                                             Result                                                                                              |
+| -------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| imagesPropertyType (**optional**) (ex: 'og')                                           |                                                 Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']`                                                 |
+| headers (**optional**) (ex: { 'user-agent': 'googlebot', 'Accept-Language': 'en-US' }) |                                                                                Add request headers to fetch call                                                                                |
+| timeout (**optional**) (ex: 1000)                                                      |                                                                                 Timeout for the request to fail                                                                                 |
+| followRedirects (**optional**) (default 'error')                                       | For security reasons, the library does not automatically follow redirects ('error' value), a malicious agent can exploit redirects to steal data, posible values: ('error', 'follow', 'manual') |
+| handleRedirects (**optional**) (with followRedirects 'manual')                         |                         When followRedirects is set to 'manual' you need to pass a function that validates if the redirectinon is secure, below you can find an example                         |
+| resolveDNSHost (**optional**)                                                          |                                                   Function that resolves the final address of the detected/parsed URL to prevent SSRF attacks                                                   |
 
 ```javascript
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
@@ -127,6 +128,28 @@ getLinkPreview("http://maliciousLocalHostRedirection.com", {
 ```
 
 This might add some latency to your request but prevents loopback attacks.
+
+## Redirections
+
+Same as SSRF, following redirections is dangerous, the library errors by default when the response tries to redirect the user. There are however some simple redirections which are valid (e.g. http to https) and you might want to allow, you can do it via:
+
+```ts
+await getLinkPreview(`http://google.com/`, {
+  followRedirects: `manual`,
+  handleRedirects: (baseURL: string, forwardedURL: string) => {
+    const urlObj = new URL(baseURL);
+    const forwardedURLObj = new URL(forwardedURL);
+    if (
+      forwardedURLObj.hostname === urlObj.hostname ||
+      forwardedURLObj.hostname === "www." + urlObj.hostname
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+});
+```
 
 ## Response
 
