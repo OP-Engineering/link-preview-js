@@ -182,7 +182,7 @@ describe(`#getLinkPreview()`, () => {
       await getLinkPreview(
         `https://www.gamestop.com/video-games/pc-gaming/components/cooling/products/hyper-212-rgb-black-edition-fan/185243.html?gclid=Cj0KCQjwraqHBhDsARIsAKuGZeECDlqkF2cxpcuS0xRxQmrv5BxFawWS_B51kiqehPf64_KlO0oyunsaAhn5EALw_wcB&gclsrc=aw.ds`
       );
-    } catch (e) {
+    } catch (e: any) {
       expect(e.message).toEqual("Request timeout");
     }
   });
@@ -195,17 +195,17 @@ describe(`#getLinkPreview()`, () => {
           timeout: 1000,
         }
       );
-    } catch (e) {
+    } catch (e: any) {
       expect(e.message).toEqual("Request timeout");
     }
   });
-  
+
   it(`should handle followRedirects option is error`, async () => {
     try {
       await getLinkPreview(`http://google.com/`, { followRedirects: `error` });
-    } catch (e) {
+    } catch (e: any) {
       expect(e.message).toEqual(
-        `uri requested responds with a redirect, redirect mode is set to error: http://google.com/`,
+        `uri requested responds with a redirect, redirect mode is set to error: http://google.com/`
       );
     }
   });
@@ -213,7 +213,7 @@ describe(`#getLinkPreview()`, () => {
   it(`should handle followRedirects option is manual but handleRedirects was not provided`, async () => {
     try {
       await getLinkPreview(`http://google.com/`, { followRedirects: `manual` });
-    } catch (e) {
+    } catch (e: any) {
       expect(e.message).toEqual(
         `link-preview-js followRedirects is set to manual, but no handleRedirects function was provided`
       );
@@ -226,7 +226,7 @@ describe(`#getLinkPreview()`, () => {
       handleRedirects: (baseURL: string, forwardedURL: string) => {
         if (forwardedURL !== `http://www.google.com/`) {
           return false;
-        } 
+        }
         return true;
       },
     });
@@ -235,7 +235,6 @@ describe(`#getLinkPreview()`, () => {
     expect(response.url).toEqual(`http://www.google.com/`);
     expect(response.mediaType).toEqual(`website`);
   });
-
 });
 
 describe(`#getPreviewFromContent`, () => {

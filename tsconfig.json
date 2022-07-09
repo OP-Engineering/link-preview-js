@@ -10,5 +10,5 @@
     "strict": true,
     "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "build", "__tests__"]
+  "exclude": ["node_modules", "build"]
 }
