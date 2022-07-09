@@ -374,7 +374,9 @@ export async function getLinkPreview(
   }
 
   if (options?.followRedirects === `manual` && !options?.handleRedirects) {
-    throw new Error(`link-preview-js followRedirects is set to manual, but no handleRedirects function was provided`);
+    throw new Error(
+      `link-preview-js followRedirects is set to manual, but no handleRedirects function was provided`
+    );
   }
 
   if (!!options?.resolveDNSHost) {
@@ -406,7 +408,9 @@ export async function getLinkPreview(
         fetchOptions.redirect === `manual` &&
         options?.handleRedirects
       ) {
-        if (!options.handleRedirects(fetchUrl, (res.headers.get(`location`) || ``))) {
+        if (
+          !options.handleRedirects(fetchUrl, res.headers.get(`location`) || ``)
+        ) {
           throw new Error(`link-preview-js could not handle redirect`);
         }
         return fetch(res.headers.get(`location`) || ``, fetchOptions as any);
@@ -417,6 +421,8 @@ export async function getLinkPreview(
       if (e.name === `AbortError`) {
         throw new Error(`Request timeout`);
       }
+
+      clearTimeout(timeoutCounter);
       throw e;
     });
 
