@@ -402,9 +402,9 @@ export async function getLinkPreview(
   // Seems like fetchOptions type definition is out of date
   // https://github.com/node-fetch/node-fetch/issues/741
   const response = await fetch(fetchUrl, fetchOptions as any)
-    .then((res) => {
+    .then(async (res) => {
       if (
-        (res.status === 301 || res.status === 302) &&
+        (res.status > 300 || res.status < 309) &&
         fetchOptions.redirect === `manual` &&
         options?.handleRedirects
       ) {
@@ -413,6 +413,13 @@ export async function getLinkPreview(
         ) {
           throw new Error(`link-preview-js could not handle redirect`);
         }
+
+        if (!!options?.resolveDNSHost) {
+          const resolvedUrl = await options.resolveDNSHost(detectedUrl);
+
+          throwOnLoopback(resolvedUrl);
+        }
+
         return fetch(res.headers.get(`location`) || ``, fetchOptions as any);
       }
       return res;
