@@ -401,30 +401,34 @@ export async function getLinkPreview(
 
   // Seems like fetchOptions type definition is out of date
   // https://github.com/node-fetch/node-fetch/issues/741
-  const response = await fetch(fetchUrl, fetchOptions as any)
-    .then((res) => {
-      if (
-        (res.status === 301 || res.status === 302) &&
-        fetchOptions.redirect === `manual` &&
-        options?.handleRedirects
-      ) {
-        if (
-          !options.handleRedirects(fetchUrl, res.headers.get(`location`) || ``)
-        ) {
-          throw new Error(`link-preview-js could not handle redirect`);
-        }
-        return fetch(res.headers.get(`location`) || ``, fetchOptions as any);
-      }
-      return res;
-    })
-    .catch((e) => {
-      if (e.name === `AbortError`) {
-        throw new Error(`Request timeout`);
-      }
+  let response = await fetch(fetchUrl, fetchOptions as any).catch((e) => {
+    if (e.name === `AbortError`) {
+      throw new Error(`Request timeout`);
+    }
 
-      clearTimeout(timeoutCounter);
-      throw e;
-    });
+    clearTimeout(timeoutCounter);
+    throw e;
+  });
+
+  if (
+    (response.status > 300 || response.status < 309) &&
+    fetchOptions.redirect === `manual` &&
+    options?.handleRedirects
+  ) {
+    const forwardedUrl = response.headers.get(`location`) || ``;
+
+    if (!options.handleRedirects(fetchUrl, forwardedUrl)) {
+      throw new Error(`link-preview-js could not handle redirect`);
+    }
+
+    if (!!options?.resolveDNSHost) {
+      const resolvedUrl = await options.resolveDNSHost(forwardedUrl);
+
+      throwOnLoopback(resolvedUrl);
+    }
+
+    response = await fetch(forwardedUrl, fetchOptions as any);
+  }
 
   clearTimeout(timeoutCounter);
 
