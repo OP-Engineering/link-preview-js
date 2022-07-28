@@ -411,7 +411,8 @@ export async function getLinkPreview(
   });
 
   if (
-    (response.status > 300 || response.status < 309) &&
+    response.status > 300 &&
+    response.status < 309 &&
     fetchOptions.redirect === `manual` &&
     options?.handleRedirects
   ) {
