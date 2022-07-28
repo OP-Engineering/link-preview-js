@@ -142,7 +142,8 @@ await getLinkPreview(`http://google.com/`, {
     const forwardedURLObj = new URL(forwardedURL);
     if (
       forwardedURLObj.hostname === urlObj.hostname ||
-      forwardedURLObj.hostname === "www." + urlObj.hostname
+      forwardedURLObj.hostname === "www." + urlObj.hostname ||
+      "www." + forwardedURLObj.hostname === urlObj.hostname
     ) {
       return true;
     } else {
