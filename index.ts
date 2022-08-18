@@ -164,13 +164,13 @@ function getVideos(doc: cheerio.Root) {
       const node = nodes[index];
       if (node.type === `tag`) video = node.attribs.content;
 
-      nodeType = nodeTypes![index];
-      if (nodeType.type === `tag`) {
+      nodeType = nodeTypes && nodeTypes[index];
+      if (nodeType?.type === `tag`) {
         videoType = nodeType ? nodeType.attribs.content : null;
       }
 
-      nodeSecureUrl = nodeSecureUrls![index];
-      if (nodeSecureUrl.type === `tag`) {
+      nodeSecureUrl = nodeSecureUrls && nodeSecureUrls[index];
+      if (nodeSecureUrl?.type === `tag`) {
         videoSecureUrl = nodeSecureUrl ? nodeSecureUrl.attribs.content : null;
       }
 
