@@ -242,9 +242,6 @@ describe(`#getLinkPreview()`, () => {
       { followRedirects: `follow` }
     );
 
-    expect(res.url).toEqual(
-      `https://newpathtitle.com/falling-markets-how-to-stop-buyer-from-getting-out/`
-    );
     expect(res.siteName).toEqual(`New Path Title`);
     expect(res.title).toEqual(
       `Falling Markets: How To Stop A Buyer From Getting Out | New Path Title`
