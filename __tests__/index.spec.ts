@@ -235,6 +235,27 @@ describe(`#getLinkPreview()`, () => {
     expect(response.url).toEqual(`http://www.google.com/`);
     expect(response.mediaType).toEqual(`website`);
   });
+
+  it('should handle video tags without type or secure_url tags', async () => {
+    const res: any  = await getLinkPreview(
+      `https://newpathtitle.com/falling-markets-how-to-stop-buyer-from-getting-out/`,
+      { followRedirects: `follow` }
+    );
+
+    expect(res.siteName).toEqual(`New Path Title`);
+    expect(res.title).toEqual(
+      `Falling Markets: How To Stop A Buyer From Getting Out | New Path Title`
+    );
+    expect(res.description).toBeTruthy();
+    expect(res.mediaType).toEqual(`article`);
+    expect(res.images.length).toBeGreaterThan(0);
+    expect(res.videos.length).toBeGreaterThan(0);
+    expect(res.videos[0].url).toEqual(
+      `https://www.youtube.com/embed/nqNXjxpAPkU`
+    );
+    expect(res.favicons.length).toBeGreaterThan(0);
+    expect(res.contentType.toLowerCase()).toEqual(`text/html`);
+  });
 });
 
 describe(`#getPreviewFromContent`, () => {
