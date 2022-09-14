@@ -22,11 +22,11 @@ It's more than likely there is nothing wrong with the library:
 
 - It's very simple; fetch html, parse html, look for OpenGraph html tags.
 - Unless HTML or the OpenGraph standard change, the library will not break
-- If the target website you are trying to preview redirects you to a login page **the preview will "fail"**, becuase it will parse the login page
-- If the target website does not have OpenGraph tags **the preview will most likely "fail"**, there are some fallbacks but in general it will not work
+- If the target website you are trying to preview redirects you to a login page **the preview will fail**, because it will parse the login page
+- If the target website does not have OpenGraph tags **the preview will most likely fail**, there are some fallbacks but in general it will not work
 - **You cannot preview (fetch) another web page from YOUR web page. This is an intentional security feature of browsers called CORS**
 
-Any opened issue that does not take this points into account will just be closed.
+If you use this library and find it useful please consider [sponsoring me](https://github.com/sponsors/ospfranco), open source takes a lot of time and effort.
 
 # Link Preview
 
