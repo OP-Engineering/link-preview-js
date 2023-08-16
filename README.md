@@ -1,7 +1,3 @@
-# Repo no longer maintained
-
-Sorry! No energy or time. Feel free to fork it and publish your own version.
-
 <h1 align="center">Link Preview JS</h1>
 
 <div align="center">
