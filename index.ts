@@ -304,42 +304,60 @@ function parseResponse(
   options?: ILinkPreviewOptions
 ) {
   try {
+    // console.log("[link-preview-js] response", response);
     let contentType = response.headers[`content-type`];
-    // console.warn(`original content type`, contentType);
-    if (contentType?.indexOf(`;`)) {
-      // eslint-disable-next-line prefer-destructuring
-      contentType = contentType.split(`;`)[0];
-      // console.warn(`splitting content type`, contentType);
-    }
+    let contentTypeTokens: string[] = [];
+    let charset = null;
 
     if (!contentType) {
       return parseUnknownResponse(response.data, response.url, options);
     }
 
-    if ((contentType as any) instanceof Array) {
-      // eslint-disable-next-line no-param-reassign, prefer-destructuring
-      contentType = contentType[0];
+    if (contentType.includes(`;`)) {
+      contentTypeTokens = contentType.split(`;`);
+      contentType = contentTypeTokens[0];
+
+      for (let token of contentTypeTokens) {
+        if (token.indexOf("charset=") !== -1) {
+          charset = token.split("=")[1];
+        }
+      }
     }
 
     // parse response depending on content type
     if (CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
-      return parseImageResponse(response.url, contentType);
+      return { ...parseImageResponse(response.url, contentType), charset };
     }
+
     if (CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
-      return parseAudioResponse(response.url, contentType);
+      return { ...parseAudioResponse(response.url, contentType), charset };
     }
+
     if (CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
-      return parseVideoResponse(response.url, contentType);
+      return { ...parseVideoResponse(response.url, contentType), charset };
     }
+
     if (CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
       const htmlString = response.data;
-      return parseTextResponse(htmlString, response.url, options, contentType);
+      return {
+        ...parseTextResponse(htmlString, response.url, options, contentType),
+        charset,
+      };
     }
+
     if (CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
-      return parseApplicationResponse(response.url, contentType);
+      return {
+        ...parseApplicationResponse(response.url, contentType),
+        charset,
+      };
     }
+
     const htmlString = response.data;
-    return parseUnknownResponse(htmlString, response.url, options);
+
+    return {
+      ...parseUnknownResponse(htmlString, response.url, options),
+      charset,
+    };
   } catch (e) {
     throw new Error(
       `link-preview-js could not fetch link information ${(

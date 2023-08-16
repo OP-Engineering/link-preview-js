@@ -20,6 +20,15 @@ describe(`#getLinkPreview()`, () => {
     expect(linkInfo.videos.length).toEqual(0);
     expect(linkInfo.favicons[0]).not.toBe(``);
     expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
+    expect(linkInfo.charset?.toLowerCase()).toEqual(`utf-8`);
+  });
+
+  it("returns charset of website", async () => {
+    const linkInfo: any = await getLinkPreview(`https://www.pravda.com.ua`);
+
+    expect(linkInfo.url).toEqual(`https://www.pravda.com.ua/`);
+    expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
+    expect(linkInfo.charset?.toLowerCase()).toEqual(`windows-1251`);
   });
 
   it(`should extract link info from a URL with a newline`, async () => {
@@ -236,8 +245,8 @@ describe(`#getLinkPreview()`, () => {
     expect(response.mediaType).toEqual(`website`);
   });
 
-  it('should handle video tags without type or secure_url tags', async () => {
-    const res: any  = await getLinkPreview(
+  it("should handle video tags without type or secure_url tags", async () => {
+    const res: any = await getLinkPreview(
       `https://newpathtitle.com/falling-markets-how-to-stop-buyer-from-getting-out/`,
       { followRedirects: `follow` }
     );
@@ -277,13 +286,11 @@ describe(`#getPreviewFromContent`, () => {
   });
 });
 
-// describe(`simple test`, () => {
-//   it("fetch my repo", async () => {
-//     const linkInfo: any = await getLinkPreview(
-//       "https://github.com/ospfranco/link-preview-js"
-//     );
-//     console.warn({ linkInfo });
+xdescribe(`simple test`, () => {
+  it("fetch my repo", async () => {
+    const linkInfo: any = await getLinkPreview("https://www.pravda.com.ua");
+    console.warn({ linkInfo });
 
-//     expect(1).toEqual(2);
-//   });
-// });
+    expect(1).toEqual(2);
+  });
+});
