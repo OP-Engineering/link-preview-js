@@ -24,28 +24,28 @@ npm i link-preview-js
 
 It's more than likely there is nothing wrong with the library:
 
-- It's very simple; fetch html, parse html, look for OpenGraph html tags.
+- It's very simple; fetch HTML, parse HTML, and search for OpenGraph HTML tags.
 - Unless HTML or the OpenGraph standard change, the library will not break
 - If the target website you are trying to preview redirects you to a login page **the preview will fail**, because it will parse the login page
-- If the target website does not have OpenGraph tags **the preview will most likely fail**, there are some fallbacks but in general it will not work
+- If the target website does not have OpenGraph tags **the preview will most likely fail**, there are some fallbacks but in general, it will not work
 - **You cannot preview (fetch) another web page from YOUR web page. This is an intentional security feature of browsers called CORS**
 
 If you use this library and find it useful please consider [sponsoring me](https://github.com/sponsors/ospfranco), open source takes a lot of time and effort.
 
 # Link Preview
 
-Allows you to extract information from a HTTP url/link (or parse a HTML string) and retrieve meta information such as title, description, images, videos, etc. via **OpenGraph** tags.
+Allows you to extract information from an HTTP URL/link (or parse an HTML string) and retrieve meta information such as title, description, images, videos, etc. via **OpenGraph** tags.
 
 ## GOTCHAs
 
-- You cannot request a different domain from your web app (Browsers block cross-origin-requests). If you don't know how _same-origin-policy_ works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore **this library works on node (back-end environments) and certain mobile run-times (cordova or react-native)**.
+- You cannot request a different domain from your web app (Browsers block cross-origin-requests). If you don't know how _same-origin-policy_ works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore **this library works on Node.js and certain mobile run-times (Cordova or React-Native)**.
 - **This library acts as if the user would visit the page, sites might re-direct you to sign-up pages, consent screens, etc.** You can try to change the user-agent header (try with `google-bot` or with `Twitterbot`), but you need to work around these issues yourself.
 
 ## API
 
-`getLinkPreview`: you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info of first valid HTTP(S) URL info it finds.
+`getLinkPreview`: you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info o the first valid HTTP(S) URL info it finds.
 
-`getPreviewFromContent`: useful for passing a pre-fetched Response object from an existing async/etc. call. Refer to example below for required object values.
+`getPreviewFromContent`: useful for passing a pre-fetched Response object from an existing async/etc. call. Refer to the example below for required object values.
 
 ```typescript
 import { getLinkPreview, getPreviewFromContent } from "link-preview-js";
@@ -83,7 +83,7 @@ yourAjaxCall(url, (response) => {
 
 ## Options
 
-Additionally you can pass an options object which should add more functionality to the parsing of the link
+Additionally, you can pass an options object which should add more functionality to the parsing of the link
 
 | Property Name                                                                          |                                                                                             Result                                                                                              |
 | -------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
@@ -108,7 +108,7 @@ getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
 
 ## SSRF Concerns
 
-Doing requests on behalf of your users or using user provided URLs is dangerous. One of such attacks is a trying to fetch a domain which redirects to localhost and so the users getting the contents of your server (doesn't affect mobile runtimes). In order to mittigate this attack you can use the resolveDNSHost option:
+Doing requests on behalf of your users or using user-provided URLs is dangerous. One of such attack is trying to fetch a domain that redirects to localhost so the users get the contents of your server (doesn't affect mobile runtimes). To mitigate this attack you can use the resolveDNSHost option:
 
 ```ts
 // example how to use node's dns resolver
@@ -136,7 +136,7 @@ This might add some latency to your request but prevents loopback attacks.
 
 ## Redirections
 
-Same as SSRF, following redirections is dangerous, the library errors by default when the response tries to redirect the user. There are however some simple redirections which are valid (e.g. http to https) and you might want to allow, you can do it via:
+Same to SSRF, following redirections is dangerous, the library errors by default when the response tries to redirect the user. There are however some simple redirections that are valid (e.g. HTTP to HTTPS) and you might want to allow them, you can do it via:
 
 ```ts
 await getLinkPreview(`http://google.com/`, {
@@ -161,7 +161,7 @@ await getLinkPreview(`http://google.com/`, {
 
 Returns a Promise that resolves with an object describing the provided link.
 The info object returned varies depending on the content type (MIME type) returned
-in the HTTP response (see below for variations of response). Rejects with an error if response can not be parsed or if there was no URL in the text provided.
+in the HTTP response (see below for variations of response). Rejects with an error if the response can not be parsed or if there was no URL in the text provided.
 
 ### Text/HTML URL
 
@@ -173,7 +173,8 @@ in the HTTP response (see below for variations of response). Rejects with an err
   description: "Buy the video on iTunes: https://itunes.apple.com/us/album/needing-getting-bundle-ep/id508124847 See more about the guitars at: http://www.gretschguitars.com...",
   images: ["https://i.ytimg.com/vi/MejbOFk7H6c/maxresdefault.jpg"],
   mediaType: "video.other",
-  contentType: "text/html; charset=utf-8",
+  contentType: "text/html",
+  charset: "utf-8"
   videos: [],
   favicons:["https://www.youtube.com/yts/img/favicon_32-vflOogEID.png","https://www.youtube.com/yts/img/favicon_48-vflVjB_Qk.png","https://www.youtube.com/yts/img/favicon_96-vflW9Ec0w.png","https://www.youtube.com/yts/img/favicon_144-vfliLAfaB.png","https://s.ytimg.com/yts/img/favicon-vfl8qSV2F.ico"]
 }
