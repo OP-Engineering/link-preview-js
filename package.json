@@ -1,6 +1,6 @@
 {
   "name": "link-preview-js",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Javascript module to extract and fetch HTTP link information from blocks of text.",
   "main": "build/index.js",
   "exports": {
