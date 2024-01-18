@@ -21,19 +21,17 @@
   "keywords": [
     "javascript",
     "link",
-    "url",
     "http",
     "preview"
   ],
-  "author": "Oscar Franco",
-  "email": "ospfranco@protonmail.com",
+  "author": "Oscar Franco, following changes by @charliemr99",
+  "email": "caramartinezrio@unal.edu.co",
   "license": "MIT",
-  "repository": "https://github.com/ospfranco/link-preview-js",
+  "repository": "https://github.com/charliemr99/new-link-preview",
   "dependencies": {
     "abort-controller": "^3.0.0",
     "cheerio": "1.0.0-rc.11",
-    "cross-fetch": "3.1.5",
-    "url": "0.11.0"
+    "cross-fetch": "3.1.5"
   },
   "files": [
     "build"
