@@ -94,7 +94,7 @@ Additionally, you can pass an options object which should add more functionality
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
   imagesPropertyType: "og", // fetches only open-graph images
   headers: {
-    "user-agent": "googlebot" // fetches with googlebot crawler user agent
+    "user-agent": "googlebot", // fetches with googlebot crawler user agent
     "Accept-Language": "fr-CA", // fetches site for French language
     // ...other optional HTTP request headers
   },
