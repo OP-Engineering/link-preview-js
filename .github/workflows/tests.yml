@@ -13,9 +13,4 @@ jobs:
       run: yarn
 
     - name: Run tests
-      uses: ospfranco/gh-jester@v1.0.13
-      with:
-        post-comment: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_CONTEXT: ${{ toJson(github) }}
+      uses: yarn test
