@@ -13,4 +13,4 @@ jobs:
         run: yarn
 
       - name: Run tests
-        uses: yarn test
+        run: yarn test
