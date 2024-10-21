@@ -26,10 +26,14 @@ jobs:
             ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
             ${{ runner.os }}-yarn-
       - run: yarn install
+      - name: Update package.json version
+        run: |
+          git fetch --tags
+          TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          jq --arg version "$TAG" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json
       - uses: JS-DevTools/npm-publish@v3
         with:
           token: ${{ secrets.NPM_TOKEN }}
-          registry: "https://npm.pkg.github.com"
       - name: Create a Release
         uses: elgohr/Github-Release-Action@v5
         env:
