@@ -43,7 +43,7 @@ function getTitle(doc: cheerio.Root) {
     metaTagContent(doc, `og:title`, `property`) ||
     metaTagContent(doc, `og:title`, `name`);
   if (!title) {
-    title = doc(`title`).text();
+    title = doc(`head > title`).text();
   }
   return title;
 }
