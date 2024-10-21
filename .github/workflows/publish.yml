@@ -28,8 +28,7 @@ jobs:
       - run: yarn install
       - name: Update package.json version
         run: |
-          git fetch --tags
-          TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          TAG=${GITHUB_REF#refs/tags/}
           jq --arg version "$TAG" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json
       - uses: JS-DevTools/npm-publish@v3
         with:
