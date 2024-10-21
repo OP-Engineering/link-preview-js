@@ -32,12 +32,11 @@ jobs:
         run: |
           TAG=${GITHUB_REF#refs/tags/}
           jq --arg version "$TAG" '.version = $version' package.json > tmp.$$.json && mv tmp.$$.json package.json
+      - name: Compile typescript
+        run: yarn build
       - uses: JS-DevTools/npm-publish@v3
         with:
           token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Compile typescript
-        run: yarn build
 
       - name: Create a Release
         uses: elgohr/Github-Release-Action@v5
