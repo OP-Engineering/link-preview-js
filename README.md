@@ -32,6 +32,12 @@ If you use this library and find it useful please consider [sponsoring me](https
 
 Allows you to extract information from an HTTP URL/link (or parse an HTML string) and retrieve meta information such as title, description, images, videos, etc. via **OpenGraph** tags.
 
+## Discord
+
+Join the Discord
+
+https://discord.gg/W9XmqCQCKP
+
 ## GOTCHAs
 
 - You cannot request a different domain from your web app (Browsers block cross-origin-requests). If you don't know how _same-origin-policy_ works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore **this library works on Node.js and certain mobile run-times (Cordova or React-Native)**.
@@ -98,8 +104,8 @@ getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
     "Accept-Language": "fr-CA", // fetches site for French language
     // ...other optional HTTP request headers
   },
-  timeout: 1000
-}).then(data => console.debug(data));
+  timeout: 1000,
+}).then((data) => console.debug(data));
 ```
 
 ## SSRF Concerns
