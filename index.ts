@@ -1,6 +1,6 @@
 import cheerio from "cheerio";
 import { fetch } from "cross-fetch";
-import AbortController from "abort-controller";
+import AbortControllerPolyfill from "abort-controller";
 import urlObj from "url";
 import { CONSTANTS } from "./constants";
 
@@ -404,7 +404,7 @@ export async function getLinkPreview(
   }
 
   const timeout = options?.timeout ?? 3000; // 3 second timeout default
-  const controller = new AbortController();
+  const controller = new (AbortController || AbortControllerPolyfill)();
   const timeoutCounter = setTimeout(() => controller.abort(), timeout);
 
   const fetchOptions = {
