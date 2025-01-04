@@ -404,7 +404,7 @@ export async function getLinkPreview(
   }
 
   const timeout = options?.timeout ?? 3000; // 3 second timeout default
-  const controller = new (AbortController || AbortControllerPolyfill)();
+  const controller = createAbortController();
   const timeoutCounter = setTimeout(() => controller.abort(), timeout);
 
   const fetchOptions = {
@@ -487,4 +487,11 @@ export async function getPreviewFromContent(
   }
 
   return parseResponse(response, options);
+}
+
+
+function createAbortController(): AbortController | AbortControllerPolyfill {
+  return typeof AbortController == 'undefined'
+    ? new AbortControllerPolyfill()
+    : new AbortController();
 }
