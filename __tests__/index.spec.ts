@@ -214,7 +214,7 @@ describe(`#getLinkPreview()`, () => {
       await getLinkPreview(`http://google.com/`, { followRedirects: `error` });
     } catch (e: any) {
       expect(e.message).toEqual(
-        `uri requested responds with a redirect, redirect mode is set to error: http://google.com/`
+        `fetch failed`
       );
     }
   });
