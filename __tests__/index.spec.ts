@@ -73,16 +73,16 @@ describe(`#getLinkPreview()`, () => {
     expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
   });
 
-  xit(`should make request with different languages`, async () => {
-    let linkInfo: any = await getLinkPreview(`https://www.wikipedia.org/`, {
-      headers: { "Accept-Language": `es` },
-      followRedirects: `follow`,
-    });
-    expect(linkInfo.title).toContain(`Wikipedia, la enciclopedia libre`);
+  // it(`should make request with different languages`, async () => {
+  //   let linkInfo: any = await getLinkPreview(`https://www.wikipedia.org/`, {
+  //     headers: { "Accept-Language": `es` },
+  //     followRedirects: `follow`,
+  //   });
+  //   expect(linkInfo.title).toContain(`Wikipedia, la enciclopedia libre`);
 
-    linkInfo = await getLinkPreview(`https://www.wikipedia.org/`);
-    expect(linkInfo.title).toContain(`Wikipedia`);
-  });
+  //   linkInfo = await getLinkPreview(`https://www.wikipedia.org/`);
+  //   expect(linkInfo.title).toContain(`Wikipedia`);
+  // });
 
   it(`should handle audio urls`, async () => {
     const linkInfo = await getLinkPreview(
@@ -128,18 +128,18 @@ describe(`#getLinkPreview()`, () => {
   });
 
   // This site changed? it is not returning application any more but rather website
-  it.skip(`should handle application urls`, async () => {
-    const linkInfo = await getLinkPreview(
-      `https://assets.curtmfg.com/masterlibrary/56282/installsheet/CME_56282_INS.pdf`
-    );
+  // it.skip(`should handle application urls`, async () => {
+  //   const linkInfo = await getLinkPreview(
+  //     `https://assets.curtmfg.com/masterlibrary/56282/installsheet/CME_56282_INS.pdf`
+  //   );
 
-    expect(linkInfo.url).toEqual(
-      `https://assets.curtmfg.com/masterlibrary/56282/installsheet/CME_56282_INS.pdf`
-    );
-    expect(linkInfo.mediaType).toEqual(`application`);
-    expect(linkInfo.contentType?.toLowerCase()).toEqual(`application/pdf`);
-    expect(linkInfo.favicons[0]).toBeTruthy();
-  });
+  //   expect(linkInfo.url).toEqual(
+  //     `https://assets.curtmfg.com/masterlibrary/56282/installsheet/CME_56282_INS.pdf`
+  //   );
+  //   expect(linkInfo.mediaType).toEqual(`application`);
+  //   expect(linkInfo.contentType?.toLowerCase()).toEqual(`application/pdf`);
+  //   expect(linkInfo.favicons[0]).toBeTruthy();
+  // });
 
   it(`no link in text should fail gracefully`, async () => {
     await expect(
@@ -213,9 +213,7 @@ describe(`#getLinkPreview()`, () => {
     try {
       await getLinkPreview(`http://google.com/`, { followRedirects: `error` });
     } catch (e: any) {
-      expect(e.message).toEqual(
-        `fetch failed`
-      );
+      expect(e.message).toEqual(`fetch failed`);
     }
   });
 
@@ -283,14 +281,5 @@ describe(`#getPreviewFromContent`, () => {
     expect(linkInfo.videos.length).toEqual(0);
     expect(linkInfo.favicons[0]).not.toBe(``);
     expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
-  });
-});
-
-xdescribe(`simple test`, () => {
-  it("fetch my repo", async () => {
-    const linkInfo: any = await getLinkPreview("https://www.pravda.com.ua");
-    console.warn({ linkInfo });
-
-    expect(1).toEqual(2);
   });
 });
