@@ -30,9 +30,7 @@
   "license": "MIT",
   "repository": "https://github.com/ospfranco/link-preview-js",
   "dependencies": {
-    "abort-controller": "^3.0.0",
     "cheerio": "1.0.0-rc.11",
-    "cross-fetch": "3.1.5",
     "url": "0.11.0"
   },
   "files": [
@@ -47,5 +45,8 @@
     "ts-jest": "^28.0.5",
     "typescript": "^4.7.4"
   },
-  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610",
+  "engines": {
+    "node": ">=18"
+  }
 }
