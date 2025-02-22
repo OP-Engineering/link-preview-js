@@ -1,5 +1,4 @@
 import cheerio from "cheerio";
-import urlObj from "url";
 import { CONSTANTS } from "./constants";
 
 interface ILinkPreviewOptions {
@@ -93,7 +92,7 @@ function getImages(
       if (node.type === `tag`) {
         src = node.attribs.content;
         if (src) {
-          src = urlObj.resolve(rootUrl, src);
+          src = new URL(src, rootUrl).toString();
           images.push(src);
         }
       }
@@ -103,7 +102,7 @@ function getImages(
   if (images.length <= 0 && !imagesPropertyType) {
     src = doc(`link[rel=image_src]`).attr(`href`);
     if (src) {
-      src = urlObj.resolve(rootUrl, src);
+      src = new URL(src, rootUrl).toString();
       images = [src];
     } else {
       nodes = doc(`img`);
@@ -117,7 +116,7 @@ function getImages(
             dic[src] = true;
             // width = node.attribs.width;
             // height = node.attribs.height;
-            images.push(urlObj.resolve(rootUrl, src));
+            images.push(new URL(src, rootUrl).toString());
           }
         });
       }
@@ -192,7 +191,7 @@ function getVideos(doc: cheerio.Root) {
 
 // returns default favicon (//hostname/favicon.ico) for a url
 function getDefaultFavicon(rootUrl: string) {
-  return urlObj.resolve(rootUrl, `/favicon.ico`);
+  return new URL(`/favicon.ico`, rootUrl).toString();
 }
 
 // returns an array of URLs to favicon images
@@ -216,7 +215,7 @@ function getFavicons(doc: cheerio.Root, rootUrl: string) {
       nodes.each((_: number, node: cheerio.Element) => {
         if (node.type === `tag`) src = node.attribs.href;
         if (src) {
-          src = urlObj.resolve(rootUrl, src);
+          src = new URL(src, rootUrl).toString();
           images.push(src);
         }
       });
@@ -486,4 +485,3 @@ export async function getPreviewFromContent(
 
   return parseResponse(response, options);
 }
-
