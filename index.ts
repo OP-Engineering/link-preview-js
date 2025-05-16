@@ -432,7 +432,13 @@ export async function getLinkPreview(
     fetchOptions.redirect === `manual` &&
     options?.handleRedirects
   ) {
-    const forwardedUrl = response.headers.get(`location`) || ``;
+    const locationHeader = response.headers.get(`location`) || ``;
+	const isAbsoluteURI = locationHeader.startsWith('http://') || locationHeader.startsWith('https://'); 
+
+    // Resolve the URL, handling both absolute and relative URLs
+    const forwardedUrl = isAbsoluteURI
+      ? locationHeader
+      : urlObj.resolve(fetchUrl, locationHeader);
 
     if (!options.handleRedirects(fetchUrl, forwardedUrl)) {
       throw new Error(`link-preview-js could not handle redirect`);
@@ -486,4 +492,3 @@ export async function getPreviewFromContent(
 
   return parseResponse(response, options);
 }
-
