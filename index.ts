@@ -433,7 +433,7 @@ export async function getLinkPreview(
     options?.handleRedirects
   ) {
     const locationHeader = response.headers.get(`location`) || ``;
-	const isAbsoluteURI = locationHeader.startsWith('http://') || locationHeader.startsWith('https://'); 
+    const isAbsoluteURI = locationHeader.startsWith('http://') || locationHeader.startsWith('https://'); 
 
     // Resolve the URL, handling both absolute and relative URLs
     const forwardedUrl = isAbsoluteURI
@@ -492,3 +492,4 @@ export async function getPreviewFromContent(
 
   return parseResponse(response, options);
 }
+
