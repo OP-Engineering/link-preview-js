@@ -257,7 +257,7 @@ describe(`#getLinkPreview()`, () => {
     });
 
     expect(res.siteName).toEqual("SiteName has been overridden");
-	  expect(res.description).toEqual(firstParagraphText);
+    expect(res.description).toEqual(firstParagraphText);
   });
 
   it("should handle video tags without type or secure_url tags", async () => {
