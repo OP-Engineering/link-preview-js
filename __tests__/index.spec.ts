@@ -243,6 +243,23 @@ describe(`#getLinkPreview()`, () => {
     expect(response.mediaType).toEqual(`website`);
   });
 
+  it("should handle override response body using onResponse option", async () => {	
+    let firstParagraphText;
+
+    const res: any = await getLinkPreview(`https://www.example.com/`, { 
+      onResponse: (result, doc) => {
+        firstParagraphText = doc('p').first().text().split('\n').map(x=> x.trim()).join(' ');
+        result.siteName = `SiteName has been overridden`;
+        result.description = firstParagraphText;
+
+        return result;
+      }
+    });
+
+    expect(res.siteName).toEqual("SiteName has been overridden");
+	  expect(res.description).toEqual(firstParagraphText);
+  });
+
   it("should handle video tags without type or secure_url tags", async () => {
     const res: any = await getLinkPreview(
       `https://newpathtitle.com/falling-markets-how-to-stop-buyer-from-getting-out/`,
