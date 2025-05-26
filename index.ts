@@ -2,6 +2,26 @@ import cheerio from "cheerio";
 import urlObj from "url";
 import { CONSTANTS } from "./constants";
 
+interface ILinkPreviewResponse {
+  url: string;
+  title: string;
+  siteName: string | undefined;
+  description: string | undefined;
+  mediaType: string;
+  contentType: string | undefined;
+  images: string[];
+  videos: IVideoType[];
+  favicons: string[];
+}
+
+interface IVideoType {
+  url: string | undefined,
+  secureUrl: string | null | undefined,
+  type: string | null | undefined,
+  width: string | undefined,
+  height: string | undefined,
+};
+
 interface ILinkPreviewOptions {
   headers?: Record<string, string>;
   imagesPropertyType?: string;
@@ -10,6 +30,7 @@ interface ILinkPreviewOptions {
   followRedirects?: `follow` | `error` | `manual`;
   resolveDNSHost?: (url: string) => Promise<string>;
   handleRedirects?: (baseURL: string, forwardedURL: string) => boolean;
+  onResponse?: (response: ILinkPreviewResponse, doc: cheerio.Root, url?: URL) => ILinkPreviewResponse;
 }
 
 interface IPreFetchedResource {
@@ -272,10 +293,10 @@ function parseTextResponse(
   url: string,
   options: ILinkPreviewOptions = {},
   contentType?: string
-) {
+): ILinkPreviewResponse {
   const doc = cheerio.load(body);
 
-  return {
+  let response = {
     url,
     title: getTitle(doc),
     siteName: getSiteName(doc),
@@ -286,6 +307,23 @@ function parseTextResponse(
     videos: getVideos(doc),
     favicons: getFavicons(doc, url),
   };
+
+  if (options?.onResponse && typeof options.onResponse !== `function`) {
+    throw new Error(
+      `link-preview-js onResponse option must be a function`
+    );
+  }
+
+  if (options?.onResponse) {
+	// send in a cloned response (to avoid mutation of original response reference)
+	const clonedResponse = structuredClone(response);
+	const urlObject = new URL(url)
+    response = options.onResponse(clonedResponse, doc, urlObject);
+  }
+
+
+  return response;
+
 }
 
 function parseUnknownResponse(

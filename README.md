@@ -95,6 +95,7 @@ Additionally, you can pass an options object which should add more functionality
 | followRedirects (**optional**) (default 'error')                                       | For security reasons, the library does not automatically follow redirects ('error' value), a malicious agent can exploit redirects to steal data, posible values: ('error', 'follow', 'manual') |
 | handleRedirects (**optional**) (with followRedirects 'manual')                         |                         When followRedirects is set to 'manual' you need to pass a function that validates if the redirectinon is secure, below you can find an example                         |
 | resolveDNSHost (**optional**)                                                          |                                                   Function that resolves the final address of the detected/parsed URL to prevent SSRF attacks                                                   |
+| onResponse (**optional**)                                                          |                                                   Function that handles the response object to allow for managing special cases                                                   |
 
 ```javascript
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
@@ -155,6 +156,25 @@ await getLinkPreview(`http://google.com/`, {
     } else {
       return false;
     }
+  },
+});
+```
+
+## onResponse Use Cases
+There may be situations where you need to provide your own logic for population properties in the response object. For example, if the library is unable to detect a description because the website does not provide OpenGraph data, you might want to use the text value of the first paragraph instead. This callback gives you access to the Cheerio doc instance, as well as the URL object so you could handle cases on a site-by-site basis, if you need to. This callback must return the modified response object
+
+```javascript
+await getLinkPreview(`https://example.com/`, {
+  onResponse: (response, doc, URL) => {
+    if (URL.hostname == 'example.com') {
+        response.siteName = 'Example Website';
+    }
+
+    if (!response.description) {
+      response.description = doc('p').first().text();
+    }
+    
+    return response;
   },
 });
 ```
