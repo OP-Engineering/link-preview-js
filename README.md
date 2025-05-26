@@ -160,8 +160,9 @@ await getLinkPreview(`http://google.com/`, {
 });
 ```
 
-## onResponse Use Cases
-There may be situations where you need to provide your own logic for population properties in the response object. For example, if the library is unable to detect a description because the website does not provide OpenGraph data, you might want to use the text value of the first paragraph instead. This callback gives you access to the Cheerio doc instance, as well as the URL object so you could handle cases on a site-by-site basis, if you need to. This callback must return the modified response object
+## onResponse
+
+In some cases the website might be missing OpenGraph tags and you might want to provide your own custom logic to try to parse data. For example, if the library is unable to detect a description, you might want to use the text value of the first paragraph instead. This callback gives you access to the Cheerio (the library internally used to parse the HTML) instance, as well as the URL object so you could handle cases on a site-by-site basis, if you need to. This callback must return the modified response object
 
 ```javascript
 await getLinkPreview(`https://example.com/`, {
