@@ -1,6 +1,17 @@
 import cheerio from "cheerio";
-import urlObj from "url";
 import { CONSTANTS } from "./constants";
+
+/**
+ * Resolves a relative URL against a base URL using WHATWG URL API
+ */
+function resolveUrl(base: string, relative: string): string {
+  try {
+    return new URL(relative, base).href;
+  } catch (e) {
+    // If URL construction fails, return the relative URL as-is
+    return relative;
+  }
+}
 
 interface ILinkPreviewResponse {
   url: string;
@@ -114,7 +125,7 @@ function getImages(
       if (node.type === `tag`) {
         src = node.attribs.content;
         if (src) {
-          src = urlObj.resolve(rootUrl, src);
+          src = resolveUrl(rootUrl, src);
           images.push(src);
         }
       }
@@ -124,7 +135,7 @@ function getImages(
   if (images.length <= 0 && !imagesPropertyType) {
     src = doc(`link[rel=image_src]`).attr(`href`);
     if (src) {
-      src = urlObj.resolve(rootUrl, src);
+      src = resolveUrl(rootUrl, src);
       images = [src];
     } else {
       nodes = doc(`img`);
@@ -138,7 +149,7 @@ function getImages(
             dic[src] = true;
             // width = node.attribs.width;
             // height = node.attribs.height;
-            images.push(urlObj.resolve(rootUrl, src));
+            images.push(resolveUrl(rootUrl, src));
           }
         });
       }
@@ -213,7 +224,7 @@ function getVideos(doc: cheerio.Root) {
 
 // returns default favicon (//hostname/favicon.ico) for a url
 function getDefaultFavicon(rootUrl: string) {
-  return urlObj.resolve(rootUrl, `/favicon.ico`);
+  return resolveUrl(rootUrl, `/favicon.ico`);
 }
 
 // returns an array of URLs to favicon images
@@ -237,7 +248,7 @@ function getFavicons(doc: cheerio.Root, rootUrl: string) {
       nodes.each((_: number, node: cheerio.Element) => {
         if (node.type === `tag`) src = node.attribs.href;
         if (src) {
-          src = urlObj.resolve(rootUrl, src);
+          src = resolveUrl(rootUrl, src);
           images.push(src);
         }
       });
@@ -471,12 +482,12 @@ export async function getLinkPreview(
     options?.handleRedirects
   ) {
     const locationHeader = response.headers.get(`location`) || ``;
-    const isAbsoluteURI = locationHeader.startsWith('http://') || locationHeader.startsWith('https://'); 
+    const isAbsoluteURI = locationHeader.startsWith('http://') || locationHeader.startsWith('https://');
 
     // Resolve the URL, handling both absolute and relative URLs
     const forwardedUrl = isAbsoluteURI
       ? locationHeader
-      : urlObj.resolve(fetchUrl, locationHeader);
+      : resolveUrl(fetchUrl, locationHeader);
 
     if (!options.handleRedirects(fetchUrl, forwardedUrl)) {
       throw new Error(`link-preview-js could not handle redirect`);
