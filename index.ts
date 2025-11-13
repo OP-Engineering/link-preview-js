@@ -6,6 +6,7 @@ interface ILinkPreviewResponse {
   url: string;
   title: string;
   siteName: string | undefined;
+  author: string | undefined;
   description: string | undefined;
   mediaType: string;
   contentType: string | undefined;
@@ -72,6 +73,13 @@ function getSiteName(doc: cheerio.Root) {
     metaTagContent(doc, `og:site_name`, `property`) ||
     metaTagContent(doc, `og:site_name`, `name`);
   return siteName;
+}
+
+function getAuthor(doc: cheerio.Root) {
+  const author =
+    metaTagContent(doc, `author`, `name`) ||
+    metaTagContent(doc, `article:author`, `property`);
+  return author;  
 }
 
 function getDescription(doc: cheerio.Root) {
@@ -301,6 +309,7 @@ function parseTextResponse(
     title: getTitle(doc),
     siteName: getSiteName(doc),
     description: getDescription(doc),
+    author: getAuthor(doc),
     mediaType: getMediaType(doc) || `website`,
     contentType,
     images: getImages(doc, url, options.imagesPropertyType),
