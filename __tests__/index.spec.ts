@@ -31,6 +31,14 @@ describe(`#getLinkPreview()`, () => {
     expect(linkInfo.charset?.toLowerCase()).toEqual(`utf-8`);
   });
 
+  it("should extract author from news article", async () => {
+    const linkInfo: any = await getLinkPreview(
+      `https://www.usatoday.com/story/special/contributor-content/2025/10/15/why-chaos-engineering-is-more-important-than-ever-in-the-ai-era/86712877007/`
+    );
+
+    expect(linkInfo.author).toEqual(`Matt Emma`);
+  })
+
   it(`should extract link info from a URL with a newline`, async () => {
     const linkInfo: any = await getLinkPreview(
       `
