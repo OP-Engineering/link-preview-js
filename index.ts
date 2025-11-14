@@ -2,13 +2,26 @@ import cheerio from "cheerio";
 import { CONSTANTS } from "./constants";
 
 /**
- * Resolves a relative URL against a base URL using WHATWG URL API
+ * Resolves a relative URL against a base URL
+ * Uses WHATWG URL API when available
+ * Falls back to legacy url.resolve() for environments like React Native
  */
 function resolveUrl(base: string, relative: string): string {
+  // Try WHATWG URL API first
+  if (typeof URL !== 'undefined') {
+    try {
+      return new URL(relative, base).href;
+    } catch (e) {
+      // If exception raised, fall through to legacy method
+    }
+  }
+
+  // Fallback to legacy url.resolve() for React Native and older environments
   try {
-    return new URL(relative, base).href;
+    const url = require('url');
+    return url.resolve(base, relative);
   } catch (e) {
-    // If URL construction fails, return the relative URL as-is
+    // If all else fails, return the relative URL as-is
     return relative;
   }
 }
