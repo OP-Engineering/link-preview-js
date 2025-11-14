@@ -1,6 +1,52 @@
 import cheerio from "cheerio";
-import urlObj from "url";
 import { CONSTANTS } from "./constants";
+
+/**
+ * Detects if we're running in a React Native context
+ */
+function isReactNative(): boolean {
+  
+  // Check for React Native specific global objects
+  const hasNativeBridgeHook =
+    typeof global !== 'undefined' &&
+    (typeof (global as any).nativeCallSyncHook === 'function' ||
+     typeof (global as any).__BUNDLE_START_TIME__ !== 'undefined' ||
+     typeof (global as any).nativePerformanceNow === 'function');
+
+  // Not a real browser DOM
+  const lacksDom =
+    typeof document === 'undefined' ||
+    typeof window === 'undefined';
+
+  return hasNativeBridgeHook && lacksDom;
+}
+
+/**
+ * Resolves a relative URL against a base URL
+ * Attempts to determine if React Native is being used, and if so, falls back to legacy URL resolution
+ * If React Native is not being used, falls back to the WHATWG URL API in Node.js and browsers
+ */
+function resolveUrl(base: string, relative: string, forceLegacy?: boolean): string {
+  // Use legacy method if forced or if React Native is detected
+  if (forceLegacy || isReactNative()) {
+    const url = require('url');
+    return url.resolve(base, relative);
+  }
+
+  // Use WHATWG URL API for Node.js and browsers
+  try {
+    return new URL(relative, base).href;
+  } catch (e) {
+    // Fallback to legacy method if URL construction fails
+    try {
+      const url = require('url');
+      return url.resolve(base, relative);
+    } catch (fallbackError) {
+      // If all else fails, return the relative URL as-is
+      return relative;
+    }
+  }
+}
 
 interface ILinkPreviewResponse {
   url: string;
@@ -31,6 +77,7 @@ interface ILinkPreviewOptions {
   resolveDNSHost?: (url: string) => Promise<string>;
   handleRedirects?: (baseURL: string, forwardedURL: string) => boolean;
   onResponse?: (response: ILinkPreviewResponse, doc: cheerio.Root, url?: URL) => ILinkPreviewResponse;
+  forceLegacyUrlResolve?: boolean;
 }
 
 interface IPreFetchedResource {
@@ -97,7 +144,8 @@ function getMediaType(doc: cheerio.Root) {
 function getImages(
   doc: cheerio.Root,
   rootUrl: string,
-  imagesPropertyType?: string
+  imagesPropertyType?: string,
+  forceLegacyUrlResolve?: boolean
 ) {
   let images: string[] = [];
   let nodes: cheerio.Cheerio | null;
@@ -114,7 +162,7 @@ function getImages(
       if (node.type === `tag`) {
         src = node.attribs.content;
         if (src) {
-          src = urlObj.resolve(rootUrl, src);
+          src = resolveUrl(rootUrl, src, forceLegacyUrlResolve);
           images.push(src);
         }
       }
@@ -124,7 +172,7 @@ function getImages(
   if (images.length <= 0 && !imagesPropertyType) {
     src = doc(`link[rel=image_src]`).attr(`href`);
     if (src) {
-      src = urlObj.resolve(rootUrl, src);
+      src = resolveUrl(rootUrl, src, forceLegacyUrlResolve);
       images = [src];
     } else {
       nodes = doc(`img`);
@@ -138,7 +186,7 @@ function getImages(
             dic[src] = true;
             // width = node.attribs.width;
             // height = node.attribs.height;
-            images.push(urlObj.resolve(rootUrl, src));
+            images.push(resolveUrl(rootUrl, src, forceLegacyUrlResolve));
           }
         });
       }
@@ -212,12 +260,12 @@ function getVideos(doc: cheerio.Root) {
 }
 
 // returns default favicon (//hostname/favicon.ico) for a url
-function getDefaultFavicon(rootUrl: string) {
-  return urlObj.resolve(rootUrl, `/favicon.ico`);
+function getDefaultFavicon(rootUrl: string, forceLegacyUrlResolve?: boolean) {
+  return resolveUrl(rootUrl, `/favicon.ico`, forceLegacyUrlResolve);
 }
 
 // returns an array of URLs to favicon images
-function getFavicons(doc: cheerio.Root, rootUrl: string) {
+function getFavicons(doc: cheerio.Root, rootUrl: string, forceLegacyUrlResolve?: boolean) {
   const images = [];
   let nodes: cheerio.Cheerio | never[] = [];
   let src: string | undefined;
@@ -237,7 +285,7 @@ function getFavicons(doc: cheerio.Root, rootUrl: string) {
       nodes.each((_: number, node: cheerio.Element) => {
         if (node.type === `tag`) src = node.attribs.href;
         if (src) {
-          src = urlObj.resolve(rootUrl, src);
+          src = resolveUrl(rootUrl, src, forceLegacyUrlResolve);
           images.push(src);
         }
       });
@@ -246,45 +294,45 @@ function getFavicons(doc: cheerio.Root, rootUrl: string) {
 
   // if no icon images, use default favicon location
   if (images.length <= 0) {
-    images.push(getDefaultFavicon(rootUrl));
+    images.push(getDefaultFavicon(rootUrl, forceLegacyUrlResolve));
   }
 
   return images;
 }
 
-function parseImageResponse(url: string, contentType: string) {
+function parseImageResponse(url: string, contentType: string, forceLegacyUrlResolve?: boolean) {
   return {
     url,
     mediaType: `image`,
     contentType,
-    favicons: [getDefaultFavicon(url)],
+    favicons: [getDefaultFavicon(url, forceLegacyUrlResolve)],
   };
 }
 
-function parseAudioResponse(url: string, contentType: string) {
+function parseAudioResponse(url: string, contentType: string, forceLegacyUrlResolve?: boolean) {
   return {
     url,
     mediaType: `audio`,
     contentType,
-    favicons: [getDefaultFavicon(url)],
+    favicons: [getDefaultFavicon(url, forceLegacyUrlResolve)],
   };
 }
 
-function parseVideoResponse(url: string, contentType: string) {
+function parseVideoResponse(url: string, contentType: string, forceLegacyUrlResolve?: boolean) {
   return {
     url,
     mediaType: `video`,
     contentType,
-    favicons: [getDefaultFavicon(url)],
+    favicons: [getDefaultFavicon(url, forceLegacyUrlResolve)],
   };
 }
 
-function parseApplicationResponse(url: string, contentType: string) {
+function parseApplicationResponse(url: string, contentType: string, forceLegacyUrlResolve?: boolean) {
   return {
     url,
     mediaType: `application`,
     contentType,
-    favicons: [getDefaultFavicon(url)],
+    favicons: [getDefaultFavicon(url, forceLegacyUrlResolve)],
   };
 }
 
@@ -303,9 +351,9 @@ function parseTextResponse(
     description: getDescription(doc),
     mediaType: getMediaType(doc) || `website`,
     contentType,
-    images: getImages(doc, url, options.imagesPropertyType),
+    images: getImages(doc, url, options.imagesPropertyType, options.forceLegacyUrlResolve),
     videos: getVideos(doc),
-    favicons: getFavicons(doc, url),
+    favicons: getFavicons(doc, url, options.forceLegacyUrlResolve),
   };
 
   if (options?.onResponse && typeof options.onResponse !== `function`) {
@@ -362,15 +410,15 @@ function parseResponse(
 
     // parse response depending on content type
     if (CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
-      return { ...parseImageResponse(response.url, contentType), charset };
+      return { ...parseImageResponse(response.url, contentType, options?.forceLegacyUrlResolve), charset };
     }
 
     if (CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
-      return { ...parseAudioResponse(response.url, contentType), charset };
+      return { ...parseAudioResponse(response.url, contentType, options?.forceLegacyUrlResolve), charset };
     }
 
     if (CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
-      return { ...parseVideoResponse(response.url, contentType), charset };
+      return { ...parseVideoResponse(response.url, contentType, options?.forceLegacyUrlResolve), charset };
     }
 
     if (CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
@@ -383,7 +431,7 @@ function parseResponse(
 
     if (CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
       return {
-        ...parseApplicationResponse(response.url, contentType),
+        ...parseApplicationResponse(response.url, contentType, options?.forceLegacyUrlResolve),
         charset,
       };
     }
@@ -476,7 +524,7 @@ export async function getLinkPreview(
     // Resolve the URL, handling both absolute and relative URLs
     const forwardedUrl = isAbsoluteURI
       ? locationHeader
-      : urlObj.resolve(fetchUrl, locationHeader);
+      : resolveUrl(fetchUrl, locationHeader, options?.forceLegacyUrlResolve);
 
     if (!options.handleRedirects(fetchUrl, forwardedUrl)) {
       throw new Error(`link-preview-js could not handle redirect`);
