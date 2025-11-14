@@ -96,6 +96,7 @@ Additionally, you can pass an options object which should add more functionality
 | handleRedirects (**optional**) (with followRedirects 'manual')                         |                         When followRedirects is set to 'manual' you need to pass a function that validates if the redirectinon is secure, below you can find an example                         |
 | resolveDNSHost (**optional**)                                                          |                                                   Function that resolves the final address of the detected/parsed URL to prevent SSRF attacks                                                   |
 | onResponse (**optional**)                                                          |                                                   Function that handles the response object to allow for managing special cases                                                   |
+| forceLegacyUrlResolve (**optional**) (default false)                                   |                                                   Force the use of legacy URL resolution instead of WHATWG URL API. Set to `true` for React Native compatibility if auto-detection fails                                                   |
 
 ```javascript
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
