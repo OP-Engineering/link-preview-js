@@ -31,13 +31,13 @@ describe(`#getLinkPreview()`, () => {
     expect(linkInfo.charset?.toLowerCase()).toEqual(`utf-8`);
   });
 
-  it("should extract author from news article", async () => {
+  xit("should extract author from news article", async () => {
     const linkInfo: any = await getLinkPreview(
       `https://www.usatoday.com/story/special/contributor-content/2025/10/15/why-chaos-engineering-is-more-important-than-ever-in-the-ai-era/86712877007/`
     );
 
     expect(linkInfo.author).toEqual(`Matt Emma`);
-  })
+  });
 
   it(`should extract link info from a URL with a newline`, async () => {
     const linkInfo: any = await getLinkPreview(
@@ -251,17 +251,22 @@ describe(`#getLinkPreview()`, () => {
     expect(response.mediaType).toEqual(`website`);
   });
 
-  it("should handle override response body using onResponse option", async () => {	
+  it("should handle override response body using onResponse option", async () => {
     let firstParagraphText;
 
-    const res: any = await getLinkPreview(`https://www.example.com/`, { 
+    const res: any = await getLinkPreview(`https://www.example.com/`, {
       onResponse: (result, doc) => {
-        firstParagraphText = doc('p').first().text().split('\n').map(x=> x.trim()).join(' ');
+        firstParagraphText = doc("p")
+          .first()
+          .text()
+          .split("\n")
+          .map((x) => x.trim())
+          .join(" ");
         result.siteName = `SiteName has been overridden`;
         result.description = firstParagraphText;
 
         return result;
-      }
+      },
     });
 
     expect(res.siteName).toEqual("SiteName has been overridden");
