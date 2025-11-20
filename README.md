@@ -26,6 +26,9 @@ It's more than likely there is nothing wrong with the library:
 - If the target website does not have OpenGraph tags **the preview will most likely fail**, there are some fallbacks but in general, it will not work
 - **You cannot preview (fetch) another web page from YOUR web page. This is an intentional security feature of browsers called CORS**
 
+<h1>DO NOT FETCH CONTENT DIRECTLY FROM A USERS DEVICE. ONLY RUN THIS IN YOUR SERVER AND SANDBOX IT IF YOU CAN</h1>
+Browsers block this via cors, but you might be clever like a fox and run this in React Native. This is a bad idea, you are exposing the device user to potentially malicious links
+
 If you use this library and find it useful please consider [sponsoring me](https://github.com/sponsors/ospfranco), open source takes a lot of time and effort.
 
 # Link Preview
