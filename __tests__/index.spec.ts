@@ -1,5 +1,21 @@
 import { getLinkPreview, getPreviewFromContent } from "../index";
+import { CONSTANTS } from "../constants";
 import prefetchedResponse from "./sampleResponse.json";
+
+describe(`#REGEX_LOOPBACK`, () => {
+  it(`matches IPv6 loopback and local ranges`, () => {
+    expect(CONSTANTS.REGEX_LOOPBACK.test(`::1`)).toBe(true);
+    expect(CONSTANTS.REGEX_LOOPBACK.test(`::ffff:127.0.0.1`)).toBe(true);
+    expect(CONSTANTS.REGEX_LOOPBACK.test(`fc00::1`)).toBe(true);
+    expect(CONSTANTS.REGEX_LOOPBACK.test(`fd12:3456:789a::1`)).toBe(true);
+    expect(CONSTANTS.REGEX_LOOPBACK.test(`fe80::abcd`)).toBe(true);
+    expect(CONSTANTS.REGEX_LOOPBACK.test(`febf::abcd`)).toBe(true);
+  });
+
+  it(`does not match non-local IPv6 addresses`, () => {
+    expect(CONSTANTS.REGEX_LOOPBACK.test(`2001:4860:4860::8888`)).toBe(false);
+  });
+});
 
 describe(`#getLinkPreview()`, () => {
   it(`should extract link info from just URL`, async () => {
@@ -147,6 +163,32 @@ describe(`#getLinkPreview()`, () => {
   it(`should handle malformed urls gracefully`, async () => {
     await expect(
       getLinkPreview(`this is a malformed link: ahttps://www.youtube.com/watch?v=wuClZjOdT30`),
+    ).rejects.toThrowErrorMatchingSnapshot();
+  });
+
+  it(`should block .internal hostnames`, async () => {
+    await expect(
+      getLinkPreview(
+        `http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token`,
+      ),
+    ).rejects.toThrowErrorMatchingSnapshot();
+  });
+
+  it(`should block .local hostnames`, async () => {
+    await expect(
+      getLinkPreview(`http://printer.local/status`),
+    ).rejects.toThrowErrorMatchingSnapshot();
+  });
+
+  it(`should block nip.io wildcard hostnames`, async () => {
+    await expect(
+      getLinkPreview(`http://169.254.169.254.nip.io/latest/meta-data/iam/security-credentials/`),
+    ).rejects.toThrowErrorMatchingSnapshot();
+  });
+
+  it(`should block sslip.io wildcard hostnames`, async () => {
+    await expect(
+      getLinkPreview(`http://127.0.0.1.sslip.io/`),
     ).rejects.toThrowErrorMatchingSnapshot();
   });
 

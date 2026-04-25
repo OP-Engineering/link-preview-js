@@ -1,6 +1,14 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`#getLinkPreview() no link in text should fail gracefully 1`] = `"link-preview-js did not receive a valid a url or text"`;
+
+exports[`#getLinkPreview() should block .internal hostnames 1`] = `"link-preview-js did not receive a valid a url or text"`;
+
+exports[`#getLinkPreview() should block .local hostnames 1`] = `"link-preview-js did not receive a valid a url or text"`;
+
+exports[`#getLinkPreview() should block nip.io wildcard hostnames 1`] = `"link-preview-js did not receive a valid a url or text"`;
+
+exports[`#getLinkPreview() should block sslip.io wildcard hostnames 1`] = `"link-preview-js did not receive a valid a url or text"`;
 
 exports[`#getLinkPreview() should handle empty strings gracefully 1`] = `"link-preview-js did not receive a valid url or text"`;
 
