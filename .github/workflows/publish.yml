@@ -19,6 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          registry-url: "https://registry.npmjs.org"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -32,7 +33,7 @@ jobs:
         run: bun run build
 
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish
 
       - name: Create a Release
         uses: elgohr/Github-Release-Action@v5
