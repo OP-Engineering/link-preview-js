@@ -1,4 +1,4 @@
-import cheerio from "cheerio";
+import { load, type Cheerio, type CheerioAPI, type Element } from "cheerio";
 import { CONSTANTS } from "./constants";
 
 interface ILinkPreviewResponse {
@@ -30,11 +30,7 @@ interface ILinkPreviewOptions {
   followRedirects?: `follow` | `error` | `manual`;
   resolveDNSHost?: (url: string) => Promise<string>;
   handleRedirects?: (baseURL: string, forwardedURL: string) => boolean;
-  onResponse?: (
-    response: ILinkPreviewResponse,
-    doc: cheerio.Root,
-    url?: URL,
-  ) => ILinkPreviewResponse;
+  onResponse?: (response: ILinkPreviewResponse, doc: CheerioAPI, url?: URL) => ILinkPreviewResponse;
 }
 
 interface IPreFetchedResource {
@@ -52,40 +48,37 @@ function throwOnLoopback(address: string) {
   }
 }
 
-function metaTag(doc: cheerio.Root, type: string, attr: string) {
+function metaTag(doc: CheerioAPI, type: string, attr: string) {
   const nodes = doc(`meta[${attr}='${type}']`);
   return nodes.length ? nodes : null;
 }
 
-function metaTagContent(doc: cheerio.Root, type: string, attr: string) {
+function metaTagContent(doc: CheerioAPI, type: string, attr: string) {
   return doc(`meta[${attr}='${type}']`).attr(`content`);
 }
 
-function getTitle(doc: cheerio.Root) {
+function getTitle(doc: CheerioAPI) {
   let title =
-    metaTagContent(doc, `og:title`, `property`) ||
-    metaTagContent(doc, `og:title`, `name`);
+    metaTagContent(doc, `og:title`, `property`) || metaTagContent(doc, `og:title`, `name`);
   if (!title) {
     title = doc(`head > title`).text();
   }
   return title;
 }
 
-function getSiteName(doc: cheerio.Root) {
+function getSiteName(doc: CheerioAPI) {
   const siteName =
-    metaTagContent(doc, `og:site_name`, `property`) ||
-    metaTagContent(doc, `og:site_name`, `name`);
+    metaTagContent(doc, `og:site_name`, `property`) || metaTagContent(doc, `og:site_name`, `name`);
   return siteName;
 }
 
-function getAuthor(doc: cheerio.Root) {
+function getAuthor(doc: CheerioAPI) {
   const author =
-    metaTagContent(doc, `author`, `name`) ||
-    metaTagContent(doc, `article:author`, `property`);
+    metaTagContent(doc, `author`, `name`) || metaTagContent(doc, `article:author`, `property`);
   return author;
 }
 
-function getDescription(doc: cheerio.Root) {
+function getDescription(doc: CheerioAPI) {
   const description =
     metaTagContent(doc, `description`, `name`) ||
     metaTagContent(doc, `Description`, `name`) ||
@@ -93,25 +86,18 @@ function getDescription(doc: cheerio.Root) {
   return description;
 }
 
-function getMediaType(doc: cheerio.Root) {
+function getMediaType(doc: CheerioAPI) {
   const node = metaTag(doc, `medium`, `name`);
   if (node) {
     const content = node.attr(`content`);
     return content === `image` ? `photo` : content;
   }
-  return (
-    metaTagContent(doc, `og:type`, `property`) ||
-    metaTagContent(doc, `og:type`, `name`)
-  );
+  return metaTagContent(doc, `og:type`, `property`) || metaTagContent(doc, `og:type`, `name`);
 }
 
-function getImages(
-  doc: cheerio.Root,
-  rootUrl: string,
-  imagesPropertyType?: string,
-) {
+function getImages(doc: CheerioAPI, rootUrl: string, imagesPropertyType?: string) {
   let images: string[] = [];
-  let nodes: cheerio.Cheerio | null;
+  let nodes: Cheerio<Element> | null;
   let src: string | undefined;
   let dic: Record<string, boolean> = {};
 
@@ -121,7 +107,7 @@ function getImages(
     metaTag(doc, `${imagePropertyType}:image`, `name`);
 
   if (nodes) {
-    nodes.each((_: number, node: cheerio.Element) => {
+    nodes.each((_: number, node: Element) => {
       if (node.type === `tag`) {
         src = node.attribs.content;
         if (src) {
@@ -143,7 +129,7 @@ function getImages(
       if (nodes?.length) {
         dic = {};
         images = [];
-        nodes.each((_: number, node: cheerio.Element) => {
+        nodes.each((_: number, node: Element) => {
           if (node.type === `tag`) src = node.attribs.src;
           if (src && !dic[src]) {
             dic[src] = true;
@@ -159,7 +145,7 @@ function getImages(
   return images;
 }
 
-function getVideos(doc: cheerio.Root) {
+function getVideos(doc: CheerioAPI) {
   const videos = [];
   let nodeTypes;
   let nodeSecureUrls;
@@ -173,13 +159,10 @@ function getVideos(doc: cheerio.Root) {
   let videoObj;
   let index;
 
-  const nodes =
-    metaTag(doc, `og:video`, `property`) || metaTag(doc, `og:video`, `name`);
+  const nodes = metaTag(doc, `og:video`, `property`) || metaTag(doc, `og:video`, `name`);
 
   if (nodes?.length) {
-    nodeTypes =
-      metaTag(doc, `og:video:type`, `property`) ||
-      metaTag(doc, `og:video:type`, `name`);
+    nodeTypes = metaTag(doc, `og:video:type`, `property`) || metaTag(doc, `og:video:type`, `name`);
     nodeSecureUrls =
       metaTag(doc, `og:video:secure_url`, `property`) ||
       metaTag(doc, `og:video:secure_url`, `name`);
@@ -228,16 +211,12 @@ function getDefaultFavicon(rootUrl: string): string {
 }
 
 // returns an array of URLs to favicon images
-function getFavicons(doc: cheerio.Root, rootUrl: string): string[] {
+function getFavicons(doc: CheerioAPI, rootUrl: string): string[] {
   const images = [];
-  let nodes: cheerio.Cheerio | never[] = [];
+  let nodes: Cheerio<Element>;
   let src: string | undefined;
 
-  const relSelectors = [
-    `rel=icon`,
-    `rel="shortcut icon"`,
-    `rel=apple-touch-icon`,
-  ];
+  const relSelectors = [`rel=icon`, `rel="shortcut icon"`, `rel=apple-touch-icon`];
 
   relSelectors.forEach((relSelector) => {
     // look for all icon tags
@@ -245,7 +224,7 @@ function getFavicons(doc: cheerio.Root, rootUrl: string): string[] {
 
     // collect all images from icon tags
     if (nodes.length) {
-      nodes.each((_: number, node: cheerio.Element) => {
+      nodes.each((_: number, node: Element) => {
         if (node.type === `tag`) src = node.attribs.href;
         if (src) {
           src = new URL(src, rootUrl).href;
@@ -305,7 +284,7 @@ function parseTextResponse(
   options: ILinkPreviewOptions = {},
   contentType?: string,
 ): ILinkPreviewResponse {
-  const doc = cheerio.load(body);
+  const doc = load(body);
 
   let response = {
     url,
@@ -343,10 +322,7 @@ function parseUnknownResponse(
   return parseTextResponse(body, url, options, contentType);
 }
 
-function parseResponse(
-  response: IPreFetchedResource,
-  options?: ILinkPreviewOptions,
-) {
+function parseResponse(response: IPreFetchedResource, options?: ILinkPreviewOptions) {
   try {
     // console.log("[link-preview-js] response", response);
     let contentType = response.headers[`content-type`];
@@ -402,11 +378,7 @@ function parseResponse(
       charset,
     };
   } catch (e) {
-    throw new Error(
-      `link-preview-js could not fetch link information ${(
-        e as any
-      ).toString()}`,
-    );
+    throw new Error(`link-preview-js could not fetch link information ${(e as any).toString()}`);
   }
 }
 
@@ -417,10 +389,7 @@ function parseResponse(
  * @param text string, text to be parsed
  * @param options ILinkPreviewOptions
  */
-export async function getLinkPreview(
-  text: string,
-  options?: ILinkPreviewOptions,
-) {
+export async function getLinkPreview(text: string, options?: ILinkPreviewOptions) {
   if (!text || typeof text !== `string`) {
     throw new Error(`link-preview-js did not receive a valid url or text`);
   }
@@ -440,7 +409,7 @@ export async function getLinkPreview(
     );
   }
 
-  if (!!options?.resolveDNSHost) {
+  if (options?.resolveDNSHost) {
     const resolvedUrl = await options.resolveDNSHost(detectedUrl);
 
     throwOnLoopback(resolvedUrl);
@@ -456,9 +425,7 @@ export async function getLinkPreview(
     signal: controller.signal,
   };
 
-  const fetchUrl = options?.proxyUrl
-    ? options.proxyUrl.concat(detectedUrl)
-    : detectedUrl;
+  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
 
   let response = await fetch(fetchUrl, fetchOptions).catch((e) => {
     if (e.name === `AbortError`) {
@@ -477,19 +444,16 @@ export async function getLinkPreview(
   ) {
     const locationHeader = response.headers.get(`location`) || ``;
     const isAbsoluteURI =
-      locationHeader.startsWith("http://") ||
-      locationHeader.startsWith("https://");
+      locationHeader.startsWith("http://") || locationHeader.startsWith("https://");
 
     // Resolve the URL, handling both absolute and relative URLs
-    const forwardedUrl = isAbsoluteURI
-      ? locationHeader
-      : new URL(locationHeader, fetchUrl).href;
+    const forwardedUrl = isAbsoluteURI ? locationHeader : new URL(locationHeader, fetchUrl).href;
 
     if (!options.handleRedirects(fetchUrl, forwardedUrl)) {
       throw new Error(`link-preview-js could not handle redirect`);
     }
 
-    if (!!options?.resolveDNSHost) {
+    if (options?.resolveDNSHost) {
       const resolvedUrl = await options.resolveDNSHost(forwardedUrl);
 
       throwOnLoopback(resolvedUrl);
@@ -506,9 +470,7 @@ export async function getLinkPreview(
   });
 
   const normalizedResponse: IPreFetchedResource = {
-    url: options?.proxyUrl
-      ? response.url.replace(options.proxyUrl, ``)
-      : response.url,
+    url: options?.proxyUrl ? response.url.replace(options.proxyUrl, ``) : response.url,
     headers,
     data: await response.text(),
   };
