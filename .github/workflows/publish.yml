@@ -7,7 +7,6 @@ on:
 permissions:
   contents: write
   id-token: write
-  packages: write
 
 jobs:
   publish:
@@ -20,7 +19,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          registry-url: https://registry.npmjs.org
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -33,7 +31,8 @@ jobs:
       - name: Compile typescript
         run: bun run build
 
-      - run: npm publish
+      - name: Publish to npm
+        run: npm publish --provenance --access public
 
       - name: Create a Release
         uses: elgohr/Github-Release-Action@v5
