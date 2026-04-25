@@ -32,7 +32,7 @@
   "author": "Oscar Franco",
   "email": "ospfranco@protonmail.com",
   "license": "MIT",
-  "repository": "https://github.com/ospfranco/link-preview-js",
+  "repository": "https://github.com/OP-Engineering/link-preview-js",
   "dependencies": {
     "cheerio": "1.0.0-rc.11"
   },
