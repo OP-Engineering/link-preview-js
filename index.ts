@@ -413,6 +413,10 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
     const resolvedUrl = await options.resolveDNSHost(detectedUrl);
 
     throwOnLoopback(resolvedUrl);
+  } else {
+    console.error(
+      "[link-preview-js] You are not resolving DNS addresses (resolveDNSHost option) before fetching a link. This can cause loopback attacks. Always try to resolve DNS addresses",
+    );
   }
 
   const timeout = options?.timeout ?? 3000; // 3 second timeout default

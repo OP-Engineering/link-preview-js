@@ -5,6 +5,9 @@ export const CONSTANTS = {
       "(?:(?:https?|ftp)://)" +
       // user:pass authentication
       "(?:\\S+(?::\\S*)?@)?" +
+      // block internal-only hostnames and wildcard DNS rebinding services
+      "(?![^/?#]+\\.(?:internal|local)(?::\\d{2,5})?(?:[/?#]|$))" +
+      "(?![^/?#]+\\.(?:nip|sslip)\\.io(?::\\d{2,5})?(?:[/?#]|$))" +
       "(?:" +
       // IP address exclusion
       // private & local networks
@@ -34,7 +37,7 @@ export const CONSTANTS = {
       // resource path
       "(?:[/?#]\\S*)?" +
       "$",
-    "i"
+    "i",
   ),
 
   REGEX_LOOPBACK: new RegExp(
@@ -63,8 +66,20 @@ export const CONSTANTS = {
       "|" +
       // Carrier-Grade NAT (CGNAT): 100.64.0.0 - 100.127.255.255
       "(?:100\\.(?:6[4-9]|[7-9]\\d|1[0-1]\\d)(?:\\.\\d{1,3}){2})" +
+      "|" +
+      // IPv6 loopback
+      "(?:::1)" +
+      "|" +
+      // IPv4-mapped IPv6 loopback: ::ffff:127.0.0.0/104
+      "(?:::ffff:127(?:\\.\\d{1,3}){3})" +
+      "|" +
+      // IPv6 Unique Local Address (ULA): fc00::/7
+      "(?:f[c-d][0-9a-f]{2}:[0-9a-f:]+)" +
+      "|" +
+      // IPv6 link-local unicast: fe80::/10
+      "(?:fe[89ab][0-9a-f]:[0-9a-f:]+)" +
       "$",
-    "i"
+    "i",
   ),
 
   REGEX_CONTENT_TYPE_IMAGE: new RegExp("image/.*", "i"),
