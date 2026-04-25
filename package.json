@@ -15,6 +15,10 @@
     "test": "jest",
     "test:ci": "jest --testLocationInResults --ci --outputFile=test_results.json --json",
     "build": "tsc",
+    "lint": "oxlint . --jest-plugin --deny-warnings",
+    "lint:fix": "oxlint . --jest-plugin --fix",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
     "bump": "./bump-version.sh",
     "prepublishOnly": "tsc"
   },
@@ -38,11 +42,12 @@
   "devDependencies": {
     "@skypack/package-check": "^0.2.2",
     "@types/cheerio": "0.22.24",
-    "@types/jest": "^28.1.4",
-    "jest": "^28.1.2",
-    "prettier": "2.7.1",
-    "ts-jest": "^28.0.5",
-    "typescript": "^4.7.4"
+    "@types/jest": "^30.0.0",
+    "jest": "30.3.0",
+    "oxfmt": "^0.46.0",
+    "oxlint": "^1.61.0",
+    "ts-jest": "29.4.9",
+    "typescript": "6.0.3"
   },
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610",
   "engines": {

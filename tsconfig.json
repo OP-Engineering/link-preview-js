@@ -3,12 +3,18 @@
     "outDir": "build",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "declaration": true,
-    "target": "es5",
+    "target": "es6",
     "skipLibCheck": true,
     "strict": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": [
+      "jest"
+    ]
   },
-  "exclude": ["node_modules", "build"]
+  "exclude": [
+    "node_modules",
+    "build"
+  ]
 }
