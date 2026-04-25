@@ -8,21 +8,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Cache dependencies
-        id: yarn-cache
-        uses: actions/cache@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          path: |
-            **/node_modules
-            .yarn/install-state.gz
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}-${{ hashFiles('**/package.json', '!node_modules/**') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-            ${{ runner.os }}-yarn-
+          bun-version: latest
 
       - name: Install dependencies
-        run: yarn
+        run: bun install --frozen-lockfile
 
       - name: Run tests
-        run: yarn test
+        run: bun run test
