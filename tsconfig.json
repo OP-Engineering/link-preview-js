@@ -3,7 +3,7 @@
     "outDir": "build",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "nodenext",
     "declaration": true,
     "target": "es6",
     "skipLibCheck": true,
