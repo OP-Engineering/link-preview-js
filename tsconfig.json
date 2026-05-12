@@ -3,6 +3,7 @@
     "outDir": "build",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "module": "nodenext",
     "moduleResolution": "nodenext",
     "declaration": true,
     "target": "es6",
