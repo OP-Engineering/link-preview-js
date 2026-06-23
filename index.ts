@@ -42,10 +42,215 @@ interface IPreFetchedResource {
   data: string;
 }
 
-function throwOnLoopback(address: string) {
-  if (CONSTANTS.REGEX_LOOPBACK.test(address)) {
+function parseIPv4Address(address: string) {
+  const parts = address.split(".");
+
+  if (parts.length !== 4) {
+    return undefined;
+  }
+
+  const octets = parts.map((part) => Number(part));
+
+  if (octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)) {
+    return undefined;
+  }
+
+  return octets;
+}
+
+function parseIPv6Hextets(address: string) {
+  const addressWithoutZone = address.split("%")[0];
+  const ipv4Match = addressWithoutZone.match(/(.+:)(\d{1,3}(?:\.\d{1,3}){3})$/);
+  let normalizedAddress = addressWithoutZone;
+
+  if (ipv4Match) {
+    const octets = parseIPv4Address(ipv4Match[2]);
+
+    if (!octets) {
+      return undefined;
+    }
+
+    normalizedAddress =
+      ipv4Match[1] +
+      [
+        ((octets[0] << 8) | octets[1]).toString(16),
+        ((octets[2] << 8) | octets[3]).toString(16),
+      ].join(":");
+  }
+
+  const compressedParts = normalizedAddress.toLowerCase().split("::");
+
+  if (compressedParts.length > 2) {
+    return undefined;
+  }
+
+  const left = compressedParts[0] ? compressedParts[0].split(":") : [];
+  const right = compressedParts[1] ? compressedParts[1].split(":") : [];
+  const missing = 8 - left.length - right.length;
+
+  if (missing < 0 || (compressedParts.length === 1 && missing !== 0)) {
+    return undefined;
+  }
+
+  const hextets = [...left, ...Array(missing).fill("0"), ...right].map((part) => {
+    if (!/^[\da-f]{1,4}$/i.test(part)) {
+      return undefined;
+    }
+
+    return Number.parseInt(part, 16);
+  });
+
+  if (hextets.some((part) => part === undefined)) {
+    return undefined;
+  }
+
+  return hextets as number[];
+}
+
+function ipv4FromHextets(high: number, low: number) {
+  return `${high >> 8}.${high & 255}.${low >> 8}.${low & 255}`;
+}
+
+function getEmbeddedIPv4Address(address: string) {
+  const hextets = parseIPv6Hextets(address);
+
+  if (!hextets) {
+    return undefined;
+  }
+
+  const firstFiveAreZero = hextets.slice(0, 5).every((part) => part === 0);
+  const firstSixAreZero = firstFiveAreZero && hextets[5] === 0;
+  const isIPv4Mapped = firstFiveAreZero && hextets[5] === 0xffff;
+  const isNat64WellKnownPrefix =
+    hextets[0] === 0x64 && hextets[1] === 0xff9b && hextets.slice(2, 6).every((part) => part === 0);
+
+  if (firstSixAreZero || isIPv4Mapped || isNat64WellKnownPrefix) {
+    return ipv4FromHextets(hextets[6], hextets[7]);
+  }
+
+  if (hextets[0] === 0x2002) {
+    return ipv4FromHextets(hextets[1], hextets[2]);
+  }
+
+  return undefined;
+}
+
+function isIPv4AddressBlocked(address: string) {
+  const octets = parseIPv4Address(address);
+
+  if (!octets) {
+    return false;
+  }
+
+  const [first, second, third] = octets;
+
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 192 && second === 0 && third === 2) ||
+    (first === 198 && second === 51 && third === 100) ||
+    (first === 203 && second === 0 && third === 113) ||
+    first >= 224
+  );
+}
+
+function isIPv6AddressBlocked(address: string) {
+  const hextets = parseIPv6Hextets(address);
+
+  if (!hextets) {
+    return false;
+  }
+
+  const embeddedIPv4Address = getEmbeddedIPv4Address(address);
+
+  return (
+    hextets.every((part) => part === 0) ||
+    (hextets.slice(0, 7).every((part) => part === 0) && hextets[7] === 1) ||
+    (hextets[0] & 0xfe00) === 0xfc00 ||
+    (hextets[0] & 0xffc0) === 0xfe80 ||
+    Boolean(embeddedIPv4Address && isIPv4AddressBlocked(embeddedIPv4Address))
+  );
+}
+
+function stripIPv6Brackets(address: string) {
+  if (address.startsWith("[") && address.endsWith("]")) {
+    return address.slice(1, -1);
+  }
+
+  return address;
+}
+
+function normalizeIPAddress(address: string) {
+  const normalizedAddress = stripIPv6Brackets(address.trim()).split("%")[0];
+
+  if (parseIPv4Address(normalizedAddress)) {
+    return normalizedAddress;
+  }
+
+  if (parseIPv6Hextets(normalizedAddress)) {
+    return normalizedAddress.toLowerCase();
+  }
+
+  return undefined;
+}
+
+function getResolvedAddress(addressOrUrl: string) {
+  const trimmedAddress = addressOrUrl.trim();
+
+  if (trimmedAddress.startsWith("http://") || trimmedAddress.startsWith("https://")) {
+    return normalizeIPAddress(new URL(trimmedAddress).hostname);
+  }
+
+  return normalizeIPAddress(trimmedAddress);
+}
+
+function throwOnLoopback(addressOrUrl: string) {
+  const normalizedAddress = getResolvedAddress(addressOrUrl);
+
+  if (normalizedAddress) {
+    if (isIPv4AddressBlocked(normalizedAddress) || isIPv6AddressBlocked(normalizedAddress)) {
+      throw new Error("SSRF request detected, trying to query host");
+    }
+
+    return;
+  }
+
+  if (CONSTANTS.REGEX_LOOPBACK.test(addressOrUrl.trim())) {
     throw new Error("SSRF request detected, trying to query host");
   }
+}
+
+function formatHostnameForUrl(address: string) {
+  return parseIPv6Hextets(address) ? `[${address}]` : address;
+}
+
+function getValidatedFetchUrl(url: string, resolvedAddressOrUrl?: string) {
+  if (!resolvedAddressOrUrl) {
+    return url;
+  }
+
+  const trimmedResolvedAddressOrUrl = resolvedAddressOrUrl.trim();
+  const resolvedAddress = getResolvedAddress(trimmedResolvedAddressOrUrl);
+
+  if (!resolvedAddress) {
+    throw new Error("resolveDNSHost must resolve to an IP address or URL");
+  }
+
+  if (
+    trimmedResolvedAddressOrUrl.startsWith("http://") ||
+    trimmedResolvedAddressOrUrl.startsWith("https://")
+  ) {
+    return trimmedResolvedAddressOrUrl;
+  }
+
+  const parsedUrl = new URL(url);
+  parsedUrl.hostname = formatHostnameForUrl(resolvedAddress);
+  return parsedUrl.href;
 }
 
 function metaTag(doc: CheerioAPI, type: string, attr: string) {
@@ -409,8 +614,10 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
     );
   }
 
+  let resolvedUrl: string | undefined;
+
   if (options?.resolveDNSHost) {
-    const resolvedUrl = await options.resolveDNSHost(detectedUrl);
+    resolvedUrl = await options.resolveDNSHost(detectedUrl);
 
     throwOnLoopback(resolvedUrl);
   } else {
@@ -423,63 +630,73 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
   const controller = new AbortController();
   const timeoutCounter = setTimeout(() => controller.abort(), timeout);
 
-  const fetchOptions = {
+  const fetchOptions: RequestInit = {
     headers: options?.headers ?? {},
     redirect: options?.followRedirects ?? `error`,
     signal: controller.signal,
   };
 
-  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
+  const validatedFetchUrl = getValidatedFetchUrl(detectedUrl, resolvedUrl);
+  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : validatedFetchUrl;
 
-  let response = await fetch(fetchUrl, fetchOptions).catch((e) => {
-    if (e.name === `AbortError`) {
-      throw new Error(`Request timeout`);
+  try {
+    const fetchWithTimeout = async (url: string) => fetch(url, fetchOptions).catch((e) => {
+      if (e.name === `AbortError`) {
+        throw new Error(`Request timeout`);
+      }
+
+      clearTimeout(timeoutCounter);
+      throw e;
+    });
+
+    let response = await fetchWithTimeout(fetchUrl);
+
+    if (
+      response.status > 300 &&
+      response.status < 309 &&
+      fetchOptions.redirect === `manual` &&
+      options?.handleRedirects
+    ) {
+      const locationHeader = response.headers.get(`location`) || ``;
+      const isAbsoluteURI =
+        locationHeader.startsWith("http://") || locationHeader.startsWith("https://");
+
+      // Resolve the URL, handling both absolute and relative URLs
+      const forwardedUrl = isAbsoluteURI ? locationHeader : new URL(locationHeader, fetchUrl).href;
+
+      if (!options.handleRedirects(fetchUrl, forwardedUrl)) {
+        throw new Error(`link-preview-js could not handle redirect`);
+      }
+
+      let forwardedResolvedUrl: string | undefined;
+
+      if (options?.resolveDNSHost) {
+        forwardedResolvedUrl = await options.resolveDNSHost(forwardedUrl);
+
+        throwOnLoopback(forwardedResolvedUrl);
+      }
+
+      const validatedForwardedUrl = getValidatedFetchUrl(forwardedUrl, forwardedResolvedUrl);
+      response = await fetchWithTimeout(validatedForwardedUrl);
     }
 
     clearTimeout(timeoutCounter);
-    throw e;
-  });
 
-  if (
-    response.status > 300 &&
-    response.status < 309 &&
-    fetchOptions.redirect === `manual` &&
-    options?.handleRedirects
-  ) {
-    const locationHeader = response.headers.get(`location`) || ``;
-    const isAbsoluteURI =
-      locationHeader.startsWith("http://") || locationHeader.startsWith("https://");
+    const headers: Record<string, string> = {};
+    response.headers.forEach((header, key) => {
+      headers[key] = header;
+    });
 
-    // Resolve the URL, handling both absolute and relative URLs
-    const forwardedUrl = isAbsoluteURI ? locationHeader : new URL(locationHeader, fetchUrl).href;
+    const normalizedResponse: IPreFetchedResource = {
+      url: options?.proxyUrl ? response.url.replace(options.proxyUrl, ``) : response.url,
+      headers,
+      data: await response.text(),
+    };
 
-    if (!options.handleRedirects(fetchUrl, forwardedUrl)) {
-      throw new Error(`link-preview-js could not handle redirect`);
-    }
-
-    if (options?.resolveDNSHost) {
-      const resolvedUrl = await options.resolveDNSHost(forwardedUrl);
-
-      throwOnLoopback(resolvedUrl);
-    }
-
-    response = await fetch(forwardedUrl, fetchOptions as any);
+    return parseResponse(normalizedResponse, options);
+  } finally {
+    clearTimeout(timeoutCounter);
   }
-
-  clearTimeout(timeoutCounter);
-
-  const headers: Record<string, string> = {};
-  response.headers.forEach((header, key) => {
-    headers[key] = header;
-  });
-
-  const normalizedResponse: IPreFetchedResource = {
-    url: options?.proxyUrl ? response.url.replace(options.proxyUrl, ``) : response.url,
-    headers,
-    data: await response.text(),
-  };
-
-  return parseResponse(normalizedResponse, options);
 }
 
 /**

@@ -275,6 +275,67 @@ describe(`#getLinkPreview()`, () => {
     expect(response.mediaType).toEqual(`website`);
   });
 
+  it(`should fetch the resolved DNS address after validation`, async () => {
+    const fetchResponse = new Response(
+      `<html><head>
+          <meta property="og:title" content="Resolved host">
+          <meta property="og:description" content="Resolved address test">
+        </head></html>`,
+      {
+        headers: {
+          "content-type": "text/html",
+        },
+      },
+    );
+    Object.defineProperty(fetchResponse, "url", {
+      value: "http://example.com/",
+    });
+    const fetchSpy = jest.spyOn(globalThis, "fetch").mockResolvedValue(fetchResponse);
+
+    try {
+      const response = await getLinkPreview(`http://example.com/`, {
+        resolveDNSHost: async () => "93.184.216.34",
+      });
+
+      expect((response as any).title).toEqual("Resolved host");
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(fetchSpy.mock.calls[0][0]).toEqual("http://93.184.216.34/");
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it(`should block resolved local addresses in normalized IPv6 forms`, async () => {
+    const fetchSpy = jest
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValue(new Error("fetch should not be called"));
+    const blockedAddresses = [
+      "0.0.0.0",
+      "0:0:0:0:0:0:0:1",
+      "::a9fe:a9fe",
+      "::ffff:a9fe:a9fe",
+      "64:ff9b::a9fe:a9fe",
+      "[::1]",
+      "fe80::1%lo0",
+      "http://127.0.0.1/",
+      "http://[::1]/",
+    ];
+
+    try {
+      for (const address of blockedAddresses) {
+        await expect(
+          getLinkPreview(`http://example.com/`, {
+            resolveDNSHost: async () => address,
+          }),
+        ).rejects.toThrow("SSRF request detected");
+      }
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it("should handle override response body using onResponse option", async () => {
     let firstParagraphText;
 
