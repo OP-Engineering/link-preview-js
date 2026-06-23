@@ -1,6 +1,4 @@
 import { load, type Cheerio, type CheerioAPI, type Element } from "cheerio";
-import { BlockList, isIP } from "node:net";
-import { Agent, type Dispatcher } from "undici";
 import { CONSTANTS } from "./constants";
 
 interface ILinkPreviewResponse {
@@ -43,29 +41,6 @@ interface IPreFetchedResource {
   url: string;
   data: string;
 }
-
-const BLOCKED_ADDRESSES = new BlockList();
-
-BLOCKED_ADDRESSES.addSubnet("0.0.0.0", 8, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("10.0.0.0", 8, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("100.64.0.0", 10, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("127.0.0.0", 8, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("169.254.0.0", 16, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("172.16.0.0", 12, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("192.0.2.0", 24, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("192.168.0.0", 16, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("198.51.100.0", 24, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("203.0.113.0", 24, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("224.0.0.0", 4, "ipv4");
-BLOCKED_ADDRESSES.addSubnet("240.0.0.0", 4, "ipv4");
-BLOCKED_ADDRESSES.addAddress("::", "ipv6");
-BLOCKED_ADDRESSES.addAddress("::1", "ipv6");
-BLOCKED_ADDRESSES.addSubnet("fc00::", 7, "ipv6");
-BLOCKED_ADDRESSES.addSubnet("fe80::", 10, "ipv6");
-
-type FetchOptions = RequestInit & {
-  dispatcher?: Dispatcher;
-};
 
 function parseIPv4Address(address: string) {
   const parts = address.split(".");
@@ -160,103 +135,122 @@ function getEmbeddedIPv4Address(address: string) {
   return undefined;
 }
 
-function throwOnLoopback(address: string) {
-  const normalizedAddress = address.trim();
-  const ipVersion = isIP(normalizedAddress);
+function isIPv4AddressBlocked(address: string) {
+  const octets = parseIPv4Address(address);
 
-  if (ipVersion) {
-    const family = ipVersion === 4 ? "ipv4" : "ipv6";
+  if (!octets) {
+    return false;
+  }
 
-    const embeddedIPv4Address =
-      ipVersion === 6 ? getEmbeddedIPv4Address(normalizedAddress) : undefined;
+  const [first, second, third] = octets;
 
-    if (
-      BLOCKED_ADDRESSES.check(normalizedAddress, family) ||
-      (embeddedIPv4Address && BLOCKED_ADDRESSES.check(embeddedIPv4Address, "ipv4"))
-    ) {
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 192 && second === 0 && third === 2) ||
+    (first === 198 && second === 51 && third === 100) ||
+    (first === 203 && second === 0 && third === 113) ||
+    first >= 224
+  );
+}
+
+function isIPv6AddressBlocked(address: string) {
+  const hextets = parseIPv6Hextets(address);
+
+  if (!hextets) {
+    return false;
+  }
+
+  const embeddedIPv4Address = getEmbeddedIPv4Address(address);
+
+  return (
+    hextets.every((part) => part === 0) ||
+    (hextets.slice(0, 7).every((part) => part === 0) && hextets[7] === 1) ||
+    (hextets[0] & 0xfe00) === 0xfc00 ||
+    (hextets[0] & 0xffc0) === 0xfe80 ||
+    Boolean(embeddedIPv4Address && isIPv4AddressBlocked(embeddedIPv4Address))
+  );
+}
+
+function stripIPv6Brackets(address: string) {
+  if (address.startsWith("[") && address.endsWith("]")) {
+    return address.slice(1, -1);
+  }
+
+  return address;
+}
+
+function normalizeIPAddress(address: string) {
+  const normalizedAddress = stripIPv6Brackets(address.trim()).split("%")[0];
+
+  if (parseIPv4Address(normalizedAddress)) {
+    return normalizedAddress;
+  }
+
+  if (parseIPv6Hextets(normalizedAddress)) {
+    return normalizedAddress.toLowerCase();
+  }
+
+  return undefined;
+}
+
+function getResolvedAddress(addressOrUrl: string) {
+  const trimmedAddress = addressOrUrl.trim();
+
+  if (trimmedAddress.startsWith("http://") || trimmedAddress.startsWith("https://")) {
+    return normalizeIPAddress(new URL(trimmedAddress).hostname);
+  }
+
+  return normalizeIPAddress(trimmedAddress);
+}
+
+function throwOnLoopback(addressOrUrl: string) {
+  const normalizedAddress = getResolvedAddress(addressOrUrl);
+
+  if (normalizedAddress) {
+    if (isIPv4AddressBlocked(normalizedAddress) || isIPv6AddressBlocked(normalizedAddress)) {
       throw new Error("SSRF request detected, trying to query host");
     }
 
     return;
   }
 
-  if (CONSTANTS.REGEX_LOOPBACK.test(normalizedAddress)) {
+  if (CONSTANTS.REGEX_LOOPBACK.test(addressOrUrl.trim())) {
     throw new Error("SSRF request detected, trying to query host");
   }
 }
 
-function normalizeHostname(hostname: string) {
-  return hostname.toLowerCase().replace(/\.$/, "");
+function formatHostnameForUrl(address: string) {
+  return parseIPv6Hextets(address) ? `[${address}]` : address;
 }
 
-function createPinnedDispatcher(url: string, resolvedAddress?: string) {
+function getValidatedFetchUrl(url: string, resolvedAddressOrUrl?: string) {
+  if (!resolvedAddressOrUrl) {
+    return url;
+  }
+
+  const trimmedResolvedAddressOrUrl = resolvedAddressOrUrl.trim();
+  const resolvedAddress = getResolvedAddress(trimmedResolvedAddressOrUrl);
+
   if (!resolvedAddress) {
-    return undefined;
+    throw new Error("resolveDNSHost must resolve to an IP address or URL");
   }
 
-  const address = resolvedAddress.trim();
-  const family = isIP(address);
-
-  if (!family) {
-    throw new Error("resolveDNSHost must resolve to an IP address");
+  if (
+    trimmedResolvedAddressOrUrl.startsWith("http://") ||
+    trimmedResolvedAddressOrUrl.startsWith("https://")
+  ) {
+    return trimmedResolvedAddressOrUrl;
   }
 
-  const expectedHostname = normalizeHostname(new URL(url).hostname);
-
-  return new Agent({
-    connect: {
-      lookup(
-        hostname: string,
-        lookupOptions: { all?: boolean },
-        callback: (...args: any[]) => void,
-      ) {
-        if (normalizeHostname(hostname) !== expectedHostname) {
-          callback(new Error("SSRF request detected, hostname changed after DNS validation"));
-          return;
-        }
-
-        if (lookupOptions?.all) {
-          callback(null, [{ address, family }]);
-          return;
-        }
-
-        callback(null, address, family);
-      },
-    },
-  });
-}
-
-function getFetchOptions(fetchOptions: RequestInit, dispatcher?: Dispatcher): FetchOptions {
-  if (!dispatcher) {
-    return fetchOptions;
-  }
-
-  return {
-    ...fetchOptions,
-    dispatcher,
-  };
-}
-
-async function destroyDispatchers(dispatchers: Dispatcher[]) {
-  await Promise.all(
-    dispatchers.map(async (dispatcher) => {
-      const disposableDispatcher = dispatcher as Dispatcher & {
-        close?: () => Promise<void> | void;
-        destroy?: () => Promise<void> | void;
-      };
-
-      try {
-        if (typeof disposableDispatcher.destroy === "function") {
-          await disposableDispatcher.destroy();
-          return;
-        }
-
-        await disposableDispatcher.close?.();
-      } catch {
-        // Ignore dispatcher disposal errors; the request result has already been handled.
-      }
-    }),
-  );
+  const parsedUrl = new URL(url);
+  parsedUrl.hostname = formatHostnameForUrl(resolvedAddress);
+  return parsedUrl.href;
 }
 
 function metaTag(doc: CheerioAPI, type: string, attr: string) {
@@ -642,19 +636,11 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
     signal: controller.signal,
   };
 
-  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : detectedUrl;
-  const dispatchers: Dispatcher[] = [];
+  const validatedFetchUrl = getValidatedFetchUrl(detectedUrl, resolvedUrl);
+  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : validatedFetchUrl;
 
   try {
-    const dispatcher = options?.proxyUrl
-      ? undefined
-      : createPinnedDispatcher(fetchUrl, resolvedUrl);
-
-    if (dispatcher) {
-      dispatchers.push(dispatcher);
-    }
-
-    let response = await fetch(fetchUrl, getFetchOptions(fetchOptions, dispatcher)).catch((e) => {
+    const fetchWithTimeout = async (url: string) => fetch(url, fetchOptions).catch((e) => {
       if (e.name === `AbortError`) {
         throw new Error(`Request timeout`);
       }
@@ -662,6 +648,8 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
       clearTimeout(timeoutCounter);
       throw e;
     });
+
+    let response = await fetchWithTimeout(fetchUrl);
 
     if (
       response.status > 300 &&
@@ -688,13 +676,8 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
         throwOnLoopback(forwardedResolvedUrl);
       }
 
-      const forwardedDispatcher = createPinnedDispatcher(forwardedUrl, forwardedResolvedUrl);
-
-      if (forwardedDispatcher) {
-        dispatchers.push(forwardedDispatcher);
-      }
-
-      response = await fetch(forwardedUrl, getFetchOptions(fetchOptions, forwardedDispatcher));
+      const validatedForwardedUrl = getValidatedFetchUrl(forwardedUrl, forwardedResolvedUrl);
+      response = await fetchWithTimeout(validatedForwardedUrl);
     }
 
     clearTimeout(timeoutCounter);
@@ -713,7 +696,6 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
     return parseResponse(normalizedResponse, options);
   } finally {
     clearTimeout(timeoutCounter);
-    await destroyDispatchers(dispatchers);
   }
 }
 

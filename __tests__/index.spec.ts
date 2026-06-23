@@ -275,11 +275,11 @@ describe(`#getLinkPreview()`, () => {
     expect(response.mediaType).toEqual(`website`);
   });
 
-  it(`should pin outbound fetches to the resolved DNS address`, async () => {
+  it(`should fetch the resolved DNS address after validation`, async () => {
     const fetchResponse = new Response(
       `<html><head>
           <meta property="og:title" content="Resolved host">
-          <meta property="og:description" content="Pinned dispatcher test">
+          <meta property="og:description" content="Resolved address test">
         </head></html>`,
       {
         headers: {
@@ -299,7 +299,7 @@ describe(`#getLinkPreview()`, () => {
 
       expect((response as any).title).toEqual("Resolved host");
       expect(fetchSpy).toHaveBeenCalledTimes(1);
-      expect((fetchSpy.mock.calls[0][1] as any).dispatcher).toBeDefined();
+      expect(fetchSpy.mock.calls[0][0]).toEqual("http://93.184.216.34/");
     } finally {
       fetchSpy.mockRestore();
     }
@@ -315,6 +315,10 @@ describe(`#getLinkPreview()`, () => {
       "::a9fe:a9fe",
       "::ffff:a9fe:a9fe",
       "64:ff9b::a9fe:a9fe",
+      "[::1]",
+      "fe80::1%lo0",
+      "http://127.0.0.1/",
+      "http://[::1]/",
     ];
 
     try {

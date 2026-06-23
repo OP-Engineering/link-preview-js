@@ -37,8 +37,7 @@
     "url": "git+https://github.com/OP-Engineering/link-preview-js.git"
   },
   "dependencies": {
-    "cheerio": "1.0.0-rc.11",
-    "undici": "^6.27.0"
+    "cheerio": "1.0.0-rc.11"
   },
   "files": [
     "build"
