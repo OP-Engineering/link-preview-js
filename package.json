@@ -5,8 +5,19 @@
   "main": "build/index.js",
   "exports": {
     ".": {
+      "types": "./build/index.d.ts",
       "require": "./build/index.js",
       "import": "./build/index.js"
+    },
+    "./node": {
+      "types": "./build/node.d.ts",
+      "require": "./build/node.js",
+      "import": "./build/node.js"
+    },
+    "./mobile": {
+      "types": "./build/mobile.d.ts",
+      "require": "./build/mobile.js",
+      "import": "./build/mobile.js"
     },
     "./package.json": "./package.json"
   },

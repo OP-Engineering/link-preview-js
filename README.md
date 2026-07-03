@@ -46,6 +46,21 @@ https://discord.gg/W9XmqCQCKP
 - You cannot request a different domain from your web app (Browsers block cross-origin-requests). If you don't know how _same-origin-policy_ works, [here is a good intro](https://dev.to/lydiahallie/cs-visualized-cors-5b8h), therefore **this library works on Node.js and certain mobile run-times (Cordova or React-Native)**.
 - **This library acts as if the user would visit the page, sites might re-direct you to sign-up pages, consent screens, etc.** You can try to change the user-agent header (try with `google-bot` or with `Twitterbot`), but you need to work around these issues yourself.
 
+## Entrypoints
+
+This package ships two variants:
+
+- `link-preview-js` / `link-preview-js/node` - full-featured, for Node.js servers. Includes the `resolveDNSHost` SSRF/DNS-rebinding protection (see [SSRF Concerns](#ssrf-concerns)), which pins HTTPS connections at the TCP layer via `undici`.
+- `link-preview-js/mobile` - for React Native, Cordova, or other non-Node/browser runtimes. Has no `undici` or `node:net` dependency, so it won't break bundlers that can't resolve Node-only modules. It has no `resolveDNSHost` option either: mobile apps don't sit in front of a private network of internal services the way a server does, so there's no loopback/localhost target worth protecting against on-device.
+
+```typescript
+// Node.js server (default import, same as "link-preview-js/node")
+import { getLinkPreview } from "link-preview-js";
+
+// React Native / browser / other non-Node runtimes
+import { getLinkPreview } from "link-preview-js/mobile";
+```
+
 ## API
 
 `getLinkPreview`: you have to pass a string, doesn't matter if it is just a URL or a piece of text that contains a URL, the library will take care of parsing it and returning the info o the first valid HTTP(S) URL info it finds.
@@ -114,7 +129,7 @@ getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
 
 ## SSRF Concerns
 
-Doing requests on behalf of your users or using user-provided URLs is dangerous. One of such attack is trying to fetch a domain that redirects to localhost so the users get the contents of your server (doesn't affect mobile runtimes). To mitigate this attack you can use the resolveDNSHost option:
+Doing requests on behalf of your users or using user-provided URLs is dangerous. One of such attack is trying to fetch a domain that redirects to localhost so the users get the contents of your server (doesn't affect mobile runtimes). To mitigate this attack you can use the resolveDNSHost option, available on the default/`link-preview-js/node` import only - see [Entrypoints](#entrypoints).
 
 ```ts
 // example how to use node's dns resolver
