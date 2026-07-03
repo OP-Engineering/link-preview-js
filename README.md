@@ -140,6 +140,8 @@ getLinkPreview("http://maliciousLocalHostRedirection.com", {
 
 This might add some latency to your request but prevents loopback attacks.
 
+Note: for `https://` URLs the request is still made against the original hostname (not the resolved IP), since TLS validates the certificate and SNI against the hostname. The resolved address is only used to detect and block loopback/private targets before the request is made.
+
 ## Redirections
 
 Same to SSRF, following redirections is dangerous, the library errors by default when the response tries to redirect the user. There are however some simple redirections that are valid (e.g. HTTP to HTTPS) and you might want to allow them, you can do it via:

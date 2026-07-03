@@ -305,6 +305,36 @@ describe(`#getLinkPreview()`, () => {
     }
   });
 
+  it(`should keep the original hostname for HTTPS requests to preserve SNI/TLS`, async () => {
+    const fetchResponse = new Response(
+      `<html><head>
+          <meta property="og:title" content="Resolved host">
+          <meta property="og:description" content="Resolved address test">
+        </head></html>`,
+      {
+        headers: {
+          "content-type": "text/html",
+        },
+      },
+    );
+    Object.defineProperty(fetchResponse, "url", {
+      value: "https://example.com/",
+    });
+    const fetchSpy = jest.spyOn(globalThis, "fetch").mockResolvedValue(fetchResponse);
+
+    try {
+      const response = await getLinkPreview(`https://example.com/`, {
+        resolveDNSHost: async () => "93.184.216.34",
+      });
+
+      expect((response as any).title).toEqual("Resolved host");
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(fetchSpy.mock.calls[0][0]).toEqual("https://example.com/");
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it(`should block resolved local addresses in normalized IPv6 forms`, async () => {
     const fetchSpy = jest
       .spyOn(globalThis, "fetch")

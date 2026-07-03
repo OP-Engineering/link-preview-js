@@ -249,6 +249,15 @@ function getValidatedFetchUrl(url: string, resolvedAddressOrUrl?: string) {
   }
 
   const parsedUrl = new URL(url);
+
+  // Rewriting the hostname to a bare IP breaks TLS: the handshake sends the IP as
+  // the SNI server name and certificate validation fails, since certificates are
+  // issued for hostnames, not IPs. The resolved address is still used above (via
+  // throwOnLoopback) to block the request, so HTTPS requests keep their hostname.
+  if (parsedUrl.protocol === "https:") {
+    return url;
+  }
+
   parsedUrl.hostname = formatHostnameForUrl(resolvedAddress);
   return parsedUrl.href;
 }
