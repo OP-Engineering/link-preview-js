@@ -11,7 +11,7 @@
     "strict": true,
     "resolveJsonModule": true,
     "types": [
-      "jest"
+      "bun"
     ]
   },
   "exclude": [

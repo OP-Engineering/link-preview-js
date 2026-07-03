@@ -31,7 +31,12 @@ jobs:
         run: bun run build
 
       - name: Publish to npm
-        run: npm publish
+        run: |
+          if echo "$GITHUB_REF_NAME" | grep -q -- '-beta\|-alpha\|-rc'; then
+            npm publish --tag beta
+          else
+            npm publish
+          fi
 
       - name: Create a Release
         uses: elgohr/Github-Release-Action@v5
