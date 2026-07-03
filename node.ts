@@ -228,17 +228,19 @@ function prepareFetch(url: string, resolvedAddressOrUrl?: string): PreparedFetch
   }
 
   const trimmedResolvedAddressOrUrl = resolvedAddressOrUrl.trim();
-  const resolvedAddress = getResolvedAddress(trimmedResolvedAddressOrUrl);
-
-  if (!resolvedAddress) {
-    throw new Error("resolveDNSHost must resolve to an IP address or URL");
-  }
 
   if (
     trimmedResolvedAddressOrUrl.startsWith("http://") ||
     trimmedResolvedAddressOrUrl.startsWith("https://")
   ) {
+    // Trusted verbatim - there's no bare address here to validate or pin to.
     return { url: trimmedResolvedAddressOrUrl };
+  }
+
+  const resolvedAddress = getResolvedAddress(trimmedResolvedAddressOrUrl);
+
+  if (!resolvedAddress) {
+    throw new Error("resolveDNSHost must resolve to an IP address or URL");
   }
 
   const parsedUrl = new URL(url);

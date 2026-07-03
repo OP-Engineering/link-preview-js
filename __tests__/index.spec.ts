@@ -354,6 +354,31 @@ describe(`#getLinkPreview()`, () => {
     }
   });
 
+  it(`should trust a resolveDNSHost result that is itself a URL with a hostname, not just a bare IP`, async () => {
+    const fetchResponse = new Response(
+      `<html><head>
+          <meta property="og:title" content="Resolved host">
+        </head></html>`,
+      { headers: { "content-type": "text/html" } },
+    );
+    Object.defineProperty(fetchResponse, "url", {
+      value: "http://replacement.example.com/",
+    });
+    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(fetchResponse);
+
+    try {
+      const response = await getLinkPreview(`http://example.com/`, {
+        resolveDNSHost: async () => "http://replacement.example.com/",
+      });
+
+      expect((response as any).title).toEqual("Resolved host");
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(fetchSpy.mock.calls[0][0]).toEqual("http://replacement.example.com/");
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it(`should keep the original hostname for HTTPS requests to preserve SNI/TLS`, async () => {
     // Real network, real DNS, no mocking: this is the exact scenario from the bug
     // report (issue #182) - resolveDNSHost validating a real address for an HTTPS URL
