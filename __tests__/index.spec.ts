@@ -6,6 +6,36 @@ import dns from "node:dns/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
+/**
+ * GitHub Actions' network egress to youtube.com is unreliable (bot detection, rate
+ * limiting, or just YouTube's markup drifting), which makes these otherwise-real
+ * requests flaky in CI specifically. Mock the response only there so local runs keep
+ * exercising the real integration.
+ */
+function mockYoutubeFetchOnCI() {
+  if (!process.env.CI) {
+    return undefined;
+  }
+
+  const fetchResponse = new Response(
+    `<html><head>
+        <meta charset="utf-8">
+        <meta property="og:site_name" content="YouTube">
+        <meta property="og:title" content="Geography Now! Germany">
+        <meta property="og:description" content="Mocked description for CI">
+        <meta property="og:type" content="video.other">
+        <meta property="og:image" content="https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg">
+        <link rel="icon" href="https://www.youtube.com/favicon.ico">
+      </head></html>`,
+    { headers: { "content-type": "text/html; charset=utf-8" } },
+  );
+  Object.defineProperty(fetchResponse, "url", {
+    value: "https://www.youtube.com/watch?v=wuClZjOdT30",
+  });
+
+  return spyOn(globalThis, "fetch").mockResolvedValue(fetchResponse);
+}
+
 describe(`#REGEX_LOOPBACK`, () => {
   it(`matches IPv6 loopback and local ranges`, () => {
     expect(CONSTANTS.REGEX_LOOPBACK.test(`::1`)).toBe(true);
@@ -23,26 +53,34 @@ describe(`#REGEX_LOOPBACK`, () => {
 
 describe(`#getLinkPreview()`, () => {
   it(`should extract link info from just URL`, async () => {
-    const linkInfo: any = await getLinkPreview(
-      `https://www.youtube.com/watch?v=wuClZjOdT30`,
-      {
-        headers: { "Accept-Language": `en-US` },
-      },
-    );
+    const fetchSpy = mockYoutubeFetchOnCI();
 
-    expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
-    expect(linkInfo.siteName).toEqual(`YouTube`);
-    expect(linkInfo.title).toEqual(`Geography Now! Germany`);
-    expect(linkInfo.description).toBeTruthy();
-    expect(linkInfo.mediaType).toEqual(`video.other`);
-    expect(linkInfo.images.length).toEqual(1);
-    expect(linkInfo.images[0]).toEqual(
-      `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
-    );
-    expect(linkInfo.videos.length).toEqual(0);
-    expect(linkInfo.favicons[0]).not.toBe(``);
-    expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
-    expect(linkInfo.charset?.toLowerCase()).toEqual(`utf-8`);
+    try {
+      const linkInfo: any = await getLinkPreview(
+        `https://www.youtube.com/watch?v=wuClZjOdT30`,
+        {
+          headers: { "Accept-Language": `en-US` },
+        },
+      );
+
+      expect(linkInfo.url).toEqual(
+        `https://www.youtube.com/watch?v=wuClZjOdT30`,
+      );
+      expect(linkInfo.siteName).toEqual(`YouTube`);
+      expect(linkInfo.title).toEqual(`Geography Now! Germany`);
+      expect(linkInfo.description).toBeTruthy();
+      expect(linkInfo.mediaType).toEqual(`video.other`);
+      expect(linkInfo.images.length).toEqual(1);
+      expect(linkInfo.images[0]).toEqual(
+        `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
+      );
+      expect(linkInfo.videos.length).toEqual(0);
+      expect(linkInfo.favicons[0]).not.toBe(``);
+      expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
+      expect(linkInfo.charset?.toLowerCase()).toEqual(`utf-8`);
+    } finally {
+      fetchSpy?.mockRestore();
+    }
   });
 
   it("returns charset of website", async () => {
@@ -62,45 +100,61 @@ describe(`#getLinkPreview()`, () => {
   });
 
   it(`should extract link info from a URL with a newline`, async () => {
-    const linkInfo: any = await getLinkPreview(
-      `
+    const fetchSpy = mockYoutubeFetchOnCI();
+
+    try {
+      const linkInfo: any = await getLinkPreview(
+        `
       https://www.youtube.com/watch?v=wuClZjOdT30
     `,
-      { headers: { "Accept-Language": `en-US` } },
-    );
+        { headers: { "Accept-Language": `en-US` } },
+      );
 
-    expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
-    expect(linkInfo.title).toEqual(`Geography Now! Germany`);
-    expect(linkInfo.siteName).toBeTruthy();
-    expect(linkInfo.description).toBeTruthy();
-    expect(linkInfo.mediaType).toEqual(`video.other`);
-    expect(linkInfo.images.length).toEqual(1);
-    expect(linkInfo.images[0]).toEqual(
-      `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
-    );
-    expect(linkInfo.videos.length).toEqual(0);
-    expect(linkInfo.favicons[0]).not.toBe(``);
-    expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
+      expect(linkInfo.url).toEqual(
+        `https://www.youtube.com/watch?v=wuClZjOdT30`,
+      );
+      expect(linkInfo.title).toEqual(`Geography Now! Germany`);
+      expect(linkInfo.siteName).toBeTruthy();
+      expect(linkInfo.description).toBeTruthy();
+      expect(linkInfo.mediaType).toEqual(`video.other`);
+      expect(linkInfo.images.length).toEqual(1);
+      expect(linkInfo.images[0]).toEqual(
+        `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
+      );
+      expect(linkInfo.videos.length).toEqual(0);
+      expect(linkInfo.favicons[0]).not.toBe(``);
+      expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
+    } finally {
+      fetchSpy?.mockRestore();
+    }
   });
 
   it(`should extract link info from just text with a URL`, async () => {
-    const linkInfo: any = await getLinkPreview(
-      `This is some text blah blah https://www.youtube.com/watch?v=wuClZjOdT30 and more text`,
-      { headers: { "Accept-Language": `en-US` } },
-    );
+    const fetchSpy = mockYoutubeFetchOnCI();
 
-    expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
-    expect(linkInfo.title).toEqual(`Geography Now! Germany`);
-    expect(linkInfo.siteName).toEqual(`YouTube`);
-    expect(linkInfo.description).toBeTruthy();
-    expect(linkInfo.mediaType).toEqual(`video.other`);
-    expect(linkInfo.images.length).toEqual(1);
-    expect(linkInfo.images[0]).toEqual(
-      `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
-    );
-    expect(linkInfo.videos.length).toEqual(0);
-    expect(linkInfo.favicons[0]).toBeTruthy();
-    expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
+    try {
+      const linkInfo: any = await getLinkPreview(
+        `This is some text blah blah https://www.youtube.com/watch?v=wuClZjOdT30 and more text`,
+        { headers: { "Accept-Language": `en-US` } },
+      );
+
+      expect(linkInfo.url).toEqual(
+        `https://www.youtube.com/watch?v=wuClZjOdT30`,
+      );
+      expect(linkInfo.title).toEqual(`Geography Now! Germany`);
+      expect(linkInfo.siteName).toEqual(`YouTube`);
+      expect(linkInfo.description).toBeTruthy();
+      expect(linkInfo.mediaType).toEqual(`video.other`);
+      expect(linkInfo.images.length).toEqual(1);
+      expect(linkInfo.images[0]).toEqual(
+        `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
+      );
+      expect(linkInfo.videos.length).toEqual(0);
+      expect(linkInfo.favicons[0]).toBeTruthy();
+      expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
+    } finally {
+      fetchSpy?.mockRestore();
+    }
   });
 
   // it(`should make request with different languages`, async () => {
@@ -309,7 +363,7 @@ describe(`#getLinkPreview()`, () => {
   it(`should handle followRedirects option is manual with handleRedirects function`, async () => {
     const response = await getLinkPreview(`http://google.com/`, {
       followRedirects: `manual`,
-      handleRedirects: (baseURL: string, forwardedURL: string) => {
+      handleRedirects: (_baseURL: string, forwardedURL: string) => {
         if (forwardedURL !== `http://www.google.com/`) {
           return false;
         }
@@ -364,7 +418,9 @@ describe(`#getLinkPreview()`, () => {
     Object.defineProperty(fetchResponse, "url", {
       value: "http://replacement.example.com/",
     });
-    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(fetchResponse);
+    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(
+      fetchResponse,
+    );
 
     try {
       const response = await getLinkPreview(`http://example.com/`, {
@@ -373,7 +429,9 @@ describe(`#getLinkPreview()`, () => {
 
       expect((response as any).title).toEqual("Resolved host");
       expect(fetchSpy).toHaveBeenCalledTimes(1);
-      expect(fetchSpy.mock.calls[0][0]).toEqual("http://replacement.example.com/");
+      expect(fetchSpy.mock.calls[0][0]).toEqual(
+        "http://replacement.example.com/",
+      );
     } finally {
       fetchSpy.mockRestore();
     }
@@ -428,7 +486,7 @@ describe(`#getLinkPreview()`, () => {
 
     try {
       for (const address of blockedAddresses) {
-        await expect(
+        expect(
           getLinkPreview(`http://example.com/`, {
             resolveDNSHost: async () => address,
           }),
