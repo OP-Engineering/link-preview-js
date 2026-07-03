@@ -1,4 +1,5 @@
 import { load, type Cheerio, type CheerioAPI, type Element } from "cheerio";
+import { Agent, fetch as undiciFetch, type Dispatcher } from "undici";
 import { CONSTANTS } from "./constants";
 
 interface ILinkPreviewResponse {
@@ -229,9 +230,35 @@ function formatHostnameForUrl(address: string) {
   return parseIPv6Hextets(address) ? `[${address}]` : address;
 }
 
-function getValidatedFetchUrl(url: string, resolvedAddressOrUrl?: string) {
+function normalizeHostnameForComparison(hostname: string) {
+  return hostname.toLowerCase().replace(/\.$/, "");
+}
+
+interface PreparedFetch {
+  url: string;
+  dispatcher?: Dispatcher;
+}
+
+/**
+ * Turns a detected URL plus its resolveDNSHost result into what to actually fetch.
+ * This is the single place that decides how a validated address gets used, so there
+ * is exactly one path through this logic - not two independently-maintained ones that
+ * could quietly drift apart and produce a hostname-preserving request with no pin.
+ *
+ * - No resolved address: nothing to enforce, fetch the URL as-is.
+ * - resolveDNSHost returned a URL: trust it verbatim, nothing to pin to.
+ * - Plain HTTP: rewriting the hostname to the resolved IP is itself the pin (the
+ *   request can't land anywhere else), so no dispatcher is needed.
+ * - HTTPS: rewriting the hostname to a bare IP breaks TLS (the handshake would send
+ *   the IP as the SNI server name, and certificate validation fails since
+ *   certificates are issued for hostnames, not IPs). The hostname is kept for SNI and
+ *   the Host header, and the connection itself is pinned to the validated address
+ *   instead via a dispatcher, so a DNS resolver returning something else on the real
+ *   request (DNS rebinding) can't route the request anywhere else.
+ */
+function prepareFetch(url: string, resolvedAddressOrUrl?: string): PreparedFetch {
   if (!resolvedAddressOrUrl) {
-    return url;
+    return { url };
   }
 
   const trimmedResolvedAddressOrUrl = resolvedAddressOrUrl.trim();
@@ -245,21 +272,69 @@ function getValidatedFetchUrl(url: string, resolvedAddressOrUrl?: string) {
     trimmedResolvedAddressOrUrl.startsWith("http://") ||
     trimmedResolvedAddressOrUrl.startsWith("https://")
   ) {
-    return trimmedResolvedAddressOrUrl;
+    return { url: trimmedResolvedAddressOrUrl };
   }
 
   const parsedUrl = new URL(url);
 
-  // Rewriting the hostname to a bare IP breaks TLS: the handshake sends the IP as
-  // the SNI server name and certificate validation fails, since certificates are
-  // issued for hostnames, not IPs. The resolved address is still used above (via
-  // throwOnLoopback) to block the request, so HTTPS requests keep their hostname.
-  if (parsedUrl.protocol === "https:") {
-    return url;
+  if (parsedUrl.protocol !== "https:") {
+    parsedUrl.hostname = formatHostnameForUrl(resolvedAddress);
+    return { url: parsedUrl.href };
   }
 
-  parsedUrl.hostname = formatHostnameForUrl(resolvedAddress);
-  return parsedUrl.href;
+  const family = parseIPv4Address(resolvedAddress) ? 4 : 6;
+  const expectedHostname = normalizeHostnameForComparison(parsedUrl.hostname);
+
+  const dispatcher = new Agent({
+    connect: {
+      lookup(
+        hostname: string,
+        lookupOptions: { all?: boolean },
+        callback: (...args: any[]) => void,
+      ) {
+        if (normalizeHostnameForComparison(hostname) !== expectedHostname) {
+          callback(new Error("SSRF request detected, hostname changed after DNS validation"));
+          return;
+        }
+
+        if (lookupOptions?.all) {
+          callback(null, [{ address: resolvedAddress, family }]);
+          return;
+        }
+
+        callback(null, resolvedAddress, family);
+      },
+    },
+  });
+
+  return { url, dispatcher };
+}
+
+/**
+ * Node's global `fetch` is powered by its own internal, vendored copy of undici. A
+ * `Dispatcher` built from the separately installed `undici` package is a different
+ * class instance and isn't recognized by that internal copy, so pinning a connection
+ * silently has no effect if it's handed to the global `fetch`. Requests that need a
+ * pinned dispatcher are therefore made with undici's own `fetch` instead.
+ */
+function fetchWithDispatcher(url: string, fetchOptions: RequestInit, dispatcher?: Dispatcher) {
+  if (!dispatcher) {
+    return fetch(url, fetchOptions);
+  }
+
+  return undiciFetch(url, { ...fetchOptions, dispatcher } as Parameters<typeof undiciFetch>[1]);
+}
+
+async function destroyDispatchers(dispatchers: Dispatcher[]) {
+  await Promise.all(
+    dispatchers.map(async (dispatcher) => {
+      try {
+        await dispatcher.destroy();
+      } catch {
+        // Ignore dispatcher disposal errors; the request result has already been handled.
+      }
+    }),
+  );
 }
 
 function metaTag(doc: CheerioAPI, type: string, attr: string) {
@@ -645,20 +720,32 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
     signal: controller.signal,
   };
 
-  const validatedFetchUrl = getValidatedFetchUrl(detectedUrl, resolvedUrl);
-  const fetchUrl = options?.proxyUrl ? options.proxyUrl.concat(detectedUrl) : validatedFetchUrl;
+  // A proxy already changes where the request is physically sent, so pinning the
+  // connection to the resolved address would fight the proxy instead of the target -
+  // in that case there's nothing for prepareFetch to decide, the proxy URL is it.
+  const initialFetch = options?.proxyUrl
+    ? { url: options.proxyUrl.concat(detectedUrl) }
+    : prepareFetch(detectedUrl, resolvedUrl);
+
+  const fetchUrl = initialFetch.url;
+  const dispatchers: Dispatcher[] = [];
+
+  if (initialFetch.dispatcher) {
+    dispatchers.push(initialFetch.dispatcher);
+  }
 
   try {
-    const fetchWithTimeout = async (url: string) => fetch(url, fetchOptions).catch((e) => {
-      if (e.name === `AbortError`) {
-        throw new Error(`Request timeout`);
-      }
+    const fetchWithTimeout = async (url: string, requestDispatcher?: Dispatcher) =>
+      fetchWithDispatcher(url, fetchOptions, requestDispatcher).catch((e) => {
+        if (e.name === `AbortError`) {
+          throw new Error(`Request timeout`);
+        }
 
-      clearTimeout(timeoutCounter);
-      throw e;
-    });
+        clearTimeout(timeoutCounter);
+        throw e;
+      });
 
-    let response = await fetchWithTimeout(fetchUrl);
+    let response = await fetchWithTimeout(fetchUrl, initialFetch.dispatcher);
 
     if (
       response.status > 300 &&
@@ -685,8 +772,15 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
         throwOnLoopback(forwardedResolvedUrl);
       }
 
-      const validatedForwardedUrl = getValidatedFetchUrl(forwardedUrl, forwardedResolvedUrl);
-      response = await fetchWithTimeout(validatedForwardedUrl);
+      const forwardedFetch = options?.proxyUrl
+        ? { url: forwardedUrl }
+        : prepareFetch(forwardedUrl, forwardedResolvedUrl);
+
+      if (forwardedFetch.dispatcher) {
+        dispatchers.push(forwardedFetch.dispatcher);
+      }
+
+      response = await fetchWithTimeout(forwardedFetch.url, forwardedFetch.dispatcher);
     }
 
     clearTimeout(timeoutCounter);
@@ -705,6 +799,7 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
     return parseResponse(normalizedResponse, options);
   } finally {
     clearTimeout(timeoutCounter);
+    await destroyDispatchers(dispatchers);
   }
 }
 

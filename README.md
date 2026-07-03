@@ -140,7 +140,7 @@ getLinkPreview("http://maliciousLocalHostRedirection.com", {
 
 This might add some latency to your request but prevents loopback attacks.
 
-Note: for `https://` URLs the request is still made against the original hostname (not the resolved IP), since TLS validates the certificate and SNI against the hostname. The resolved address is only used to detect and block loopback/private targets before the request is made.
+Note: for `https://` URLs the request keeps the original hostname (rewriting it to the resolved IP would break TLS: certificates and SNI are validated against the hostname, not an IP). Instead, the connection itself is pinned to the validated address (via a Node `undici` dispatcher), so a DNS resolver that returns a different address on the real request than it did during the `resolveDNSHost` check (DNS rebinding) can't route the request elsewhere. This pinning is only available under Node.js; other runtimes fall back to the `resolveDNSHost` check alone.
 
 ## Redirections
 
