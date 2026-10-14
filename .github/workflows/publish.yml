@@ -11,16 +11,14 @@ permissions:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      # Installs node and bun from mise.toml. npm publish authenticates through npm
+      # trusted publishing (OIDC, see id-token permission), no registry token needed.
+      - uses: jdx/mise-action@v5
         with:
-          node-version: "24"
-          registry-url: "https://registry.npmjs.org"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+          version: 2026.5.16
 
       - run: bun install --frozen-lockfile
       - name: Update package.json version

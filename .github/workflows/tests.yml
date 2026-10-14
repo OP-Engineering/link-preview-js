@@ -3,12 +3,12 @@ on: pull_request
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - uses: jdx/mise-action@v4
+        uses: actions/checkout@v6
+      - uses: jdx/mise-action@v5
         with:
           experimental: true
           version: 2026.5.16
