@@ -71,15 +71,13 @@ import { getLinkPreview } from "link-preview-js/mobile";
 import { getLinkPreview, getPreviewFromContent } from "link-preview-js";
 
 // pass the link directly
-getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c").then((data) =>
-  console.debug(data)
-);
+getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c").then((data) => console.debug(data));
 
 ////////////////////////// OR //////////////////////////
 
 // pass a chunk of text
 getLinkPreview(
-  "This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c"
+  "This is a text supposed to be parsed and the first link displayed https://www.youtube.com/watch?v=MejbOFk7H6c",
 ).then((data) => console.debug(data));
 
 ////////////////////////// OR //////////////////////////
@@ -113,7 +111,7 @@ Additionally, you can pass an options object which should add more functionality
 | followRedirects (**optional**) (default 'error')                                       | For security reasons, the library does not automatically follow redirects ('error' value), a malicious agent can exploit redirects to steal data, posible values: ('error', 'follow', 'manual') |
 | handleRedirects (**optional**) (with followRedirects 'manual')                         |                         When followRedirects is set to 'manual' you need to pass a function that validates if the redirectinon is secure, below you can find an example                         |
 | resolveDNSHost (**optional**)                                                          |                                                   Function that resolves the final address of the detected/parsed URL to prevent SSRF attacks                                                   |
-| onResponse (**optional**)                                                          |                                                   Function that handles the response object to allow for managing special cases                                                   |
+| onResponse (**optional**)                                                              |                                                          Function that handles the response object to allow for managing special cases                                                          |
 
 ```javascript
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
@@ -180,6 +178,8 @@ await getLinkPreview(`http://google.com/`, {
 });
 ```
 
+`handleRedirects` is called for every hop of a redirect chain (`baseURL` is the URL that redirected, `forwardedURL` where it points to), up to 20 redirects. Whether redirects are followed with `'follow'` or `'manual'`, every hop goes through the same SSRF checks as the original URL (including `resolveDNSHost`) before it's requested.
+
 ## onResponse
 
 In some cases the website might be missing OpenGraph tags and you might want to provide your own custom logic to try to parse data. For example, if the library is unable to detect a description, you might want to use the text value of the first paragraph instead. This callback gives you access to the Cheerio (the library internally used to parse the HTML) instance, as well as the URL object so you could handle cases on a site-by-site basis, if you need to. This callback must return the modified response object
@@ -187,14 +187,14 @@ In some cases the website might be missing OpenGraph tags and you might want to 
 ```javascript
 await getLinkPreview(`https://example.com/`, {
   onResponse: (response, doc, URL) => {
-    if (URL.hostname == 'example.com') {
-        response.siteName = 'Example Website';
+    if (URL.hostname == "example.com") {
+      response.siteName = "Example Website";
     }
 
     if (!response.description) {
-      response.description = doc('p').first().text();
+      response.description = doc("p").first().text();
     }
-    
+
     return response;
   },
 });

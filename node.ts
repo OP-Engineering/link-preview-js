@@ -305,6 +305,51 @@ async function destroyDispatchers(dispatchers: Dispatcher[]) {
   );
 }
 
+const MAX_REDIRECTS = 20;
+
+function isRedirectStatus(status: number) {
+  return status === 301 || status === 302 || status === 303 || status === 307 || status === 308;
+}
+
+function resolveRedirectLocation(locationHeader: string, baseUrl: string, proxyUrl?: string) {
+  const location =
+    proxyUrl && locationHeader.startsWith(proxyUrl)
+      ? locationHeader.slice(proxyUrl.length)
+      : locationHeader;
+
+  return new URL(location, baseUrl).href;
+}
+
+/**
+ * Redirect targets come from the fetched server, not the caller, so they get the same
+ * URL validation the initial link went through before any DNS resolution happens. The
+ * hostname (not the whole URL) is checked for literal loopback/private addresses, since
+ * REGEX_LOOPBACK could otherwise match an IP-looking path segment.
+ */
+function throwOnDisallowedRedirectTarget(url: string) {
+  if (!CONSTANTS.REGEX_VALID_URL.test(url)) {
+    throw new Error("SSRF request detected, redirect target is not an allowed URL");
+  }
+
+  throwOnLoopback(new URL(url).hostname);
+}
+
+/**
+ * Runs the caller's resolveDNSHost (if any) for a URL that's about to be fetched and
+ * rejects loopback/private results. Applied to the initial link and every redirect hop.
+ */
+async function resolveAndValidateHost(url: string, options?: ILinkPreviewOptions) {
+  if (!options?.resolveDNSHost) {
+    return undefined;
+  }
+
+  const resolvedUrl = await options.resolveDNSHost(url);
+
+  throwOnLoopback(resolvedUrl);
+
+  return resolvedUrl;
+}
+
 /**
  * Parses the text, extracts the first link it finds and does a HTTP request
  * to fetch the website content, afterwards it tries to parse the internal HTML
@@ -332,89 +377,86 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
     );
   }
 
-  let resolvedUrl: string | undefined;
-
-  if (options?.resolveDNSHost) {
-    resolvedUrl = await options.resolveDNSHost(detectedUrl);
-
-    throwOnLoopback(resolvedUrl);
-  } else {
+  if (!options?.resolveDNSHost) {
     console.error(
       "[link-preview-js] You are not resolving DNS addresses (resolveDNSHost option) before fetching a link. This can cause loopback attacks. Always try to resolve DNS addresses",
     );
   }
 
+  const resolvedUrl = await resolveAndValidateHost(detectedUrl, options);
+
   const timeout = options?.timeout ?? 3000; // 3 second timeout default
   const controller = new AbortController();
   const timeoutCounter = setTimeout(() => controller.abort(), timeout);
+  const redirectMode = options?.followRedirects ?? `error`;
 
+  // Redirects are never handed to fetch to follow on its own: an internally followed
+  // hop would skip the SSRF checks below (and, for plain HTTP, any pinning), letting a
+  // public page redirect the request to a loopback/private address. Every hop is
+  // instead fetched with `manual` and validated here before being requested.
   const fetchOptions: RequestInit = {
     headers: options?.headers ?? {},
-    redirect: options?.followRedirects ?? `error`,
+    redirect: redirectMode === `error` ? `error` : `manual`,
     signal: controller.signal,
   };
 
-  // A proxy already changes where the request is physically sent, so pinning the
-  // connection to the resolved address would fight the proxy instead of the target -
-  // in that case there's nothing for prepareFetch to decide, the proxy URL is it.
-  const initialFetch = options?.proxyUrl
-    ? { url: options.proxyUrl.concat(detectedUrl) }
-    : prepareFetch(detectedUrl, resolvedUrl);
-
-  const fetchUrl = initialFetch.url;
   const dispatchers: Dispatcher[] = [];
 
-  if (initialFetch.dispatcher) {
-    dispatchers.push(initialFetch.dispatcher);
-  }
+  const fetchHop = (targetUrl: string, targetResolvedUrl?: string) => {
+    // A proxy already changes where the request is physically sent, so pinning the
+    // connection to the resolved address would fight the proxy instead of the target -
+    // in that case there's nothing for prepareFetch to decide, the proxy URL is it.
+    const prepared: PreparedFetch = options?.proxyUrl
+      ? { url: options.proxyUrl.concat(targetUrl) }
+      : prepareFetch(targetUrl, targetResolvedUrl);
+
+    if (prepared.dispatcher) {
+      dispatchers.push(prepared.dispatcher);
+    }
+
+    return fetchWithDispatcher(prepared.url, fetchOptions, prepared.dispatcher).catch((e) => {
+      if (e.name === `AbortError`) {
+        throw new Error(`Request timeout`);
+      }
+
+      clearTimeout(timeoutCounter);
+      throw e;
+    });
+  };
 
   try {
-    const fetchWithTimeout = async (url: string, requestDispatcher?: Dispatcher) =>
-      fetchWithDispatcher(url, fetchOptions, requestDispatcher).catch((e) => {
-        if (e.name === `AbortError`) {
-          throw new Error(`Request timeout`);
-        }
+    // The URL as the caller/server sees it, used to resolve relative Location headers
+    // (the fetched URL may have been rewritten to an IP or prefixed with a proxy).
+    let currentUrl = detectedUrl;
+    let response = await fetchHop(detectedUrl, resolvedUrl);
+    let redirectCount = 0;
 
-        clearTimeout(timeoutCounter);
-        throw e;
-      });
+    // In `manual` mode handleRedirects approves every hop of the chain, not just the first.
+    while (redirectMode !== `error` && isRedirectStatus(response.status)) {
+      if (redirectCount >= MAX_REDIRECTS) {
+        throw new Error(`link-preview-js exceeded the maximum number of redirects`);
+      }
 
-    let response = await fetchWithTimeout(fetchUrl, initialFetch.dispatcher);
+      redirectCount++;
 
-    if (
-      response.status > 300 &&
-      response.status < 309 &&
-      fetchOptions.redirect === `manual` &&
-      options?.handleRedirects
-    ) {
-      const locationHeader = response.headers.get(`location`) || ``;
-      const isAbsoluteURI =
-        locationHeader.startsWith("http://") || locationHeader.startsWith("https://");
+      const locationHeader = response.headers.get(`location`);
 
-      // Resolve the URL, handling both absolute and relative URLs
-      const forwardedUrl = isAbsoluteURI ? locationHeader : new URL(locationHeader, fetchUrl).href;
+      if (!locationHeader) {
+        break;
+      }
 
-      if (!options.handleRedirects(fetchUrl, forwardedUrl)) {
+      await response.body?.cancel().catch(() => {});
+
+      const forwardedUrl = resolveRedirectLocation(locationHeader, currentUrl, options?.proxyUrl);
+
+      if (redirectMode === `manual` && !options?.handleRedirects?.(currentUrl, forwardedUrl)) {
         throw new Error(`link-preview-js could not handle redirect`);
       }
 
-      let forwardedResolvedUrl: string | undefined;
+      throwOnDisallowedRedirectTarget(forwardedUrl);
 
-      if (options?.resolveDNSHost) {
-        forwardedResolvedUrl = await options.resolveDNSHost(forwardedUrl);
-
-        throwOnLoopback(forwardedResolvedUrl);
-      }
-
-      const forwardedFetch = options?.proxyUrl
-        ? { url: forwardedUrl }
-        : prepareFetch(forwardedUrl, forwardedResolvedUrl);
-
-      if (forwardedFetch.dispatcher) {
-        dispatchers.push(forwardedFetch.dispatcher);
-      }
-
-      response = await fetchWithTimeout(forwardedFetch.url, forwardedFetch.dispatcher);
+      currentUrl = forwardedUrl;
+      response = await fetchHop(forwardedUrl, await resolveAndValidateHost(forwardedUrl, options));
     }
 
     clearTimeout(timeoutCounter);

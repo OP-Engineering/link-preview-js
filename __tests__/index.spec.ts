@@ -56,24 +56,17 @@ describe(`#getLinkPreview()`, () => {
     const fetchSpy = mockYoutubeFetchOnCI();
 
     try {
-      const linkInfo: any = await getLinkPreview(
-        `https://www.youtube.com/watch?v=wuClZjOdT30`,
-        {
-          headers: { "Accept-Language": `en-US` },
-        },
-      );
+      const linkInfo: any = await getLinkPreview(`https://www.youtube.com/watch?v=wuClZjOdT30`, {
+        headers: { "Accept-Language": `en-US` },
+      });
 
-      expect(linkInfo.url).toEqual(
-        `https://www.youtube.com/watch?v=wuClZjOdT30`,
-      );
+      expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
       expect(linkInfo.siteName).toEqual(`YouTube`);
       expect(linkInfo.title).toEqual(`Geography Now! Germany`);
       expect(linkInfo.description).toBeTruthy();
       expect(linkInfo.mediaType).toEqual(`video.other`);
       expect(linkInfo.images.length).toEqual(1);
-      expect(linkInfo.images[0]).toEqual(
-        `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
-      );
+      expect(linkInfo.images[0]).toEqual(`https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`);
       expect(linkInfo.videos.length).toEqual(0);
       expect(linkInfo.favicons[0]).not.toBe(``);
       expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
@@ -110,17 +103,13 @@ describe(`#getLinkPreview()`, () => {
         { headers: { "Accept-Language": `en-US` } },
       );
 
-      expect(linkInfo.url).toEqual(
-        `https://www.youtube.com/watch?v=wuClZjOdT30`,
-      );
+      expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
       expect(linkInfo.title).toEqual(`Geography Now! Germany`);
       expect(linkInfo.siteName).toBeTruthy();
       expect(linkInfo.description).toBeTruthy();
       expect(linkInfo.mediaType).toEqual(`video.other`);
       expect(linkInfo.images.length).toEqual(1);
-      expect(linkInfo.images[0]).toEqual(
-        `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
-      );
+      expect(linkInfo.images[0]).toEqual(`https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`);
       expect(linkInfo.videos.length).toEqual(0);
       expect(linkInfo.favicons[0]).not.toBe(``);
       expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
@@ -138,17 +127,13 @@ describe(`#getLinkPreview()`, () => {
         { headers: { "Accept-Language": `en-US` } },
       );
 
-      expect(linkInfo.url).toEqual(
-        `https://www.youtube.com/watch?v=wuClZjOdT30`,
-      );
+      expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
       expect(linkInfo.title).toEqual(`Geography Now! Germany`);
       expect(linkInfo.siteName).toEqual(`YouTube`);
       expect(linkInfo.description).toBeTruthy();
       expect(linkInfo.mediaType).toEqual(`video.other`);
       expect(linkInfo.images.length).toEqual(1);
-      expect(linkInfo.images[0]).toEqual(
-        `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
-      );
+      expect(linkInfo.images[0]).toEqual(`https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`);
       expect(linkInfo.videos.length).toEqual(0);
       expect(linkInfo.favicons[0]).toBeTruthy();
       expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
@@ -181,9 +166,7 @@ describe(`#getLinkPreview()`, () => {
   });
 
   it(`should handle video urls`, async () => {
-    const linkInfo = await getLinkPreview(
-      `https://www.w3schools.com/html/mov_bbb.mp4`,
-    );
+    const linkInfo = await getLinkPreview(`https://www.w3schools.com/html/mov_bbb.mp4`);
 
     expect(linkInfo.url).toEqual(`https://www.w3schools.com/html/mov_bbb.mp4`);
     expect(linkInfo.mediaType).toEqual(`video`);
@@ -233,9 +216,7 @@ describe(`#getLinkPreview()`, () => {
 
   it(`should handle malformed urls gracefully`, async () => {
     expect(
-      getLinkPreview(
-        `this is a malformed link: ahttps://www.youtube.com/watch?v=wuClZjOdT30`,
-      ),
+      getLinkPreview(`this is a malformed link: ahttps://www.youtube.com/watch?v=wuClZjOdT30`),
     ).rejects.toThrow(`link-preview-js did not receive a valid a url or text`);
   });
 
@@ -255,9 +236,7 @@ describe(`#getLinkPreview()`, () => {
 
   it(`should block nip.io wildcard hostnames`, async () => {
     expect(
-      getLinkPreview(
-        `http://169.254.169.254.nip.io/latest/meta-data/iam/security-credentials/`,
-      ),
+      getLinkPreview(`http://169.254.169.254.nip.io/latest/meta-data/iam/security-credentials/`),
     ).rejects.toThrow(`link-preview-js did not receive a valid a url or text`);
   });
 
@@ -275,16 +254,13 @@ describe(`#getLinkPreview()`, () => {
 
   it.skip(`should handle a proxy url option`, async () => {
     // origin header is required by cors-anywhere
-    const linkInfo: any = await getLinkPreview(
-      `https://www.youtube.com/watch?v=wuClZjOdT30`,
-      {
-        proxyUrl: `https://cors-anywhere.herokuapp.com/`,
-        headers: {
-          Origin: `http://localhost:8000`,
-          "Accept-Language": `en-US`,
-        },
+    const linkInfo: any = await getLinkPreview(`https://www.youtube.com/watch?v=wuClZjOdT30`, {
+      proxyUrl: `https://cors-anywhere.herokuapp.com/`,
+      headers: {
+        Origin: `http://localhost:8000`,
+        "Accept-Language": `en-US`,
       },
-    );
+    });
 
     expect(linkInfo.url).toEqual(`https://www.youtube.com/watch?v=wuClZjOdT30`);
     expect(linkInfo.siteName).toEqual(`YouTube`);
@@ -292,9 +268,7 @@ describe(`#getLinkPreview()`, () => {
     expect(linkInfo.description).toBeTruthy();
     expect(linkInfo.mediaType).toEqual(`video.other`);
     expect(linkInfo.images.length).toEqual(1);
-    expect(linkInfo.images[0]).toEqual(
-      `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
-    );
+    expect(linkInfo.images[0]).toEqual(`https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`);
     expect(linkInfo.videos.length).toEqual(0);
     expect(linkInfo.favicons[0]).not.toBe(``);
     expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
@@ -320,9 +294,9 @@ describe(`#getLinkPreview()`, () => {
     const fetchSpy = mockHangingFetch();
 
     try {
-      expect(
-        getLinkPreview(`https://example.com/infinite-loading`),
-      ).rejects.toThrow("Request timeout");
+      expect(getLinkPreview(`https://example.com/infinite-loading`)).rejects.toThrow(
+        "Request timeout",
+      );
     } finally {
       fetchSpy.mockRestore();
     }
@@ -391,9 +365,7 @@ describe(`#getLinkPreview()`, () => {
     Object.defineProperty(fetchResponse, "url", {
       value: "http://example.com/",
     });
-    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(
-      fetchResponse,
-    );
+    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(fetchResponse);
 
     try {
       const response = await getLinkPreview(`http://example.com/`, {
@@ -418,9 +390,7 @@ describe(`#getLinkPreview()`, () => {
     Object.defineProperty(fetchResponse, "url", {
       value: "http://replacement.example.com/",
     });
-    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(
-      fetchResponse,
-    );
+    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(fetchResponse);
 
     try {
       const response = await getLinkPreview(`http://example.com/`, {
@@ -429,9 +399,7 @@ describe(`#getLinkPreview()`, () => {
 
       expect((response as any).title).toEqual("Resolved host");
       expect(fetchSpy).toHaveBeenCalledTimes(1);
-      expect(fetchSpy.mock.calls[0][0]).toEqual(
-        "http://replacement.example.com/",
-      );
+      expect(fetchSpy.mock.calls[0][0]).toEqual("http://replacement.example.com/");
     } finally {
       fetchSpy.mockRestore();
     }
@@ -457,15 +425,168 @@ describe(`#getLinkPreview()`, () => {
     // doesn't honor undici's `connect.lookup` override that createPinnedDispatcher
     // (index.ts) relies on to pin the connection - so this can only be verified
     // against the real undici package, run under plain `node`.
-    const fixture = path.join(
-      __dirname,
-      "fixtures",
-      "verify-undici-pinning.node.cjs",
-    );
+    const fixture = path.join(__dirname, "fixtures", "verify-undici-pinning.node.cjs");
     const result = spawnSync("node", [fixture], { encoding: "utf-8" });
 
     expect(result.stdout.trim()).toEqual("PASS");
     expect(result.status).toEqual(0);
+  });
+
+  it(`should block followed redirects to loopback/private addresses`, async () => {
+    const blockedTargets = [
+      "http://127.0.0.1/",
+      "http://169.254.169.254/latest/meta-data/",
+      "http://[::1]/",
+      "http://localhost/",
+      "http://service.internal/",
+    ];
+
+    for (const target of blockedTargets) {
+      const fetchSpy = spyOn(globalThis, "fetch").mockImplementation(
+        (async () =>
+          new Response(null, {
+            status: 302,
+            headers: { location: target },
+          })) as any,
+      );
+
+      try {
+        await expect(
+          getLinkPreview(`http://example.com/`, { followRedirects: `follow` }),
+        ).rejects.toThrow("SSRF request detected");
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
+        expect(fetchSpy.mock.calls[0][1]?.redirect).toEqual("manual");
+      } finally {
+        fetchSpy.mockRestore();
+      }
+    }
+  });
+
+  it(`should revalidate every followed redirect hop with resolveDNSHost`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation(
+      (async () =>
+        new Response(null, {
+          status: 302,
+          headers: { location: "http://attacker.example.net/" },
+        })) as any,
+    );
+    const resolveDNSHost = async (url: string) =>
+      url.includes("attacker") ? "10.0.0.5" : "93.184.216.34";
+
+    try {
+      await expect(
+        getLinkPreview(`http://example.com/`, {
+          followRedirects: `follow`,
+          resolveDNSHost,
+        }),
+      ).rejects.toThrow("SSRF request detected");
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(fetchSpy.mock.calls[0][0]).toEqual("http://93.184.216.34/");
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it(`should follow safe redirects hop by hop, pinning each to its resolved address`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation((async (url: string) => {
+      if (url === "http://93.184.216.34/") {
+        return new Response(null, {
+          status: 301,
+          headers: { location: "/next" },
+        });
+      }
+
+      const finalResponse = new Response(
+        `<html><head><meta property="og:title" content="Redirected"></head></html>`,
+        { headers: { "content-type": "text/html" } },
+      );
+      Object.defineProperty(finalResponse, "url", { value: url });
+      return finalResponse;
+    }) as any);
+    const resolvedUrls: string[] = [];
+
+    try {
+      const response: any = await getLinkPreview(`http://example.com/`, {
+        followRedirects: `follow`,
+        resolveDNSHost: async (url) => {
+          resolvedUrls.push(url);
+          return "93.184.216.34";
+        },
+      });
+
+      expect(response.title).toEqual("Redirected");
+      expect(resolvedUrls).toEqual(["http://example.com/", "http://example.com/next"]);
+      expect(fetchSpy.mock.calls.map((call) => call[0])).toEqual([
+        "http://93.184.216.34/",
+        "http://93.184.216.34/next",
+      ]);
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it(`should ask handleRedirects about every hop of a manual redirect chain`, async () => {
+    const redirects: Record<string, string> = {
+      "http://example.com/": "http://www.example.com/",
+      "http://www.example.com/": "https://www.example.com/",
+    };
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation((async (url: string) => {
+      if (redirects[url]) {
+        return new Response(null, { status: 302, headers: { location: redirects[url] } });
+      }
+
+      const finalResponse = new Response(
+        `<html><head><meta property="og:title" content="Final"></head></html>`,
+        { headers: { "content-type": "text/html" } },
+      );
+      Object.defineProperty(finalResponse, "url", { value: url });
+      return finalResponse;
+    }) as any);
+    const approvedHops: string[][] = [];
+
+    try {
+      const response: any = await getLinkPreview(`http://example.com/`, {
+        followRedirects: `manual`,
+        handleRedirects: (baseURL, forwardedURL) => {
+          approvedHops.push([baseURL, forwardedURL]);
+          return true;
+        },
+      });
+
+      expect(response.title).toEqual("Final");
+      expect(approvedHops).toEqual([
+        ["http://example.com/", "http://www.example.com/"],
+        ["http://www.example.com/", "https://www.example.com/"],
+      ]);
+
+      await expect(
+        getLinkPreview(`http://example.com/`, {
+          followRedirects: `manual`,
+          handleRedirects: (baseURL) => baseURL === "http://example.com/",
+        }),
+      ).rejects.toThrow("could not handle redirect");
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it(`should stop following redirect loops`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation(
+      (async () =>
+        new Response(null, {
+          status: 302,
+          headers: { location: "http://example.com/" },
+        })) as any,
+    );
+
+    try {
+      await expect(
+        getLinkPreview(`http://example.com/`, { followRedirects: `follow` }),
+      ).rejects.toThrow("maximum number of redirects");
+      expect(fetchSpy).toHaveBeenCalledTimes(21);
+    } finally {
+      fetchSpy.mockRestore();
+    }
   });
 
   it(`should block resolved local addresses in normalized IPv6 forms`, async () => {
@@ -553,9 +674,7 @@ describe(`#getPreviewFromContent`, () => {
     expect(linkInfo.description).toBeTruthy();
     expect(linkInfo.mediaType).toEqual(`video.other`);
     expect(linkInfo.images.length).toEqual(1);
-    expect(linkInfo.images[0]).toEqual(
-      `https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`,
-    );
+    expect(linkInfo.images[0]).toEqual(`https://i.ytimg.com/vi/wuClZjOdT30/maxresdefault.jpg`);
     expect(linkInfo.videos.length).toEqual(0);
     expect(linkInfo.favicons[0]).not.toBe(``);
     expect(linkInfo.contentType.toLowerCase()).toEqual(`text/html`);
