@@ -129,6 +129,8 @@ getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
 
 Doing requests on behalf of your users or using user-provided URLs is dangerous. One of such attack is trying to fetch a domain that redirects to localhost so the users get the contents of your server (doesn't affect mobile runtimes). To mitigate this attack you can use the resolveDNSHost option, available on the default/`link-preview-js/node` import only - see [Entrypoints](#entrypoints).
 
+**The default options offer no SSRF protection.** Without `resolveDNSHost` the library only rejects URLs that literally contain a private or loopback address, or a known internal hostname. It does not check where a hostname resolves, so any public domain pointing at an internal address will still be fetched. If you fetch user-provided URLs on a server, always pass `resolveDNSHost`.
+
 ```ts
 // example how to use node's dns resolver
 const dns = require("node:dns");

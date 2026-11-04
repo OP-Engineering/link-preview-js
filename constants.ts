@@ -27,8 +27,8 @@ export const CONSTANTS = {
       "(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)" +
       // domain name
       "(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*" +
-      // TLD identifier
-      "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))" +
+      // TLD identifier (xn-- is the normalized form of an international TLD)
+      "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}|xn--[a-z0-9-]*[a-z0-9]))" +
       // TLD may end with dot
       "\\.?" +
       ")" +

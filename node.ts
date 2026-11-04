@@ -321,17 +321,21 @@ function resolveRedirectLocation(locationHeader: string, baseUrl: string, proxyU
 }
 
 /**
- * Redirect targets come from the fetched server, not the caller, so they get the same
- * URL validation the initial link went through before any DNS resolution happens. The
- * hostname (not the whole URL) is checked for literal loopback/private addresses, since
- * REGEX_LOOPBACK could otherwise match an IP-looking path segment.
+ * Validates a URL about to be requested, either the initial link or a redirect target.
+ * The URL must be normalized first: `new URL()` rewrites hostnames (fullwidth digits to
+ * ASCII, for example), so checking the raw text would validate a different host than
+ * the one that gets fetched. The hostname (not the whole URL) is checked for literal
+ * loopback/private addresses, since REGEX_LOOPBACK could otherwise match an IP-looking
+ * path segment.
  */
-function throwOnDisallowedRedirectTarget(url: string) {
-  if (!CONSTANTS.REGEX_VALID_URL.test(url)) {
-    throw new Error("SSRF request detected, redirect target is not an allowed URL");
+function throwOnDisallowedUrl(url: string) {
+  const normalizedUrl = new URL(url);
+
+  if (!CONSTANTS.REGEX_VALID_URL.test(normalizedUrl.href)) {
+    throw new Error("SSRF request detected, URL is not allowed");
   }
 
-  throwOnLoopback(new URL(url).hostname);
+  throwOnLoopback(normalizedUrl.hostname);
 }
 
 /**
@@ -370,6 +374,8 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
   if (!detectedUrl) {
     throw new Error(`link-preview-js did not receive a valid a url or text`);
   }
+
+  throwOnDisallowedUrl(detectedUrl);
 
   if (options?.followRedirects === `manual` && !options?.handleRedirects) {
     throw new Error(
@@ -453,7 +459,7 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
         throw new Error(`link-preview-js could not handle redirect`);
       }
 
-      throwOnDisallowedRedirectTarget(forwardedUrl);
+      throwOnDisallowedUrl(forwardedUrl);
 
       currentUrl = forwardedUrl;
       response = await fetchHop(forwardedUrl, await resolveAndValidateHost(forwardedUrl, options));

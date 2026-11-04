@@ -620,6 +620,70 @@ describe(`#getLinkPreview()`, () => {
     }
   });
 
+  it(`should reject initial links that normalize to a blocked host`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation(
+      (async () => new Response(`<html></html>`)) as any,
+    );
+    const blockedLinks = [
+      // Fullwidth digits normalize to private IPv4 addresses
+      "http://127.0.0.１１:8099/",
+      "http://127.0.0.０１/",
+      "http://10.0.0.１１/",
+      "http://192.168.0.１１/",
+      "http://169.254.169.２５４/",
+      // Fullwidth letters normalize to blocked hostnames
+      "http://foo.ｉｎｔｅｒｎａｌ/",
+      "http://foo.ｌｏｃａｌ/",
+      "http://127.0.0.1.ｎｉｐ.ｉｏ/",
+      // Blocked for redirect targets, but not matched by REGEX_VALID_URL
+      "http://100.100.100.200/",
+      "http://192.0.2.10/",
+    ];
+
+    try {
+      for (const link of blockedLinks) {
+        await expect(getLinkPreview(link)).rejects.toThrow("SSRF request detected");
+      }
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it(`should keep accepting international domains as links and redirect targets`, async () => {
+    const htmlResponse = (url: string) => {
+      const response = new Response(`<html><head><title>IDN</title></head></html>`, {
+        headers: { "content-type": "text/html" },
+      });
+      Object.defineProperty(response, "url", { value: url });
+      return response;
+    };
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation((async (url: string) => {
+      if (url === "https://redirect.example.com/") {
+        return new Response(null, {
+          status: 302,
+          headers: { location: "https://xn--fsqu00a.xn--fiqs8s/" },
+        });
+      }
+
+      return htmlResponse(url);
+    }) as any);
+
+    try {
+      const direct: any = await getLinkPreview(`https://пример.рф/`);
+      expect(direct.title).toEqual("IDN");
+
+      const redirected: any = await getLinkPreview(`https://redirect.example.com/`, {
+        followRedirects: `follow`,
+      });
+      expect(redirected.title).toEqual("IDN");
+      expect(fetchSpy.mock.calls[2][0]).toEqual("https://xn--fsqu00a.xn--fiqs8s/");
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it("should handle override response body using onResponse option", async () => {
     let firstParagraphText;
 
