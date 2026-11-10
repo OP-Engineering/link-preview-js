@@ -50,7 +50,7 @@ https://discord.gg/W9XmqCQCKP
 
 This package ships two variants:
 
-- `link-preview-js` / `link-preview-js/node` - full-featured, for Node.js servers. Includes the `resolveDNSHost` SSRF/DNS-rebinding protection (see [SSRF Concerns](#ssrf-concerns)), which pins HTTPS connections at the TCP layer via `undici`.
+- `link-preview-js` / `link-preview-js/node` - full-featured, for Node.js servers. Includes SSRF/DNS-rebinding protection, on by default (see [SSRF Concerns](#ssrf-concerns)), which pins connections at the TCP layer via `undici`.
 - `link-preview-js/mobile` - for React Native, Cordova, or other non-Node/browser runtimes. Has no `undici` or `node:net` dependency, so it won't break bundlers that can't resolve Node-only modules. It has no `resolveDNSHost` option either: mobile apps don't sit in front of a private network of internal services the way a server does, so there's no loopback/localhost target worth protecting against on-device.
 
 ```typescript
@@ -103,15 +103,15 @@ yourAjaxCall(url, (response) => {
 
 Additionally, you can pass an options object which should add more functionality to the parsing of the link
 
-| Property Name                                                                          |                                                                                             Result                                                                                              |
-| -------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| imagesPropertyType (**optional**) (ex: 'og')                                           |                                                 Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']`                                                 |
-| headers (**optional**) (ex: { 'user-agent': 'googlebot', 'Accept-Language': 'en-US' }) |                                                                                Add request headers to fetch call                                                                                |
-| timeout (**optional**) (ex: 1000)                                                      |                                                                                 Timeout for the request to fail                                                                                 |
-| followRedirects (**optional**) (default 'error')                                       | For security reasons, the library does not automatically follow redirects ('error' value), a malicious agent can exploit redirects to steal data, posible values: ('error', 'follow', 'manual') |
-| handleRedirects (**optional**) (with followRedirects 'manual')                         |                         When followRedirects is set to 'manual' you need to pass a function that validates if the redirectinon is secure, below you can find an example                         |
-| resolveDNSHost (**optional**)                                                          |                                                   Function that resolves the final address of the detected/parsed URL to prevent SSRF attacks                                                   |
-| onResponse (**optional**)                                                              |                                                          Function that handles the response object to allow for managing special cases                                                          |
+| Property Name                                                                          |                                                                                                      Result                                                                                                       |
+| -------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| imagesPropertyType (**optional**) (ex: 'og')                                           |                                                          Fetches images only with the specified property, `meta[property='${imagesPropertyType}:image']`                                                          |
+| headers (**optional**) (ex: { 'user-agent': 'googlebot', 'Accept-Language': 'en-US' }) |                                                                                         Add request headers to fetch call                                                                                         |
+| timeout (**optional**) (ex: 1000)                                                      |                                                                                          Timeout for the request to fail                                                                                          |
+| followRedirects (**optional**) (default 'error')                                       |          For security reasons, the library does not automatically follow redirects ('error' value), a malicious agent can exploit redirects to steal data, posible values: ('error', 'follow', 'manual')          |
+| handleRedirects (**optional**) (with followRedirects 'manual')                         |                                  When followRedirects is set to 'manual' you need to pass a function that validates if the redirectinon is secure, below you can find an example                                  |
+| resolveDNSHost (**optional**) (default: built-in `dns.lookup` check)                   | How the host of each requested URL is resolved and checked for SSRF. Omit it for the built-in check, pass your own resolver function, or pass `false` to disable resolution (see [SSRF Concerns](#ssrf-concerns)) |
+| onResponse (**optional**)                                                              |                                                                   Function that handles the response object to allow for managing special cases                                                                   |
 
 ```javascript
 getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
@@ -127,12 +127,13 @@ getLinkPreview("https://www.youtube.com/watch?v=MejbOFk7H6c", {
 
 ## SSRF Concerns
 
-Doing requests on behalf of your users or using user-provided URLs is dangerous. One of such attack is trying to fetch a domain that redirects to localhost so the users get the contents of your server (doesn't affect mobile runtimes). To mitigate this attack you can use the resolveDNSHost option, available on the default/`link-preview-js/node` import only - see [Entrypoints](#entrypoints).
+Doing requests on behalf of your users or using user-provided URLs is dangerous. One such attack is passing a URL whose hostname resolves to an internal address (`localhost`, a private network, or a cloud metadata endpoint like `169.254.169.254`), so your server fetches its own internal resources and hands them back to the attacker. This doesn't affect mobile runtimes (see [Entrypoints](#entrypoints)).
 
-**The default options offer no SSRF protection.** Without `resolveDNSHost` the library only rejects URLs that literally contain a private or loopback address, or a known internal hostname. It does not check where a hostname resolves, so any public domain pointing at an internal address will still be fetched. If you fetch user-provided URLs on a server, always pass `resolveDNSHost`.
+**On the default/`link-preview-js/node` import this is blocked out of the box.** Before every request (the initial link and each redirect hop), the hostname is resolved with `dns.lookup`. If **any** returned address is loopback, private, link-local, CGNAT, unique-local or otherwise reserved, the request is rejected with an `SSRF request detected` error. The connection is then pinned to the addresses that were checked (via a Node `undici` dispatcher), so a DNS server answering differently on the real request (DNS rebinding) can't redirect it. The original hostname is kept, so the `Host` header, SNI and TLS certificate validation are unaffected.
+
+You can replace the built-in check with your own resolver, for example to use a specific DNS server or to cache results:
 
 ```ts
-// example how to use node's dns resolver
 const dns = require("node:dns");
 getLinkPreview("http://maliciousLocalHostRedirection.com", {
   resolveDNSHost: async (url: string) => {
@@ -153,9 +154,14 @@ getLinkPreview("http://maliciousLocalHostRedirection.com", {
 });
 ```
 
-This might add some latency to your request but prevents loopback attacks.
+A custom resolver may return an IP address, which is validated and then used for the request, or a URL, which is trusted and fetched as-is. With an IP address, `http://` requests are sent to that IP directly. `https://` requests keep the original hostname, since rewriting it to an IP would break TLS, and the connection is pinned to the address instead.
 
-Note: for `https://` URLs the request keeps the original hostname (rewriting it to the resolved IP would break TLS: certificates and SNI are validated against the hostname, not an IP). Instead, the connection itself is pinned to the validated address (via a Node `undici` dispatcher), so a DNS resolver that returns a different address on the real request than it did during the `resolveDNSHost` check (DNS rebinding) can't route the request elsewhere. This pinning is only available under Node.js; other runtimes fall back to the `resolveDNSHost` check alone.
+To fetch internal hosts on purpose (e.g. previews of intranet pages), pass `resolveDNSHost: false`. This skips resolution entirely: only URLs that literally contain a private or loopback address, or a known internal hostname, are rejected, and any hostname pointing at an internal address will be fetched. Don't use it with user-provided URLs.
+
+Notes:
+
+- Connection pinning is only enforced under Node.js. Bun's built-in `undici` replacement ignores it, so on Bun the pre-request check is the only protection, which leaves a small DNS-rebinding window.
+- With `proxyUrl`, the target is still resolved and checked locally, but the connection isn't pinned: the proxy decides where the request actually goes.
 
 ## Redirections
 

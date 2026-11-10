@@ -1,3 +1,4 @@
+import dns from "node:dns/promises";
 import { Agent, fetch as undiciFetch, type Dispatcher } from "undici";
 import { CONSTANTS } from "./constants";
 import { parseResponse, type ILinkPreviewBaseOptions } from "./shared";
@@ -6,7 +7,23 @@ export type { ILinkPreviewResponse, IVideoType, IPreFetchedResource } from "./sh
 export { getPreviewFromContent } from "./shared";
 
 export interface ILinkPreviewOptions extends ILinkPreviewBaseOptions {
-  resolveDNSHost?: (url: string) => Promise<string>;
+  /**
+   * Controls how the host of every URL about to be requested (the initial link and each
+   * redirect hop) is resolved and checked against loopback/private/link-local ranges.
+   *
+   * - `undefined` (default): resolved with `dns.lookup`. The request is rejected if any
+   *   returned address is blocked, and the connection is pinned to the validated addresses.
+   * - a function: your own resolver, returning an IP address (validated and pinned) or a URL
+   *   (trusted verbatim).
+   * - `false`: no resolution. Only URLs that literally contain a blocked address or a known
+   *   internal hostname are rejected, so hostnames pointing at internal addresses are fetched.
+   */
+  resolveDNSHost?: ((url: string) => Promise<string>) | false;
+}
+
+interface ResolvedAddress {
+  address: string;
+  family: 4 | 6;
 }
 
 function parseIPv4Address(address: string) {
@@ -144,6 +161,10 @@ function isIPv6AddressBlocked(address: string) {
   );
 }
 
+function isAddressBlocked(address: string) {
+  return isIPv4AddressBlocked(address) || isIPv6AddressBlocked(address);
+}
+
 function stripIPv6Brackets(address: string) {
   if (address.startsWith("[") && address.endsWith("]")) {
     return address.slice(1, -1);
@@ -180,7 +201,7 @@ function throwOnLoopback(addressOrUrl: string) {
   const normalizedAddress = getResolvedAddress(addressOrUrl);
 
   if (normalizedAddress) {
-    if (isIPv4AddressBlocked(normalizedAddress) || isIPv6AddressBlocked(normalizedAddress)) {
+    if (isAddressBlocked(normalizedAddress)) {
       throw new Error("SSRF request detected, trying to query host");
     }
 
@@ -206,28 +227,74 @@ interface PreparedFetch {
 }
 
 /**
- * Turns a detected URL plus its resolveDNSHost result into what to actually fetch.
- * This is the single place that decides how a validated address gets used, so there
- * is exactly one path through this logic - not two independently-maintained ones that
- * could quietly drift apart and produce a hostname-preserving request with no pin.
- *
- * - No resolved address: nothing to enforce, fetch the URL as-is.
- * - resolveDNSHost returned a URL: trust it verbatim, nothing to pin to.
- * - Plain HTTP: rewriting the hostname to the resolved IP is itself the pin (the
- *   request can't land anywhere else), so no dispatcher is needed.
- * - HTTPS: rewriting the hostname to a bare IP breaks TLS (the handshake would send
- *   the IP as the SNI server name, and certificate validation fails since
- *   certificates are issued for hostnames, not IPs). The hostname is kept for SNI and
- *   the Host header, and the connection itself is pinned to the validated address
- *   instead via a dispatcher, so a DNS resolver returning something else on the real
- *   request (DNS rebinding) can't route the request anywhere else.
+ * Bun swaps the "undici" package for its own native implementation, which accepts a
+ * dispatcher but ignores its `connect.lookup` override, so pinning can't be enforced
+ * there. On Bun the pre-fetch address validation is the only protection.
  */
-function prepareFetch(url: string, resolvedAddressOrUrl?: string): PreparedFetch {
-  if (!resolvedAddressOrUrl) {
+const RUNTIME_HONORS_PINNED_LOOKUP = typeof process === "undefined" || !process.versions?.bun;
+
+/**
+ * An undici dispatcher whose DNS lookup always answers with the already-validated
+ * addresses, so the connection can't land on a different address than the one that was
+ * checked, even if a second DNS query would answer differently (DNS rebinding). The
+ * request keeps its hostname, so the Host header, SNI and certificate validation are
+ * unaffected.
+ */
+function createPinnedDispatcher(url: string, addresses: ResolvedAddress[]) {
+  if (!RUNTIME_HONORS_PINNED_LOOKUP) {
+    return undefined;
+  }
+
+  const expectedHostname = normalizeHostnameForComparison(new URL(url).hostname);
+
+  return new Agent({
+    connect: {
+      lookup(
+        hostname: string,
+        lookupOptions: { all?: boolean },
+        callback: (...args: any[]) => void,
+      ) {
+        if (normalizeHostnameForComparison(hostname) !== expectedHostname) {
+          callback(new Error("SSRF request detected, hostname changed after DNS validation"));
+          return;
+        }
+
+        if (lookupOptions?.all) {
+          callback(null, addresses);
+          return;
+        }
+
+        callback(null, addresses[0].address, addresses[0].family);
+      },
+    },
+  });
+}
+
+/**
+ * Turns a URL about to be fetched plus its validated resolution into what to actually
+ * fetch. This is the single place that decides how a validated address gets used, so
+ * there's exactly one path through this logic and no way to end up with a
+ * hostname-preserving request that has no pin.
+ *
+ * - No resolution (`resolveDNSHost: false`): fetch the URL as-is.
+ * - Built-in resolution: keep the URL, pin the connection to the validated addresses.
+ * - resolveDNSHost returned a URL: trust it verbatim, nothing to pin to.
+ * - resolveDNSHost returned an address, plain HTTP: rewrite the hostname to that
+ *   address. The rewrite is itself the pin, since the request can't land anywhere else.
+ * - resolveDNSHost returned an address, HTTPS: rewriting the hostname to a bare IP
+ *   breaks TLS (the IP would be sent as the SNI server name, and certificates are issued
+ *   for hostnames). Keep the hostname and pin the connection with a dispatcher instead.
+ */
+function prepareFetch(url: string, resolution?: HostResolution): PreparedFetch {
+  if (!resolution) {
     return { url };
   }
 
-  const trimmedResolvedAddressOrUrl = resolvedAddressOrUrl.trim();
+  if (Array.isArray(resolution)) {
+    return { url, dispatcher: createPinnedDispatcher(url, resolution) };
+  }
+
+  const trimmedResolvedAddressOrUrl = resolution.trim();
 
   if (
     trimmedResolvedAddressOrUrl.startsWith("http://") ||
@@ -251,31 +318,8 @@ function prepareFetch(url: string, resolvedAddressOrUrl?: string): PreparedFetch
   }
 
   const family = parseIPv4Address(resolvedAddress) ? 4 : 6;
-  const expectedHostname = normalizeHostnameForComparison(parsedUrl.hostname);
 
-  const dispatcher = new Agent({
-    connect: {
-      lookup(
-        hostname: string,
-        lookupOptions: { all?: boolean },
-        callback: (...args: any[]) => void,
-      ) {
-        if (normalizeHostnameForComparison(hostname) !== expectedHostname) {
-          callback(new Error("SSRF request detected, hostname changed after DNS validation"));
-          return;
-        }
-
-        if (lookupOptions?.all) {
-          callback(null, [{ address: resolvedAddress, family }]);
-          return;
-        }
-
-        callback(null, resolvedAddress, family);
-      },
-    },
-  });
-
-  return { url, dispatcher };
+  return { url, dispatcher: createPinnedDispatcher(url, [{ address: resolvedAddress, family }]) };
 }
 
 /**
@@ -339,12 +383,56 @@ function throwOnDisallowedUrl(url: string) {
 }
 
 /**
- * Runs the caller's resolveDNSHost (if any) for a URL that's about to be fetched and
- * rejects loopback/private results. Applied to the initial link and every redirect hop.
+ * What a URL's host resolved to, after validation:
+ * - `undefined`: not resolved (`resolveDNSHost: false`)
+ * - `string`: what the caller's resolveDNSHost returned
+ * - `ResolvedAddress[]`: what the built-in resolver returned
  */
-async function resolveAndValidateHost(url: string, options?: ILinkPreviewOptions) {
-  if (!options?.resolveDNSHost) {
+type HostResolution = string | ResolvedAddress[] | undefined;
+
+/**
+ * The default SSRF protection: resolves the URL's host the same way the request
+ * would, and rejects it if any returned address is blocked. Checking every address
+ * (not just the first) matters because the connection may fall back to any of them.
+ * An address that can't be parsed fails closed.
+ */
+async function lookupAndValidateHost(url: string): Promise<ResolvedAddress[]> {
+  const hostname = stripIPv6Brackets(new URL(url).hostname);
+  const literalAddress = normalizeIPAddress(hostname);
+  const results = literalAddress
+    ? [{ address: literalAddress, family: parseIPv4Address(literalAddress) ? 4 : 6 }]
+    : await dns.lookup(hostname, { all: true });
+
+  if (results.length === 0) {
+    throw new Error(`link-preview-js could not resolve ${hostname}`);
+  }
+
+  return results.map(({ address, family }) => {
+    const normalizedAddress = normalizeIPAddress(address);
+
+    if (!normalizedAddress || isAddressBlocked(normalizedAddress)) {
+      throw new Error("SSRF request detected, trying to query host");
+    }
+
+    return { address: normalizedAddress, family: family === 6 ? 6 : 4 };
+  });
+}
+
+/**
+ * Resolves and validates the host of a URL that's about to be fetched, with the
+ * caller's resolveDNSHost or the built-in resolver. Applied to the initial link and
+ * every redirect hop.
+ */
+async function resolveAndValidateHost(
+  url: string,
+  options?: ILinkPreviewOptions,
+): Promise<HostResolution> {
+  if (options?.resolveDNSHost === false) {
     return undefined;
+  }
+
+  if (!options?.resolveDNSHost) {
+    return lookupAndValidateHost(url);
   }
 
   const resolvedUrl = await options.resolveDNSHost(url);
@@ -383,13 +471,7 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
     );
   }
 
-  if (!options?.resolveDNSHost) {
-    console.error(
-      "[link-preview-js] You are not resolving DNS addresses (resolveDNSHost option) before fetching a link. This can cause loopback attacks. Always try to resolve DNS addresses",
-    );
-  }
-
-  const resolvedUrl = await resolveAndValidateHost(detectedUrl, options);
+  const resolution = await resolveAndValidateHost(detectedUrl, options);
 
   const timeout = options?.timeout ?? 3000; // 3 second timeout default
   const controller = new AbortController();
@@ -408,13 +490,13 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
 
   const dispatchers: Dispatcher[] = [];
 
-  const fetchHop = (targetUrl: string, targetResolvedUrl?: string) => {
+  const fetchHop = (targetUrl: string, resolution: HostResolution) => {
     // A proxy already changes where the request is physically sent, so pinning the
     // connection to the resolved address would fight the proxy instead of the target -
     // in that case there's nothing for prepareFetch to decide, the proxy URL is it.
     const prepared: PreparedFetch = options?.proxyUrl
       ? { url: options.proxyUrl.concat(targetUrl) }
-      : prepareFetch(targetUrl, targetResolvedUrl);
+      : prepareFetch(targetUrl, resolution);
 
     if (prepared.dispatcher) {
       dispatchers.push(prepared.dispatcher);
@@ -434,7 +516,7 @@ export async function getLinkPreview(text: string, options?: ILinkPreviewOptions
     // The URL as the caller/server sees it, used to resolve relative Location headers
     // (the fetched URL may have been rewritten to an IP or prefixed with a proxy).
     let currentUrl = detectedUrl;
-    let response = await fetchHop(detectedUrl, resolvedUrl);
+    let response = await fetchHop(detectedUrl, resolution);
     let redirectCount = 0;
 
     // In `manual` mode handleRedirects approves every hop of the chain, not just the first.

@@ -3,6 +3,9 @@ import { getLinkPreview, getPreviewFromContent } from "../index";
 import { CONSTANTS } from "../constants";
 import prefetchedResponse from "./sampleResponse.json";
 import dns from "node:dns/promises";
+import fs from "node:fs";
+import http from "node:http";
+import type { AddressInfo } from "node:net";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -34,6 +37,33 @@ function mockYoutubeFetchOnCI() {
   });
 
   return spyOn(globalThis, "fetch").mockResolvedValue(fetchResponse);
+}
+
+/**
+ * Answers the built-in resolver's `dns.lookup` from a fixed table instead of real DNS,
+ * so tests can point hostnames at whatever addresses they need.
+ */
+function mockDNS(table: Record<string, string | string[]>) {
+  return spyOn(dns, "lookup").mockImplementation((async (hostname: string) => {
+    const addresses = table[hostname];
+
+    if (!addresses) {
+      throw Object.assign(new Error(`getaddrinfo ENOTFOUND ${hostname}`), { code: "ENOTFOUND" });
+    }
+
+    return [addresses].flat().map((address) => ({
+      address,
+      family: address.includes(":") ? 6 : 4,
+    }));
+  }) as any);
+}
+
+function htmlResponse(url: string, title: string) {
+  const response = new Response(`<html><head><title>${title}</title></head></html>`, {
+    headers: { "content-type": "text/html" },
+  });
+  Object.defineProperty(response, "url", { value: url });
+  return response;
 }
 
 describe(`#REGEX_LOOPBACK`, () => {
@@ -669,6 +699,11 @@ describe(`#getLinkPreview()`, () => {
 
       return htmlResponse(url);
     }) as any);
+    const dnsSpy = mockDNS({
+      "xn--e1afmkfd.xn--p1ai": "89.253.237.94",
+      "redirect.example.com": "93.184.216.34",
+      "xn--fsqu00a.xn--fiqs8s": "93.184.216.35",
+    });
 
     try {
       const direct: any = await getLinkPreview(`https://пример.рф/`);
@@ -681,6 +716,7 @@ describe(`#getLinkPreview()`, () => {
       expect(fetchSpy.mock.calls[2][0]).toEqual("https://xn--fsqu00a.xn--fiqs8s/");
     } finally {
       fetchSpy.mockRestore();
+      dnsSpy.mockRestore();
     }
   });
 
@@ -726,6 +762,252 @@ describe(`#getLinkPreview()`, () => {
   //   expect(res.favicons.length).toBeGreaterThan(0);
   //   expect(res.contentType.toLowerCase()).toEqual(`text/html`);
   // });
+});
+
+describe(`#getLinkPreview() default DNS resolution`, () => {
+  it(`should not fetch a local server through a hostname that resolves to loopback`, async () => {
+    // The reported attack: lvh.me (and friends) publicly resolve to 127.0.0.1, so the
+    // URL passes every string check but the request would land on the server itself.
+    let requests = 0;
+    const server = http.createServer((_req, res) => {
+      requests++;
+      res.setHeader("content-type", "text/html");
+      res.end(`<html><head><title>INTERNAL SECRET</title></head></html>`);
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const port = (server.address() as AddressInfo).port;
+    const dnsSpy = mockDNS({ "lvh.me": "127.0.0.1" });
+
+    try {
+      await expect(getLinkPreview(`http://lvh.me:${port}/`)).rejects.toThrow(
+        "SSRF request detected",
+      );
+      expect(requests).toEqual(0);
+    } finally {
+      dnsSpy.mockRestore();
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
+
+  it(`should block hostnames resolving to any loopback/private/link-local address`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockRejectedValue(
+      new Error("fetch should not be called"),
+    );
+    const blockedAddresses = [
+      "127.0.0.1",
+      "10.0.0.5",
+      "172.16.0.1",
+      "192.168.1.1",
+      "169.254.169.254",
+      "100.64.0.1",
+      "0.0.0.0",
+      "::1",
+      "::ffff:127.0.0.1",
+      "::ffff:a9fe:a9fe",
+      "64:ff9b::a9fe:a9fe",
+      "fe80::1",
+      "fd00::1",
+    ];
+
+    try {
+      for (const address of blockedAddresses) {
+        const dnsSpy = mockDNS({ "attacker.example.net": address });
+
+        try {
+          await expect(getLinkPreview(`http://attacker.example.net/`)).rejects.toThrow(
+            "SSRF request detected",
+          );
+        } finally {
+          dnsSpy.mockRestore();
+        }
+      }
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it(`should block a hostname if any of its addresses is blocked, not just the first`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockRejectedValue(
+      new Error("fetch should not be called"),
+    );
+    const dnsSpy = mockDNS({ "attacker.example.net": ["93.184.216.34", "169.254.169.254"] });
+
+    try {
+      await expect(getLinkPreview(`https://attacker.example.net/`)).rejects.toThrow(
+        "SSRF request detected",
+      );
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+      dnsSpy.mockRestore();
+    }
+  });
+
+  it(`should fetch public hostnames with the original URL, keeping the Host header`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation((async (url: string) =>
+      htmlResponse(url, "Public")) as any);
+    const dnsSpy = mockDNS({ "example.com": ["93.184.216.34", "2606:2800:220:1::1"] });
+
+    try {
+      for (const url of [`http://example.com/page`, `https://example.com/page`]) {
+        const response: any = await getLinkPreview(url);
+        expect(response.title).toEqual("Public");
+      }
+
+      expect(fetchSpy.mock.calls.map((call) => call[0])).toEqual([
+        "http://example.com/page",
+        "https://example.com/page",
+      ]);
+      expect(dnsSpy.mock.calls.map((call) => call[0])).toEqual(["example.com", "example.com"]);
+      expect((dnsSpy.mock.calls[0] as unknown[])[1]).toEqual({ all: true });
+    } finally {
+      fetchSpy.mockRestore();
+      dnsSpy.mockRestore();
+    }
+  });
+
+  it(`should not do a DNS lookup for literal public IP addresses`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation((async (url: string) =>
+      htmlResponse(url, "Literal")) as any);
+    const dnsSpy = mockDNS({});
+
+    try {
+      const response: any = await getLinkPreview(`http://93.184.216.34/`);
+
+      expect(response.title).toEqual("Literal");
+      expect(dnsSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+      dnsSpy.mockRestore();
+    }
+  });
+
+  it(`should resolve and validate every redirect hop`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation(
+      (async () =>
+        new Response(null, {
+          status: 302,
+          headers: { location: "http://metadata.attacker.example.net/latest/meta-data/" },
+        })) as any,
+    );
+    const dnsSpy = mockDNS({
+      "example.com": "93.184.216.34",
+      "metadata.attacker.example.net": "169.254.169.254",
+    });
+
+    try {
+      await expect(
+        getLinkPreview(`http://example.com/`, { followRedirects: `follow` }),
+      ).rejects.toThrow("SSRF request detected");
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(dnsSpy.mock.calls.map((call) => call[0])).toEqual([
+        "example.com",
+        "metadata.attacker.example.net",
+      ]);
+    } finally {
+      fetchSpy.mockRestore();
+      dnsSpy.mockRestore();
+    }
+  });
+
+  it(`should propagate DNS resolution failures without fetching`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockRejectedValue(
+      new Error("fetch should not be called"),
+    );
+    const dnsSpy = mockDNS({});
+
+    try {
+      await expect(getLinkPreview(`http://does-not-exist.example.net/`)).rejects.toThrow(
+        "ENOTFOUND",
+      );
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+      dnsSpy.mockRestore();
+    }
+  });
+
+  it(`should use a custom resolveDNSHost instead of the built-in resolver`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation((async (url: string) =>
+      htmlResponse(url, "Custom")) as any);
+    const dnsSpy = mockDNS({});
+
+    try {
+      const response: any = await getLinkPreview(`http://example.com/`, {
+        resolveDNSHost: async () => "93.184.216.34",
+      });
+
+      expect(response.title).toEqual("Custom");
+      expect(dnsSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+      dnsSpy.mockRestore();
+    }
+  });
+
+  it(`should skip DNS resolution entirely with resolveDNSHost: false`, async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockImplementation((async (url: string) =>
+      htmlResponse(url, "Unresolved")) as any);
+    const dnsSpy = mockDNS({ "intranet.example.com": "10.0.0.5" });
+
+    try {
+      const response: any = await getLinkPreview(`http://intranet.example.com/`, {
+        resolveDNSHost: false,
+      });
+
+      expect(response.title).toEqual("Unresolved");
+      expect(dnsSpy).not.toHaveBeenCalled();
+      expect(fetchSpy.mock.calls[0][0]).toEqual("http://intranet.example.com/");
+
+      // Literal blocked addresses are still rejected by the URL checks.
+      await expect(
+        getLinkPreview(`http://100.100.100.200/`, { resolveDNSHost: false }),
+      ).rejects.toThrow("SSRF request detected");
+    } finally {
+      fetchSpy.mockRestore();
+      dnsSpy.mockRestore();
+    }
+  });
+
+  it(`should pin the connection to the validated addresses under Node, defeating DNS rebinding`, async () => {
+    // Bun ignores undici's `connect.lookup` override (see the resolveDNSHost pinning
+    // test above), so this builds the real library and runs it under plain `node`.
+    // Built inside the repo so the bundle's external "undici" import resolves.
+    const cacheDir = path.join(__dirname, "..", "node_modules", ".cache");
+    fs.mkdirSync(cacheDir, { recursive: true });
+    const outDir = fs.mkdtempSync(path.join(cacheDir, "link-preview-js-"));
+    const bundle = path.join(outDir, "node.cjs");
+
+    try {
+      const build = spawnSync(
+        process.execPath,
+        [
+          "build",
+          path.join(__dirname, "..", "node.ts"),
+          "--target=node",
+          "--format=cjs",
+          "--packages=external",
+          `--outfile=${bundle}`,
+        ],
+        { encoding: "utf-8" },
+      );
+      expect(build.status).toEqual(0);
+
+      const fixture = path.join(__dirname, "fixtures", "verify-default-dns-pinning.node.cjs");
+      const result = spawnSync("node", [fixture, bundle], {
+        encoding: "utf-8",
+        cwd: path.join(__dirname, ".."),
+      });
+
+      expect(result.stderr.trim()).toEqual("");
+      expect(result.stdout.trim()).toEqual("PASS");
+      expect(result.status).toEqual(0);
+    } finally {
+      fs.rmSync(outDir, { recursive: true, force: true });
+    }
+  }, 15000);
 });
 
 describe(`#getPreviewFromContent`, () => {
